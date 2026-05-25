@@ -1,0 +1,60 @@
+/* ==========================================================================
+   1. KHỞI TẠO BỘ BIẾN MÀU TOÀN CỤC (SAGE GREEN & EARTHY PALETTE)
+   ========================================================================== */
+:root {
+  --bg-main: #F7F6E7;         /* 60% Màu nền chính - Kem nhạt */
+  --bg-card: #FFFFFF;         /* Nền của các khối hộp - Trắng tinh */
+  --bg-sidebar: #DFDDC5;      /* Nền của thanh bộ lọc - Xám rêu nhạt */
+  
+  --color-primary: #777D71;   /* 30% Màu thương hiệu (Navbar, Tiêu đề) - Xám rêu đậm */
+  --color-secondary: #BBD38B; /* Màu chức năng tạo mới (Nút đăng bài) - Xanh lục sáng */
+  --color-accent: #C84B31;    /* 10% Màu điểm nhấn khẩn cấp (Giá, Đếm ngược) - Cam cháy */
+  
+  --text-dark: #2D302E;       /* Màu chữ chính - Đen xám */
+  --text-muted: #8A9086;      /* Màu chữ phụ, chú thích - Xám nhạt */
+  --font-main: 'Inter', 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ==========================================================================
+   2. RESET CSS CƠ BẢN
+   ========================================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-main);
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: var(--font-main);
+  transition: all 0.3s ease;
+}
+
+input, select, textarea {
+  font-family: var(--font-main);
+  outline: none;
+  border: 1px solid var(--bg-sidebar);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+/* Các nhóm màu tiện ích nhanh (Utility Classes) */
+.text-accent { color: var(--color-accent); font-weight: bold; }
+.bg-primary { background-color: var(--color-primary); color: #fff; }
+.bg-secondary { background-color: var(--color-secondary); color: var(--text-dark); }
+.btn-accent { background-color: var(--color-accent); color: #fff; font-weight: bold; }
