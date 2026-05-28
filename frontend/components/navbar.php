@@ -1,105 +1,33 @@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="../assets/css/style.css">
-
-<style>
-  .navbar-custom {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: var(--bg-card);
-    padding: 12px 5%;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  }
-
-  .nav-logo {
-    font-size: 24px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-  }
-  .nav-logo i {
-    color: var(--color-primary);
-    margin-right: 8px;
-    transform: rotate(-45deg);
-  }
-
-  .nav-search-container {
-    display: flex;
-    align-items: center;
-    width: 40%;
-    position: relative;
-  }
-  .nav-search-input {
-    width: 100%;
-    padding: 10px 40px 10px 15px;
-    border-radius: 20px;
-    background-color: var(--bg-main);
-  }
-  .nav-search-input:focus {
-    border-color: var(--color-primary);
-    background-color: var(--bg-card);
-  }
-  .nav-search-icon {
-    position: absolute;
-    right: 15px;
-    color: var(--text-muted);
-    cursor: pointer;
-  }
-
-  .nav-buttons {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-  .btn-post {
-    background-color: var(--color-secondary);
-    color: var(--text-dark);
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .btn-post:hover {
-    filter: brightness(0.9);
-    transform: translateY(-1px);
-  }
-  .user-menu {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--color-primary);
-    font-weight: 600;
-  }
-</style>
-
-<nav class="navbar-custom">
-  <a href="../home/index.php" class="nav-logo">
-    <i class="fas fa-gavel"></i>
-    <span style="color: var(--color-primary);">e</span>
-    <span style="color: var(--color-secondary);">B</span>
-    <span style="color: var(--color-accent);">a</span>
-    <span style="color: var(--color-primary);">y</span>
-    <span style="font-weight: 300; margin-left: 4px; color: var(--text-muted);">Mini</span>
-  </a>
-
-  <div class="nav-search-container">
-    <input type="text" class="nav-search-input" placeholder="Tìm kiếm sản phẩm đấu giá...">
-    <i class="fas fa-magnifying-glass nav-search-icon"></i>
-  </div>
-
-  <div class="nav-buttons">
-    <a href="../seller/post-item.php" class="btn-post">
-      <i class="fas fa-box-open"></i> Đăng Bán Đồ
-    </a>
+<header class="bg-surface/80 backdrop-blur-md font-body-md text-body-md docked full-width top-0 sticky z-50 shadow-sm border-b border-outline-variant/30">
+  <div class="flex justify-between items-center px-gutter py-3 max-w-container-max mx-auto w-full">
     
-    <div class="user-menu">
-      <i class="fas fa-circle-user fa-lg"></i>
-      <span>Triet_User</span>
+    <div class="flex items-center gap-8">
+      <a class="font-headline-md text-headline-md font-bold text-primary tracking-tight" href="../home/index.php">Chợ Cũ</a>
+      <nav class="hidden md:flex gap-6 font-medium text-[16px]">
+        <a class="text-primary border-b-2 border-primary pb-1" href="../home/index.php">Trang chủ</a>
+        <a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Danh mục</a>
+        <a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Khuyến mãi</a>
+      </nav>
     </div>
+
+    <div class="flex-1 max-w-xl mx-8 hidden md:block">
+      <div class="relative group">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">search</span>
+        <input class="w-full pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary/20 transition-all text-[15px]" placeholder="Tìm kiếm sản phẩm đồ cũ..." type="text"/>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <a href="#" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative block">
+        shopping_cart
+      </a>
+      <a href="../auth/login.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors block">
+        account_circle
+      </a>
+      <button class="bg-primary text-on-primary px-6 py-2 rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm text-[15px]">
+        Đăng tin
+      </button>
+    </div>
+    
   </div>
-</nav>
+</header>
