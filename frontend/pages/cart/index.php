@@ -5,7 +5,7 @@
 </head>
 <body onload="renderCart()">
 
-<h2>Giỏ hàng của Tri</h2>
+<h2>Giỏ hàng</h2>
 
 <div id="cart-list"></div>
 
