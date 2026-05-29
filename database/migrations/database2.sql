@@ -1,9 +1,8 @@
 CREATE TABLE orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     buyer_id INT NOT NULL,
-    total_price DECIMAL(10,2) NOT NULL,
+    total_price DECIMAL(12,0) NOT NULL,
     shipping_address VARCHAR(255) NOT NULL,
-
     status ENUM(
         'pending',
         'confirmed',
@@ -11,12 +10,7 @@ CREATE TABLE orders (
         'cancelled'
     ) DEFAULT 'pending',
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (buyer_id)
-    REFERENCES users(ID)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE order_details (
@@ -24,58 +18,30 @@ CREATE TABLE order_details (
     order_id INT NOT NULL,
     product_id INT NOT NULL,
     quantity INT DEFAULT 1,
-    price DECIMAL(10,2) NOT NULL,
-
-    FOREIGN KEY (order_id)
-    REFERENCES orders(id)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-
-    FOREIGN KEY (product_id)
-    REFERENCES products(ID)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE
+    price DECIMAL(12,0) NOT NULL
 );
 
-INSERT INTO orders (
-    buyer_id,
-    total_price,
-    shipping_address,
-    status
-)
-VALUES
-(
-    1,
-    8500000,
-    'Thu Duc, TP.HCM',
-    'completed'
-),
-(
-    2,
-    7000000,
-    'Bien Hoa, Dong Nai',
-    'pending'
-);
+ALTER TABLE orders
+ADD CONSTRAINT fk_orders_user
+FOREIGN KEY (buyer_id)
+REFERENCES users(ID)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
 
-INSERT INTO order_details (
-    order_id,
-    product_id,
-    quantity,
-    price
-)
-VALUES
-(
-    1,
-    1,
-    1,
-    8500000
-),
-(
-    2,
-    2,
-    1,
-    7000000
-);
+ALTER TABLE order_details
+ADD CONSTRAINT fk_orderdetails_order
+FOREIGN KEY (order_id)
+REFERENCES orders(id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE order_details
+ADD CONSTRAINT fk_orderdetails_product
+FOREIGN KEY (product_id)
+REFERENCES products(ID)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
 
 SELECT *
 FROM orders;
