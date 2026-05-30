@@ -138,4 +138,37 @@ class AuthService {
             'user'   => $user
         ];
     }
+
+    /**
+     * Get details of the currently authenticated user from local session state.
+     * 
+     * @return array Status payload with user profile or error details
+     */
+    public function getCurrentUser(): array {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (empty($_SESSION['user_id'])) {
+            return [
+                'status'  => 'error',
+                'code'    => 401,
+                'message' => 'Chưa đăng nhập.'
+            ];
+        }
+
+        $user = $this->userRepository->findById((int)$_SESSION['user_id']);
+        if ($user === null) {
+            return [
+                'status'  => 'error',
+                'code'    => 404,
+                'message' => 'Không tìm thấy người dùng.'
+            ];
+        }
+
+        return [
+            'status' => 'success',
+            'code'   => 200,
+            'user'   => $user
+        ];
+    }
 }

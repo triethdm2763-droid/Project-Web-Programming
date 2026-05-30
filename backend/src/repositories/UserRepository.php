@@ -33,6 +33,19 @@ class UserRepository extends BaseRepository {
     }
 
     /**
+     * Find a user by their ID.
+     * 
+     * @param int $id
+     * @return array|null The user data array, or null if not found
+     */
+    public function findById(int $id) {
+        $stmt = $this->db->prepare("SELECT `ID`, `Username`, `Email`, `Phone`, `Role`, `Status`, `created_at` FROM `users` WHERE `ID` = :id LIMIT 1");
+        $stmt->execute(['id' => $id]);
+        $user = $stmt->fetch();
+        return $user ?: null;
+    }
+
+    /**
      * Create and insert a new user into the database.
      * 
      * @param string $username

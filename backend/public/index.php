@@ -65,6 +65,9 @@ $routes = [
         '/api/auth/register' => ['App\Controllers\AuthController', 'register'],
         '/api/auth/login'    => ['App\Controllers\AuthController', 'login'],
         '/api/auth/logout'   => ['App\Controllers\AuthController', 'logout']
+    ],
+    'GET' => [
+        '/api/auth/me'       => ['App\Controllers\AuthController', 'me']
     ]
 ];
 

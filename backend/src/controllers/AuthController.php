@@ -97,4 +97,21 @@ class AuthController extends BaseController {
             'message' => 'Đăng xuất thành công!'
         ], 200);
     }
+
+    /**
+     * GET /api/auth/me
+     * Retrieve current logged in user details.
+     */
+    public function me() {
+        $result = $this->authService->getCurrentUser();
+        if ($result['status'] === 'success') {
+            return $this->json([
+                'user' => $result['user']
+            ], 200);
+        }
+
+        return $this->json([
+            'error' => $result['message']
+        ], $result['code']);
+    }
 }
