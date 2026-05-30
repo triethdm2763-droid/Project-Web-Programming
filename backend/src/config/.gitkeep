@@ -1,0 +1,41 @@
+<?php
+declare(strict_types=1);
+
+namespace config;
+
+use PDO;
+use PDOException;
+
+class Database
+{
+    private static ?PDO $instance = null;
+
+    private static string $host   = 'localhost';
+    private static string $dbname = 'be1_db';
+    private static string $user   = 'root';
+    private static string $pass   = '';
+    private static string $port   = '3306';
+
+    private function __construct() {}
+    private function __clone() {}
+
+    public static function getInstance(): PDO
+    {
+        if (self::$instance === null) {
+            $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',
+                self::$host, self::$port, self::$dbname);
+            try {
+                self::$instance = new PDO($dsn, self::$user, self::$pass, [
+                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES   => false,
+                ]);
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'DB error: ' . $e->getMessage()]);
+                exit;
+            }
+        }
+        return self::$instance;
+    }
+}
