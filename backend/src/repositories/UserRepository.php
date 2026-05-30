@@ -1,40 +1,73 @@
 <?php
-declare(strict_types=1);
+namespace App\Repositories;
 
-namespace repositories;
-
-use config\Database;
+use App\Core\BaseRepository;
 use PDO;
 
-class UserRepository
-{
-    private PDO $db;
+class UserRepository extends BaseRepository {
 
-    public function __construct()
-    {
-        $this->db = Database::getInstance();
+    /**
+     * Find a user by their Username.
+     * 
+     * @param string $username
+     * @return array|null The user data array, or null if not found
+     */
+    public function findByUsername(string $username) {
+        $stmt = $this->db->prepare("SELECT * FROM `users` WHERE `Username` = :username LIMIT 1");
+        $stmt->execute(['username' => $username]);
+        $user = $stmt->fetch();
+        return $user ?: null;
     }
 
-    public function findByEmail(string $email): ?array
-    {
-        $stmt = $this->db->prepare('SELECT * FROM users WHERE email = :email LIMIT 1');
-        $stmt->execute([':email' => $email]);
-        return $stmt->fetch() ?: null;
+    /**
+     * Find a user by their Email.
+     * 
+     * @param string $email
+     * @return array|null The user data array, or null if not found
+     */
+    public function findByEmail(string $email) {
+        $stmt = $this->db->prepare("SELECT * FROM `users` WHERE `Email` = :email LIMIT 1");
+        $stmt->execute(['email' => $email]);
+        $user = $stmt->fetch();
+        return $user ?: null;
     }
 
-    public function findById(int $id): ?array
-    {
-        $stmt = $this->db->prepare('SELECT id, name, email, created_at FROM users WHERE id = :id LIMIT 1');
-        $stmt->execute([':id' => $id]);
-        return $stmt->fetch() ?: null;
+    /**
+     * Find a user by their ID.
+     * 
+     * @param int $id
+     * @return array|null The user data array, or null if not found
+     */
+    public function findById(int $id) {
+        $stmt = $this->db->prepare("SELECT `ID`, `Username`, `Email`, `Phone`, `Role`, `Status`, `created_at` FROM `users` WHERE `ID` = :id LIMIT 1");
+        $stmt->execute(['id' => $id]);
+        $user = $stmt->fetch();
+        return $user ?: null;
     }
 
-    public function create(string $name, string $email, string $hashedPassword): int
-    {
-        $stmt = $this->db->prepare(
-            'INSERT INTO users (name, email, password, created_at) VALUES (:name, :email, :password, NOW())'
-        );
-        $stmt->execute([':name' => $name, ':email' => $email, ':password' => $hashedPassword]);
-        return (int) $this->db->lastInsertId();
+    /**
+     * Create and insert a new user into the database.
+     * 
+     * @param string $username
+     * @param string $email
+     * @param string $passwordHash Pre-hashed password
+     * @param string|null $phone
+     * @param string $role Default 'user'
+     * @return int The auto-incremented primary key ID of the created user
+     */
+    public function create(string $username, string $email, string $passwordHash, ?string $phone, string $role = 'user'): int {
+        $sql = "INSERT INTO `users` (`Username`, `Password`, `Email`, `Phone`, `Role`, `Status`) 
+                VALUES (:username, :password, :email, :phone, :role, 'active')";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'username' => $username,
+            'password' => $passwordHash,
+            'email'    => $email,
+            'phone'    => $phone,
+            'role'     => $role
+        ]);
+
+        return (int)$this->db->lastInsertId();
     }
 }

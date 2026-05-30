@@ -1,41 +1,53 @@
 <?php
-declare(strict_types=1);
-
-namespace config;
+namespace App\Config;
 
 use PDO;
 use PDOException;
 
-class Database
-{
-    private static ?PDO $instance = null;
+class Database {
+    private static $instance = null;
+    private $conn;
 
-    private static string $host   = 'localhost';
-    private static string $dbname = 'be1_db';
-    private static string $user   = 'root';
-    private static string $pass   = '';
-    private static string $port   = '3306';
+    // Database connection parameters
+    private $host = 'localhost';
+    private $db_name = 'c2c_used_marketplace';
+    private $username = 'root';
+    private $password = ''; // XAMPP default is empty string
 
-    private function __construct() {}
-    private function __clone() {}
+    // Private constructor to prevent direct instantiation
+    private function __construct() {
+        try {
+            $dsn = "mysql:host={$this->host};dbname={$this->db_name};charset=utf8mb4";
+            
+            // PDO configuration options for security and error handling
+            $options = [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   => false, // Disabling emulation prevents SQL Injection in older mysql versions
+            ];
 
-    public static function getInstance(): PDO
-    {
+            $this->conn = new PDO($dsn, $this->username, $this->password, $options);
+        } catch (PDOException $e) {
+            // Send JSON error and halt execution if DB connection fails
+            http_response_code(500);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'error' => 'Database connection failed: ' . $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+    }
+
+    // Get the database instance
+    public static function getInstance() {
         if (self::$instance === null) {
-            $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',
-                self::$host, self::$port, self::$dbname);
-            try {
-                self::$instance = new PDO($dsn, self::$user, self::$pass, [
-                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES   => false,
-                ]);
-            } catch (PDOException $e) {
-                http_response_code(500);
-                echo json_encode(['success' => false, 'message' => 'DB error: ' . $e->getMessage()]);
-                exit;
-            }
+            self::$instance = new self();
         }
         return self::$instance;
+    }
+
+    // Get the PDO connection object
+    public function getConnection() {
+        return $this->conn;
     }
 }

@@ -1,91 +1,174 @@
 <?php
-declare(strict_types=1);
+namespace App\Services;
 
-namespace services;
+use App\Repositories\UserRepository;
+use App\Validators\Validator;
 
-use repositories\UserRepository;
+class AuthService {
+    private $userRepository;
 
-class AuthService
-{
-    private UserRepository $userRepo;
-
-    public function __construct()
-    {
-        $this->userRepo = new UserRepository();
+    public function __construct() {
+        $this->userRepository = new UserRepository();
     }
 
-    public function register(array $input): array
-    {
-        $name     = trim($input['name']  ?? '');
-        $email    = trim($input['email'] ?? '');
-        $password = $input['password']   ?? '';
+    /**
+     * Process user registration.
+     * 
+     * @param array $data Input data payload
+     * @return array Status array indicating success or failure with error messages
+     */
+    public function register(array $data): array {
+        // 1. Validate Input Data
+        $rules = [
+            'username' => 'required|min:3|max:50',
+            'email'    => 'required|email',
+            'password' => 'required|min:6',
+            'phone'    => 'phone'
+        ];
 
-        if (empty($name) || empty($email) || empty($password))
-            return ['success' => false, 'message' => 'Vui lòng điền đầy đủ thông tin'];
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL))
-            return ['success' => false, 'message' => 'Email không hợp lệ'];
-        if (strlen($password) < 6)
-            return ['success' => false, 'message' => 'Mật khẩu phải có ít nhất 6 ký tự'];
-        if ($this->userRepo->findByEmail($email))
-            return ['success' => false, 'message' => 'Email đã được sử dụng'];
+        $errors = Validator::validate($data, $rules);
+        if (!empty($errors)) {
+            return [
+                'status' => 'error',
+                'code'   => 400,
+                'errors' => $errors
+            ];
+        }
 
-        $id = $this->userRepo->create($name, $email, password_hash($password, PASSWORD_BCRYPT));
+        $username = trim($data['username']);
+        $email = trim($data['email']);
+        $password = $data['password'];
+        $phone = isset($data['phone']) ? trim($data['phone']) : null;
+
+        // 2. Check if Username Already Exists
+        if ($this->userRepository->findByUsername($username) !== null) {
+            return [
+                'status' => 'error',
+                'code'   => 409, // HTTP Conflict
+                'errors' => ['username' => ['Tên đăng nhập này đã tồn tại trên hệ thống.']]
+            ];
+        }
+
+        // 3. Check if Email Already Exists
+        if ($this->userRepository->findByEmail($email) !== null) {
+            return [
+                'status' => 'error',
+                'code'   => 409, // HTTP Conflict
+                'errors' => ['email' => ['Địa chỉ email này đã được đăng ký sử dụng.']]
+            ];
+        }
+
+        // 4. Secure Password Hashing
+        $passwordHash = password_hash($password, PASSWORD_BCRYPT);
+
+        // 5. Save to Database
+        $userId = $this->userRepository->create($username, $email, $passwordHash, $phone);
 
         return [
-            'success' => true,
-            'message' => 'Đăng ký thành công',
-            'data'    => ['id' => $id, 'name' => $name, 'email' => $email],
+            'status'  => 'success',
+            'code'    => 201, // HTTP Created
+            'user_id' => $userId
         ];
     }
 
-    public function login(array $input): array
-    {
-        $email    = trim($input['email'] ?? '');
-        $password = $input['password']   ?? '';
+    /**
+     * Process user login.
+     * 
+     * @param array $data Input credentials payload
+     * @return array Status array indicating success or failure with error messages
+     */
+    public function login(array $data): array {
+        // 1. Validate Input Fields
+        $rules = [
+            'username' => 'required',
+            'password' => 'required'
+        ];
 
-        if (empty($email) || empty($password))
-            return ['success' => false, 'message' => 'Vui lòng điền đầy đủ thông tin'];
+        $errors = Validator::validate($data, $rules);
+        if (!empty($errors)) {
+            return [
+                'status' => 'error',
+                'code'   => 400,
+                'errors' => $errors
+            ];
+        }
 
-        $user = $this->userRepo->findByEmail($email);
+        $inputUsername = trim($data['username']);
+        $password = $data['password'];
 
-        if (!$user || !password_verify($password, $user['password']))
-            return ['success' => false, 'message' => 'Email hoặc mật khẩu không đúng'];
+        // 2. Retrieve User by Username or Email (Flexible Login)
+        $user = $this->userRepository->findByUsername($inputUsername);
+        if ($user === null) {
+            // Try checking by email just in case the user typed their email
+            $user = $this->userRepository->findByEmail($inputUsername);
+        }
 
-        $this->startSession();
-        $_SESSION['user_id']    = $user['id'];
-        $_SESSION['user_name']  = $user['name'];
-        $_SESSION['user_email'] = $user['email'];
-        $_SESSION['logged_in']  = true;
+        if ($user === null) {
+            return [
+                'status'  => 'error',
+                'code'    => 401, // Unauthorized
+                'message' => 'Tên đăng nhập hoặc mật khẩu không chính xác.'
+            ];
+        }
+
+        // 3. Verify Hashed Password
+        if (!password_verify($password, $user['Password'])) {
+            return [
+                'status'  => 'error',
+                'code'    => 401,
+                'message' => 'Tên đăng nhập hoặc mật khẩu không chính xác.'
+            ];
+        }
+
+        // 4. Check User Account Status
+        if ($user['Status'] !== 'active') {
+            return [
+                'status'  => 'error',
+                'code'    => 403, // Forbidden
+                'message' => 'Tài khoản của bạn hiện đang bị khóa hoặc ngưng hoạt động.'
+            ];
+        }
+
+        // 5. Securely Strip Sensitive Password Hash
+        unset($user['Password']);
 
         return [
-            'success' => true,
-            'message' => 'Đăng nhập thành công',
-            'data'    => ['id' => $user['id'], 'name' => $user['name'], 'email' => $user['email']],
+            'status' => 'success',
+            'code'   => 200,
+            'user'   => $user
         ];
     }
 
-    public function logout(): array
-    {
-        $this->startSession();
-        $_SESSION = [];
-        session_destroy();
-        return ['success' => true, 'message' => 'Đăng xuất thành công'];
-    }
+    /**
+     * Get details of the currently authenticated user from local session state.
+     * 
+     * @return array Status payload with user profile or error details
+     */
+    public function getCurrentUser(): array {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (empty($_SESSION['user_id'])) {
+            return [
+                'status'  => 'error',
+                'code'    => 401,
+                'message' => 'Chưa đăng nhập.'
+            ];
+        }
 
-    public function getCurrentUser(): array
-    {
-        $this->startSession();
-        if (empty($_SESSION['logged_in']))
-            return ['success' => false, 'message' => 'Chưa đăng nhập'];
+        $user = $this->userRepository->findById((int)$_SESSION['user_id']);
+        if ($user === null) {
+            return [
+                'status'  => 'error',
+                'code'    => 404,
+                'message' => 'Không tìm thấy người dùng.'
+            ];
+        }
 
-        $user = $this->userRepo->findById((int) $_SESSION['user_id']);
-        return $user
-            ? ['success' => true, 'data' => $user]
-            : ['success' => false, 'message' => 'Không tìm thấy người dùng'];
-    }
-
-    private function startSession(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) session_start();
+        return [
+            'status' => 'success',
+            'code'   => 200,
+            'user'   => $user
+        ];
     }
 }

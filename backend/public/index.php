@@ -1,39 +1,97 @@
 <?php
-declare(strict_types=1);
+// Start session for login state tracking
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-define('BASE_PATH', dirname(__DIR__));
-
-spl_autoload_register(function (string $class): void {
-    $file = BASE_PATH . '/src/' . str_replace('\\', '/', $class) . '.php';
-    if (file_exists($file)) require_once $file;
+// 1. SMART PSR-4 AUTOLOADER
+spl_autoload_register(function ($class) {
+    $prefix = 'App\\';
+    $base_dir = __DIR__ . '/../src/';
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0) {
+        return;
+    }
+    $relative_class = substr($class, $len);
+    
+    // Split namespace parts
+    $parts = explode('\\', $relative_class);
+    $className = array_pop($parts); // E.g., AuthController
+    
+    // Convert directory names to lowercase (e.g., Controllers -> controllers)
+    $dirs = array_map('strtolower', $parts);
+    
+    $path = implode('/', $dirs);
+    $file = $base_dir . ($path ? $path . '/' : '') . $className . '.php';
+    
+    if (file_exists($file)) {
+        require_once $file;
+    }
 });
 
-require_once BASE_PATH . '/src/config/Database.php';
+// Helper response if route not found
+function sendJsonError($message, $code = 404) {
+    http_response_code($code);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['error' => $message], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
-header('Content-Type: application/json; charset=UTF-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+// 2. EXTRACT CLEAN ROUTE PATH
+$requestUri = $_SERVER['REQUEST_URI'];
+if (($pos = strpos($requestUri, '?')) !== false) {
+    $requestUri = substr($requestUri, 0, $pos);
+}
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
+$path = '/';
+if (preg_match('/(\/api\/.*)$/', $requestUri, $matches)) {
+    $path = rtrim($matches[1], '/');
+}
 
-$uri    = rtrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Handle CORS Preflight request
+if ($method === 'OPTIONS') {
+    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization");
+    http_response_code(204);
+    exit;
+}
+
+// 3. DEFINE STATIC API ROUTES
 $routes = [
-    'POST /api/auth/register' => ['controllers\AuthController', 'register'],
-    'POST /api/auth/login'    => ['controllers\AuthController', 'login'],
-    'POST /api/auth/logout'   => ['controllers\AuthController', 'logout'],
-    'GET /api/auth/me'        => ['controllers\AuthController', 'me'],
+    'POST' => [
+        '/api/auth/register' => ['App\Controllers\AuthController', 'register'],
+        '/api/auth/login'    => ['App\Controllers\AuthController', 'login'],
+        '/api/auth/logout'   => ['App\Controllers\AuthController', 'logout']
+    ],
+    'GET' => [
+        '/api/auth/me'       => ['App\Controllers\AuthController', 'me']
+    ]
 ];
 
-$key = "$method $uri";
+// 4. ROUTE DISPATCHING
+if (!isset($routes[$method]) || !isset($routes[$method][$path])) {
+    sendJsonError("API endpoint '{$method} {$path}' not found.", 404);
+}
 
-if (array_key_exists($key, $routes)) {
-    [$controllerClass, $action] = $routes[$key];
-    $controller = new ("\\$controllerClass")();
-    $controller->$action();
-} else {
-    http_response_code(404);
-    echo json_encode(['success' => false, 'message' => 'Route not found']);
+list($controllerClass, $action) = $routes[$method][$path];
+
+try {
+    if (!class_exists($controllerClass)) {
+        sendJsonError("Controller class '{$controllerClass}' not found.", 500);
+    }
+    
+    $controllerInstance = new $controllerClass();
+    
+    if (!method_exists($controllerInstance, $action)) {
+        sendJsonError("Action '{$action}' not found in controller '{$controllerClass}'.", 500);
+    }
+    
+    // Call the action
+    $controllerInstance->$action();
+    
+} catch (Exception $e) {
+    sendJsonError("Internal Server Error: " . $e->getMessage(), 500);
 }
