@@ -16,7 +16,7 @@ CREATE TABLE `products` (
   `Seller_ID` int(11) NOT NULL,
   `Price` decimal(15,0) NOT NULL,
   `Stock_quantity` int(11) NOT NULL DEFAULT 1,
-  `Status` varchar(10) NOT NULL DEFAULT 'pending',
+  `Status` varchar(20) NOT NULL DEFAULT 'pending',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -54,6 +54,6 @@ ALTER TABLE `users`
   MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `products`
-  ADD CONSTRAINT `fk_product_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`),
-  ADD CONSTRAINT `fk_product_seller` FOREIGN KEY (`seller_id`) REFERENCES `users` (`ID`);
+  ADD CONSTRAINT `fk_product_category` FOREIGN KEY (`Category_ID`) REFERENCES `categories` (`ID`),
+  ADD CONSTRAINT `fk_product_seller` FOREIGN KEY (`Seller_ID`) REFERENCES `users` (`ID`);
 COMMIT;
