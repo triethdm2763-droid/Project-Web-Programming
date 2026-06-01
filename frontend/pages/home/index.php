@@ -1,3 +1,18 @@
+<?php
+// 1. Nhúng file cấu hình database vào
+require_once '../../../backend/config/database.php';
+
+// 2. Khởi tạo kết nối
+$database = new Database();
+$db = $database->connection();
+
+// 3. Viết câu lệnh SQL bốc 4 sản phẩm mẫu từ database ra
+$query = "SELECT * FROM products LIMIT 4";
+$stmt = $db->prepare($query);
+$stmt->execute();
+$products = $stmt->fetchAll();
+?>
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -76,93 +91,28 @@
            3. PRODUCT MARKETPLACE GRID (Lưới trống chờ đổ dữ liệu Tuần 2)
            ========================================================================== -->
         <section class="space-y-6">
-            <div class="flex justify-between items-end border-b border-outline-variant/20 pb-4">
-                <div>
-                    <h2 class="font-headline-md text-xl md:text-2xl font-bold text-on-background">Tin Đăng Mới Nhất</h2>
-                    <p class="text-body-sm text-on-surface-variant">Các mặt hàng chính chủ do người dùng tự đăng tải thanh lý</p>
-                </div>
-                <a class="text-primary font-semibold hover:underline text-[15px] flex items-center gap-1" href="#">
-                    Xem Tất Cả <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                </a>
-            </div>
-
-            <!-- Lưới hiển thị 4 khung sản phẩm trống (Placeholder) -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-gutter">
-
-                <!-- KHUNG SẢN PHẨM TRỐNG 1 -->
-                <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all group border border-outline-variant/10 flex flex-col">
-                    <div class="aspect-square bg-surface-container flex items-center justify-center relative text-outline/50">
-                        <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm z-10 uppercase tracking-wider">Độc Bản (SL=1)</span>
-                        <!-- Icon ảnh trống đại diện -->
-                        <span class="material-symbols-outlined text-5xl select-none">image</span>
-                    </div>
-                    <div class="p-4 flex flex-col flex-grow space-y-2">
-                        <a href="../products/detail.php" class="font-semibold text-[15px] line-clamp-2 hover:text-primary transition-colors h-11 block leading-snug">
-                            Tên sản phẩm thanh lý mẫu (Chờ dữ liệu API...)
-                        </a>
-                        <div class="text-primary font-bold text-lg">0 đ</div>
-                        <div class="text-outline text-[12px] mt-auto pt-2 border-t border-outline-variant/10 flex justify-between items-center text-on-surface-variant">
-                            <span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">location_on</span>--</span>
-                            <span>--</span>
-                        </div>
+    <?php if (!empty($products)): ?>
+        <?php foreach ($products as $row): ?>
+            <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-outline-variant/10 flex flex-col">
+                <div class="aspect-square bg-surface-container flex items-center justify-center relative text-outline/50">
+                    <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm">Độc Bản (SL=1)</span>
+                    <span class="material-symbols-outlined text-5xl">image</span>
+                </div>
+                <div class="p-4 flex flex-col flex-grow space-y-2">
+                    <h3 class="font-semibold text-[15px] line-clamp-2 h-11 block">
+                        <?php echo htmlspecialchars($row['name']); ?>
+                    </h3>
+                    <div class="text-primary font-bold text-lg">
+                        <?php echo number_format($row['price'], 0, ',', '.'); ?> đ
                     </div>
                 </div>
-
-                <!-- KHUNG SẢN PHẨM TRỐNG 2 -->
-                <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all group border border-outline-variant/10 flex flex-col">
-                    <div class="aspect-square bg-surface-container flex items-center justify-center relative text-outline/50">
-                        <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm z-10 uppercase tracking-wider">Độc Bản (SL=1)</span>
-                        <span class="material-symbols-outlined text-5xl select-none">image</span>
-                    </div>
-                    <div class="p-4 flex flex-col flex-grow space-y-2">
-                        <a href="#" class="font-semibold text-[15px] line-clamp-2 hover:text-primary transition-colors h-11 block leading-snug">
-                            Tên sản phẩm thanh lý mẫu (Chờ dữ liệu API...)
-                        </a>
-                        <div class="text-primary font-bold text-lg">0 đ</div>
-                        <div class="text-outline text-[12px] mt-auto pt-2 border-t border-outline-variant/10 flex justify-between items-center text-on-surface-variant">
-                            <span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">location_on</span>--</span>
-                            <span>--</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- KHUNG SẢN PHẨM TRỐNG 3 -->
-                <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all group border border-outline-variant/10 flex flex-col">
-                    <div class="aspect-square bg-surface-container flex items-center justify-center relative text-outline/50">
-                        <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm z-10 uppercase tracking-wider">Độc Bản (SL=1)</span>
-                        <span class="material-symbols-outlined text-5xl select-none">image</span>
-                    </div>
-                    <div class="p-4 flex flex-col flex-grow space-y-2">
-                        <a href="#" class="font-semibold text-[15px] line-clamp-2 hover:text-primary transition-colors h-11 block leading-snug">
-                            Tên sản phẩm thanh lý mẫu (Chờ dữ liệu API...)
-                        </a>
-                        <div class="text-primary font-bold text-lg">0 đ</div>
-                        <div class="text-outline text-[12px] mt-auto pt-2 border-t border-outline-variant/10 flex justify-between items-center text-on-surface-variant">
-                            <span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">location_on</span>--</span>
-                            <span>--</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- KHUNG SẢN PHẨM TRỐNG 4 -->
-                <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all group border border-outline-variant/10 flex flex-col">
-                    <div class="aspect-square bg-surface-container flex items-center justify-center relative text-outline/50">
-                        <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm z-10 uppercase tracking-wider">Độc Bản (SL=1)</span>
-                        <span class="material-symbols-outlined text-5xl select-none">image</span>
-                    </div>
-                    <div class="p-4 flex flex-col flex-grow space-y-2">
-                        <a href="#" class="font-semibold text-[15px] line-clamp-2 hover:text-primary transition-colors h-11 block leading-snug">
-                            Tên sản phẩm thanh lý mẫu (Chờ dữ liệu API...)
-                        </a>
-                        <div class="text-primary font-bold text-lg">0 đ</div>
-                        <div class="text-outline text-[12px] mt-auto pt-2 border-t border-outline-variant/10 flex justify-between items-center text-on-surface-variant">
-                            <span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">location_on</span>--</span>
-                            <span>--</span>
-                        </div>
-                    </div>
-                </div>
-
             </div>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <p>Chưa có sản phẩm nào trong hệ thống.</p>
+    <?php endif; ?>
+</div>
         </section>
     </main>
 

@@ -14,10 +14,11 @@ CREATE TABLE `products` (
   `Image` varchar(255) DEFAULT NULL,
   `Category_ID` int(11) NOT NULL,
   `Seller_ID` int(11) NOT NULL,
-  `Price` decimal(15,0) NOT NULL,
+  `Price` decimal(15,2) NOT NULL,
   `Stock_quantity` int(11) NOT NULL DEFAULT 1,
   `Status` varchar(20) NOT NULL DEFAULT 'pending',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `users` (
