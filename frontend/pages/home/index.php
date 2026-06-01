@@ -1,94 +1,163 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Trang Chủ | Chợ Cũ</title>
+    <title>Trang Chủ | Chợ Cũ Marketplace</title>
+    <!-- Nhúng Header chứa cấu hình Tailwind và biến màu style.css của Triết -->
     <?php include '../../components/header.php'; ?>
 </head>
 <body class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col">
 
+    <!-- Nhúng thanh điều hướng Navbar -->
     <?php include '../../components/navbar.php'; ?>
 
-    <main class="max-w-container-max mx-auto px-gutter py-8 flex-grow w-full">
+    <main class="max-w-container-max mx-auto px-gutter py-8 flex-grow w-full space-y-12">
         
-        <section class="bg-surface-container-low p-8 rounded-xl border border-outline-variant/20 shadow-sm mb-12 text-center">
-            <h2 class="font-headline-lg text-headline-lg text-primary mb-3">Sàn Giao Dịch Đồ Cũ C2C Độc Bản</h2>
-            <p class="text-on-surface-variant max-w-2xl mx-auto text-body-md leading-relaxed">
-                Nền tảng thương mại điện tử giao dịch hàng thanh lý cá nhân uy tín. Hệ thống tối ưu hóa luồng xử lý mua sắm ngay lập tức cho các mặt hàng số lượng bằng một, cam kết minh bạch và công bằng!
-            </p>
+        <!-- ==========================================================================
+           1. HERO BANNER SECTION (Giao diện giới thiệu mô hình C2C Độc bản)
+           ========================================================================== -->
+        <section class="relative bg-gradient-to-r from-primary to-[#1e6aff] text-white rounded-2xl p-8 md:p-12 shadow-md overflow-hidden group">
+            <div class="max-w-xl relative z-10 space-y-4">
+                <span class="bg-secondary-container text-white text-[12px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
+                    Sàn C2C Uy Tín Toàn Quốc
+                </span>
+                <h1 class="font-headline-lg text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
+                    Nền Tảng Mua Bán & Thanh Lý Đồ Cũ Chính Chủ
+                </h1>
+                <p class="text-white/80 text-body-md max-w-md leading-relaxed">
+                    Trải nghiệm luồng chốt đơn siêu tốc với mô hình **"Mua Ngay"** dành riêng cho các mặt hàng độc bản, số lượng chỉ có một. Ai đến trước, mua trước!
+                </p>
+                <div class="pt-2">
+                    <a href="#" class="inline-block bg-white text-primary font-bold px-8 py-3.5 rounded-full shadow-md hover:bg-surface transition-all active:scale-95 text-[15px]">
+                        Khám Phá Ngay
+                    </a>
+                </div>
+            </div>
+            <div class="absolute right-0 bottom-0 top-0 w-1/2 hidden md:block opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
+                <span class="material-symbols-outlined text-[300px] absolute right-4 top-1/2 -translate-y-1/2 text-white">storefront</span>
+            </div>
         </section>
 
-        <section class="mt-section-gap">
-            <div class="flex justify-between items-end mb-8">
-                <h2 class="font-headline-md text-headline-md">Sản phẩm vừa lên sàn</h2>
-                <a class="text-primary font-label-md hover:underline" href="#">Xem tất cả sản phẩm</a>
+        <!-- ==========================================================================
+           2. BROWSE BY CATEGORIES (Bộ lọc danh mục trực quan)
+           ========================================================================== -->
+        <section class="space-y-4">
+            <h2 class="font-headline-md text-xl md:text-2xl font-bold text-on-background flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">grid_view</span> Danh Mục Nổi Bật
+            </h2>
+            <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+                    <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">devices</span>
+                    <span class="text-label-sm font-semibold text-on-surface">Đồ Điện Tử</span>
+                </a>
+                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+                    <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">apparel</span>
+                    <span class="text-label-sm font-semibold text-on-surface">Thời Trang</span>
+                </a>
+                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+                    <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">chair</span>
+                    <span class="text-label-sm font-semibold text-on-surface">Nhà Cửa & Đời Sống</span>
+                </a>
+                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+                    <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">directions_bike</span>
+                    <span class="text-label-sm font-semibold text-on-surface">Xe Cộ</span>
+                </a>
+                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+                    <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">menu_book</span>
+                    <span class="text-label-sm font-semibold text-on-surface">Sách & Giải Trí</span>
+                </a>
+                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+                    <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">sports_esports</span>
+                    <span class="text-label-sm font-semibold text-on-surface">Máy Game / Console</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+           3. PRODUCT MARKETPLACE GRID (Lưới trống chờ đổ dữ liệu Tuần 2)
+           ========================================================================== -->
+        <section class="space-y-6">
+            <div class="flex justify-between items-end border-b border-outline-variant/20 pb-4">
+                <div>
+                    <h2 class="font-headline-md text-xl md:text-2xl font-bold text-on-background">Tin Đăng Mới Nhất</h2>
+                    <p class="text-body-sm text-on-surface-variant">Các mặt hàng chính chủ do người dùng tự đăng tải thanh lý</p>
+                </div>
+                <a class="text-primary font-semibold hover:underline text-[15px] flex items-center gap-1" href="#">
+                    Xem Tất Cả <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
             </div>
 
+            <!-- Lưới hiển thị 4 khung sản phẩm trống (Placeholder) -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-gutter">
-                
+
+                <!-- KHUNG SẢN PHẨM TRỐNG 1 -->
                 <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all group border border-outline-variant/10 flex flex-col">
-                    <div class="aspect-square overflow-hidden bg-surface-container-low relative">
-                        <span class="absolute top-3 left-3 bg-tertiary text-white font-label-sm text-[12px] px-2 py-1 rounded shadow-sm z-10">Độc bản</span>
-                        <img alt="Fujifilm X-T30 II" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvzpouZValUbG51LPqZJvCRQM1dQ5WI5FqEqB8it3JWawAaTOtWYxQSiWOu0_ObQrIsfz_ZFVGeJHH9vQmZzO0coRsdL6PBV_HTgFhCRb1gNF6T0mq2tp7-brTMHs4HsRBY8C0PrRXVpZS98r6Gb6shYHFV6D6-TtcNaBkasGzrarJKgcY_KyUyd-YdP4pB3EzqZLtZmzYwqHCxGSyXU5wnLOffKy_CuqQZswBDGrqDQ8krt1PqUCpELd8z6g606L0y7QDXpc2peg"/>
+                    <div class="aspect-square bg-surface-container flex items-center justify-center relative text-outline/50">
+                        <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm z-10 uppercase tracking-wider">Độc Bản (SL=1)</span>
+                        <!-- Icon ảnh trống đại diện -->
+                        <span class="material-symbols-outlined text-5xl select-none">image</span>
                     </div>
-                    <div class="p-4 flex flex-col flex-grow">
-                        <a href="../products/detail.php" class="font-label-md text-label-md line-clamp-2 mb-2 hover:text-primary transition-colors h-12 block">
-                            Máy ảnh Fujifilm X-T30 II kèm ống kính 18-55mm f/2.8-4 R LM OIS
+                    <div class="p-4 flex flex-col flex-grow space-y-2">
+                        <a href="../products/detail.php" class="font-semibold text-[15px] line-clamp-2 hover:text-primary transition-colors h-11 block leading-snug">
+                            Tên sản phẩm thanh lý mẫu (Chờ dữ liệu API...)
                         </a>
-                        <div class="text-primary font-bold text-body-lg">18.500.000 đ</div>
-                        <div class="text-outline text-label-sm mt-auto pt-2 border-t border-outline-variant/10 flex justify-between">
-                            <span>TP. HCM</span>
-                            <span>Vừa xong</span>
+                        <div class="text-primary font-bold text-lg">0 đ</div>
+                        <div class="text-outline text-[12px] mt-auto pt-2 border-t border-outline-variant/10 flex justify-between items-center text-on-surface-variant">
+                            <span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">location_on</span>--</span>
+                            <span>--</span>
                         </div>
                     </div>
                 </div>
 
+                <!-- KHUNG SẢN PHẨM TRỐNG 2 -->
                 <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all group border border-outline-variant/10 flex flex-col">
-                    <div class="aspect-square overflow-hidden bg-surface-container-low relative">
-                        <span class="absolute top-3 left-3 bg-tertiary text-white font-label-sm text-[12px] px-2 py-1 rounded shadow-sm z-10">Độc bản</span>
-                        <img alt="Sony A6400" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfmuYUFI1o3GCzWvm_5nRPqm3uA7vxePXGA3wvp7b16bsu_Qx3tr_DW0XkKQ076dI3d9zrUPRhecmQfsisZEJgEL0i_AyCZkyhT4jjWMRAXXLmQKtiNLeTf-nOWQv-KbbaocjmJZ6xS-6FFVafMJPY5p_3jrjGK-oPjaAMkxm9_MA4GuXAOqAkNeSea4EicnXf5uB-yiRw8u9rSUujlRkCt7r11AoeF2syaIGbKkqvu45tVyBSEsd9NZ7XL6cBVhKq9Pqkj1GZQRY"/>
+                    <div class="aspect-square bg-surface-container flex items-center justify-center relative text-outline/50">
+                        <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm z-10 uppercase tracking-wider">Độc Bản (SL=1)</span>
+                        <span class="material-symbols-outlined text-5xl select-none">image</span>
                     </div>
-                    <div class="p-4 flex flex-col flex-grow">
-                        <a href="#" class="font-label-md text-label-md line-clamp-2 mb-2 hover:text-primary transition-colors h-12 block">
-                            Sony Alpha A6400 Body - Ngoại hình đẹp 95% nguyên bản chính chủ
+                    <div class="p-4 flex flex-col flex-grow space-y-2">
+                        <a href="#" class="font-semibold text-[15px] line-clamp-2 hover:text-primary transition-colors h-11 block leading-snug">
+                            Tên sản phẩm thanh lý mẫu (Chờ dữ liệu API...)
                         </a>
-                        <div class="text-primary font-bold text-body-lg">14.200.000 đ</div>
-                        <div class="text-outline text-label-sm mt-auto pt-2 border-t border-outline-variant/10 flex justify-between">
-                            <span>Hà Nội</span>
-                            <span>2 giờ trước</span>
+                        <div class="text-primary font-bold text-lg">0 đ</div>
+                        <div class="text-outline text-[12px] mt-auto pt-2 border-t border-outline-variant/10 flex justify-between items-center text-on-surface-variant">
+                            <span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">location_on</span>--</span>
+                            <span>--</span>
                         </div>
                     </div>
                 </div>
 
+                <!-- KHUNG SẢN PHẨM TRỐNG 3 -->
                 <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all group border border-outline-variant/10 flex flex-col">
-                    <div class="aspect-square overflow-hidden bg-surface-container-low relative">
-                        <span class="absolute top-3 left-3 bg-tertiary text-white font-label-sm text-[12px] px-2 py-1 rounded shadow-sm z-10">Độc bản</span>
-                        <img alt="Canon EOS RP" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJcAGGYi5TctiPeBuwxbNRUDV3cUZfKykjh0fBlNjj5Rnj6VvusN9S2A0EMwwHPl6izYzOGQXTyxTSDpPTjxNuR0C8K4NBYWFzru8wnLfaaMsvSWVotU3fqAlxx33vhZZeEyPfA3KFo5J1N5TZ9wZdQaymPOfHlye3gR7OH-suUtgpr84aN0vkf4RtZN4ECVMzna8jDeyfJVmv2HvzAUAlCSm-XMjUW3p-8SOW2jLIIrU3tjeQsl-U9Ia-OrkZf3QDnvOZsap6jSU"/>
+                    <div class="aspect-square bg-surface-container flex items-center justify-center relative text-outline/50">
+                        <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm z-10 uppercase tracking-wider">Độc Bản (SL=1)</span>
+                        <span class="material-symbols-outlined text-5xl select-none">image</span>
                     </div>
-                    <div class="p-4 flex flex-col flex-grow">
-                        <a href="#" class="font-label-md text-label-md line-clamp-2 mb-2 hover:text-primary transition-colors h-12 block">
-                            Canon EOS RP Mirrorless - Fullframe giá rẻ, máy hoạt động mượt mà
+                    <div class="p-4 flex flex-col flex-grow space-y-2">
+                        <a href="#" class="font-semibold text-[15px] line-clamp-2 hover:text-primary transition-colors h-11 block leading-snug">
+                            Tên sản phẩm thanh lý mẫu (Chờ dữ liệu API...)
                         </a>
-                        <div class="text-primary font-bold text-body-lg">16.800.000 đ</div>
-                        <div class="text-outline text-label-sm mt-auto pt-2 border-t border-outline-variant/10 flex justify-between">
-                            <span>TP. HCM</span>
-                            <span>1 ngày trước</span>
+                        <div class="text-primary font-bold text-lg">0 đ</div>
+                        <div class="text-outline text-[12px] mt-auto pt-2 border-t border-outline-variant/10 flex justify-between items-center text-on-surface-variant">
+                            <span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">location_on</span>--</span>
+                            <span>--</span>
                         </div>
                     </div>
                 </div>
 
+                <!-- KHUNG SẢN PHẨM TRỐNG 4 -->
                 <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all group border border-outline-variant/10 flex flex-col">
-                    <div class="aspect-square overflow-hidden bg-surface-container-low relative">
-                        <span class="absolute top-3 left-3 bg-tertiary text-white font-label-sm text-[12px] px-2 py-1 rounded shadow-sm z-10">Độc bản</span>
-                        <img alt="Nikon Z fc" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1xrb0AgcwPMso-5WHozKBSmthBO7Z1cmmuhowZFdU-gXwT8ilTR5jf0rC9hH04xN_Dih0E1wNNwlCt_QpXDVngxroVdWwAWkKXWoQ55Kd9WacQJ78VbX-aC4-Gq7V3hiDQxi07JZYIOxFxUfv-qcLcytCfs6wC0XvqN9LkIH-MksEjvRGuN7OwBhCk_tct0GjNZCbalS0b_daWHi-voOtPNN5MXdxnt3brSBNQspjGQI578-ZNeWv3gB01UQwBKK761-djbD10lk"/>
+                    <div class="aspect-square bg-surface-container flex items-center justify-center relative text-outline/50">
+                        <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm z-10 uppercase tracking-wider">Độc Bản (SL=1)</span>
+                        <span class="material-symbols-outlined text-5xl select-none">image</span>
                     </div>
-                    <div class="p-4 flex flex-col flex-grow">
-                        <a href="#" class="font-label-md text-label-md line-clamp-2 mb-2 hover:text-primary transition-colors h-12 block">
-                            Nikon Z fc Silver Edition - Phong cách Retro cổ điển thời thượng
+                    <div class="p-4 flex flex-col flex-grow space-y-2">
+                        <a href="#" class="font-semibold text-[15px] line-clamp-2 hover:text-primary transition-colors h-11 block leading-snug">
+                            Tên sản phẩm thanh lý mẫu (Chờ dữ liệu API...)
                         </a>
-                        <div class="text-primary font-bold text-body-lg">17.500.000 đ</div>
-                        <div class="text-outline text-label-sm mt-auto pt-2 border-t border-outline-variant/10 flex justify-between">
-                            <span>Đà Nẵng</span>
-                            <span>3 giờ trước</span>
+                        <div class="text-primary font-bold text-lg">0 đ</div>
+                        <div class="text-outline text-[12px] mt-auto pt-2 border-t border-outline-variant/10 flex justify-between items-center text-on-surface-variant">
+                            <span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">location_on</span>--</span>
+                            <span>--</span>
                         </div>
                     </div>
                 </div>
@@ -97,7 +166,7 @@
         </section>
     </main>
 
+    <!-- Nhúng chân trang Footer -->
     <?php include '../../components/footer.php'; ?>
-
 </body>
 </html>
