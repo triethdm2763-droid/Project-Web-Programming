@@ -18,6 +18,12 @@
                     <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Địa chỉ Email</label>
                     <input type="email" id="email" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Nhập email của bạn...">
                 </div>
+                <!-- Bắt đầu phần bổ sung số điện thoại -->
+                <div>
+                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Số điện thoại</label>
+                    <input type="tel" id="phone" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Nhập số điện thoại của bạn...">
+                </div>
+                <!-- Kết thúc phần bổ sung số điện thoại -->
                 <div>
                     <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Mật khẩu</label>
                     <input type="password" id="password" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)...">
@@ -33,10 +39,12 @@
     async function register() {
         let fullname = document.getElementById("fullname").value.trim();
         let email = document.getElementById("email").value.trim();
+        let phone = document.getElementById("phone").value.trim(); // Bổ sung biến phone
         let password = document.getElementById("password").value.trim();
         let btn = document.getElementById("registerBtn");
         
-        if (!fullname || !email || !password) { 
+        // Thêm biến phone vào điều kiện kiểm tra rỗng
+        if (!fullname || !email || !phone || !password) { 
             alert("Vui lòng điền đầy đủ tất cả các trường."); 
             return; 
         }
@@ -56,7 +64,8 @@
             let res = await fetch("http://localhost/api/auth/register", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ fullname, email, password })
+                // Bổ sung phone vào body JSON
+                body: JSON.stringify({ fullname, email, phone, password })
             });
 
             let data = await res.json(); 
