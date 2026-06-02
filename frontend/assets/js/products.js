@@ -105,3 +105,92 @@ function fetchProducts(searchQuery = '', categoryId = '') {
 function escapeHtml(text) {
     return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
 }
+// HÀM XỬ LÝ RIÊNG CHO TRANG CHI TIẾT SẢN PHẨM (detail.php)
+function loadProductDetail() {
+    // 1. Bốc mã ID sản phẩm từ thanh URL (Ví dụ: detail.php?id=3)
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+
+    // Nếu không phải đang ở trang chi tiết hoặc không có ID trên URL thì dừng lại
+    if (!productId || !document.getElementById('product-detail-container')) return;
+
+    // Đường dẫn API lấy chi tiết 1 món đồ cụ thể (Task BE1 Tuần 2)
+    const DETAIL_API_URL = `/Project-Web-Programming/backend/api/products/${productId}`;
+
+    // 2. Tiến hành gọi kết nối API thật từ Backend
+    fetch(DETAIL_API_URL)
+        .then(response => {
+            if (!response.ok) throw new Error('Không thể lấy thông tin chi tiết sản phẩm');
+            return response.json();
+        })
+        .then(result => {
+            const product = result.data; // Dữ liệu sản phẩm thật từ DB bốc lên
+            
+            if (!product) {
+                document.getElementById('product-detail-container').innerHTML = 
+                    `<div class="text-center py-12 text-error">Sản phẩm không tồn tại hoặc đã bị xóa.</div>`;
+                return;
+            }
+
+            // 3. Đổ dữ liệu động thật vào các phần tử HTML trên giao diện của FE2
+            
+            // Đổ tên sản phẩm
+            const nameElem = document.getElementById('product-name');
+            if (nameElem) nameElem.innerText = product.name;
+
+            // Đổ giá tiền (định dạng VND)
+            const priceElem = document.getElementById('product-price');
+            if (priceElem) {
+                priceElem.innerText = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price);
+            }
+
+            // Đổ mô tả tình trạng đồ cũ
+            const descElem = document.getElementById('product-description');
+            if (descElem) descElem.innerText = product.description || 'Không có mô tả chi tiết cho sản phẩm này.';
+
+            // Đổ tên Danh mục
+            const categoryElem = document.getElementById('product-category');
+            if (categoryElem) categoryElem.innerText = product.danh_muc || 'Đồ cũ';
+
+            // Đổ tên Người bán (Seller)
+            const sellerElem = document.getElementById('product-seller');
+            if (sellerElem) sellerElem.innerText = product.nguoi_ban || 'Thành viên Chợ Cũ';
+
+            // Xử lý hình ảnh sản phẩm thật
+            const imgContainer = document.getElementById('product-image-container');
+            if (imgContainer) {
+                if (product.image) {
+                    imgContainer.innerHTML = `<img src="/Project-Web-Programming/backend/uploads/products/${product.image}" 
+                        alt="${product.name}" class="w-full h-full object-contain rounded-2xl">`;
+                } else {
+                    imgContainer.innerHTML = `<span class="material-symbols-outlined text-6xl text-outline/50">image</span>`;
+                }
+            }
+
+            // 4. KIỂM TRA TRẠNG THÁI ĐỂ BẬT/TẮT NÚT MUA (Task nâng cao)
+            const buyBtn = document.getElementById('btn-buy-now');
+            if (buyBtn) {
+                if (product.status === 'sold') {
+                    buyBtn.innerText = 'ĐÃ BÁN ĐỨT';
+                    buyBtn.disabled = true;
+                    buyBtn.className = "w-full bg-outline text-white py-4 rounded-full font-bold cursor-not-allowed opacity-50 text-[16px]";
+                } else {
+                    // Gắn mã ID sản phẩm vào nút mua để bạn FE2 xử lý Giỏ hàng / Checkout ở task kế tiếp
+                    buyBtn.setAttribute('data-product-id', product.id);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi trang chi tiết:', error);
+            document.getElementById('product-detail-container').innerHTML = 
+                `<div class="text-center py-12 text-error">Có lỗi xảy ra khi tải thông tin sản phẩm.</div>`;
+        });
+}
+
+// Bổ sung lệnh chạy hàm này vào trình bắt sự kiện DOMContentLoaded có sẵn của Triết
+document.addEventListener('DOMContentLoaded', function() {
+    // Các lệnh bắt sự kiện Tìm kiếm / Bộ lọc cũ của Triết giữ nguyên ở đây...
+    
+    // Chạy thêm hàm này để kiểm tra xem có cần load chi tiết sản phẩm không
+    loadProductDetail();
+});
