@@ -40,7 +40,7 @@ CREATE TABLE `products` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `Name` varchar(255) NOT NULL,
   `Description` text DEFAULT NULL,
-  `Image` varchar(255) DEFAULT NULL,
+  `Image` text DEFAULT NULL,
   `Category_ID` int(11) NOT NULL,
   `Seller_ID` int(11) NOT NULL,
   `Price` decimal(15,2) NOT NULL,

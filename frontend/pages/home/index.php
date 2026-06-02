@@ -1,18 +1,20 @@
 <?php
-// 1. Nhúng file cấu hình database vào
-require_once '../../../backend/config/database.php';
+// 1. Nhúng file Database Singleton của Backend vào
+require_once '../../../backend/src/config/Database.php';
 
-// 2. Khởi tạo kết nối
-$database = new Database();
-$db = $database->connection();
+// 2. Vì Backend dùng Namespace nên ta phải chỉ định rõ tên Class đầy đủ
+use App\Config\Database;
 
-// 3. Viết câu lệnh SQL bốc 4 sản phẩm mẫu từ database ra
+// 3. Gọi kết nối theo chuẩn Singleton (Dùng getInstance() chứ không dùng "new")
+$database = Database::getInstance();
+$db = $database->getConnection(); // Gọi đúng hàm getConnection() của các bạn viết
+
+// 4. Bốc 4 sản phẩm mẫu từ Database ra
 $query = "SELECT * FROM products LIMIT 4";
 $stmt = $db->prepare($query);
 $stmt->execute();
 $products = $stmt->fetchAll();
 ?>
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
