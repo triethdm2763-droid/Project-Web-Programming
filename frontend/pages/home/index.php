@@ -62,30 +62,37 @@ $products = $stmt->fetchAll();
                 <span class="material-symbols-outlined text-primary">grid_view</span> Danh Mục Nổi Bật
             </h2>
             <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+                
+                <a href="#" data-id="1" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
                     <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">devices</span>
                     <span class="text-label-sm font-semibold text-on-surface">Đồ Điện Tử</span>
                 </a>
-                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+
+                <a href="#" data-id="2" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
                     <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">apparel</span>
                     <span class="text-label-sm font-semibold text-on-surface">Thời Trang</span>
                 </a>
-                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+
+                <a href="#" data-id="3" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
                     <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">chair</span>
                     <span class="text-label-sm font-semibold text-on-surface">Nhà Cửa & Đời Sống</span>
                 </a>
-                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+
+                <a href="#" data-id="4" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
                     <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">directions_bike</span>
                     <span class="text-label-sm font-semibold text-on-surface">Xe Cộ</span>
                 </a>
-                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+
+                <a href="#" data-id="5" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
                     <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">menu_book</span>
                     <span class="text-label-sm font-semibold text-on-surface">Sách & Giải Trí</span>
                 </a>
-                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+
+                <a href="#" data-id="6" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
                     <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">sports_esports</span>
                     <span class="text-label-sm font-semibold text-on-surface">Máy Game / Console</span>
                 </a>
+
             </div>
         </section>
 
@@ -120,5 +127,8 @@ $products = $stmt->fetchAll();
 
     <!-- Nhúng chân trang Footer -->
     <?php include '../../components/footer.php'; ?>
+    <!-- Nhúng file JavaScript để xử lý tương tác sản phẩm -->
+    <script src="/Project-Web-Programming/frontend/assets/js/products.js"></script>
+
 </body>
-</html>
+</html>s

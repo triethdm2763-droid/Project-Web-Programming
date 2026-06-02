@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Product Detail | Chợ Cũ</title>
+    <title>Chi tiết sản phẩm | Chợ Cũ</title>
     <?php include '../../components/header.php'; ?>
 </head>
 
