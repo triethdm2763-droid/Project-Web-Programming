@@ -1,28 +1,51 @@
 // frontend/assets/js/products.js
 
-// Đường dẫn gốc tới các cổng API của Backend 
-const API_BASE_URL = '/Project-Web-Programming/backend/api/products'; 
-
+// 1. KHỞI TẠO HÀM ĐỢI GIAO DIỆN TẢI XONG (DOMContentLoaded)
 document.addEventListener('DOMContentLoaded', function() {
-    // Gọi hàm lấy sản phẩm lần đầu khi vừa tải xong trang
-    fetchProducts();
+    
+    // --- KHU VỰC 1: XỬ LÝ NÚT ĐĂNG TIN TRÊN NAVBAR ---
+    const btnCreatePost = document.getElementById('btn-create-post');
+    if (btnCreatePost) {
+        btnCreatePost.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Đọc trạng thái đăng nhập từ nút HTML do PHP truyền sang
+            const isLoggedIn = this.getAttribute('data-logged-in') === 'true';
 
-    // BẮT SỰ KIỆN TÌM KIẾM 
+            if (isLoggedIn) {
+                // Đã đăng nhập -> Vào trang Đăng tin của Seller
+                window.location.href = '/Project-Web-Programming/frontend/pages/seller/my-store.php';
+            } else {
+                // Chưa đăng nhập -> Bật thông báo rồi ép qua trang đăng nhập
+                alert('Bạn cần phải đăng nhập tài khoản trước khi thực hiện chức năng đăng tin thanh lý đồ cũ!');
+                window.location.href = '/Project-Web-Programming/frontend/pages/auth/login.php';
+            }
+        });
+    }
+
+    // --- KHU VỰC 2: TỰ ĐỘNG GỌI SẢN PHẨM HOẶC TRANG CHI TIẾT ---
+    // Kiểm tra xem đang đứng ở Trang chủ hay Trang chi tiết sản phẩm
+    if (document.getElementById('product-detail-container')) {
+        // Nếu thấy container chi tiết -> Chạy hàm load trang chi tiết
+        loadProductDetail();
+    } else {
+        // Nếu không -> Mặc định gọi danh sách sản phẩm ngoài Trang chủ
+        fetchProducts();
+    }
+
+    // --- KHU VỰC 3: BẮT SỰ KIỆN TÌM KIẾM SẢN PHẨM ĐỘNG ---
     const searchInput = document.querySelector('input[placeholder="Tìm kiếm sản phẩm đồ cũ..."]');
     if (searchInput) {
         let typingTimer;
         searchInput.addEventListener('input', function() {
             clearTimeout(typingTimer);
-            // Đợi người dùng gõ xong 500ms mới gọi API để tránh quá tải server (Debounce)
             typingTimer = setTimeout(() => {
                 const query = searchInput.value.trim();
                 fetchProducts(query, '');
-            }, 500);
+            }, 500); // Chờ gõ xong 500ms mới gọi API
         });
     }
 
-    // BẮT SỰ KIỆN LỌC THEO DANH MỤC 
-    // Giả sử các thẻ danh mục ngoài Trang chủ có class 'category-btn' và thuộc tính 'data-id'
+    // --- KHU VỰC 4: BẮT SỰ KIỆN BỘ LỌC DANH MỤC ---
     const categoryButtons = document.querySelectorAll('.category-btn');
     categoryButtons.forEach(btn => {
         btn.addEventListener('click', function(e) {
@@ -31,166 +54,99 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchProducts('', categoryId);
         });
     });
-});
 
-/**
- * Hàm gọi API lấy danh sách sản phẩm công khai và đổ lên lưới HTML
- */
+}); // KẾT THÚC HÀM DOMContentLoaded
+
+
+// ==========================================================================
+// HÀM 1: GỌI API LẤY DANH SÁCH SẢN PHẨM (TRANG CHỦ)
+// ==========================================================================
 function fetchProducts(searchQuery = '', categoryId = '') {
-    // Tạo chuỗi Query Parameters cho URL công khai (GET /api/products)
-    let url = API_BASE_URL;
+    let url = '/Project-Web-Programming/backend/api/products';
     let params = [];
     if (searchQuery) params.push(`search=${encodeURIComponent(searchQuery)}`);
     if (categoryId) params.push(`category=${categoryId}`);
     if (params.length > 0) url += `?${params.join('&')}`;
 
-    const productGrid = document.querySelector('.grid-cols-2.md:\\(grid-cols-4\\)'); // Lưới sản phẩm trang chủ
+    // Tìm lưới sản phẩm dựa theo cấu trúc class Tailwind của nhóm
+    const productGrid = document.querySelector('.grid-cols-2.md\\:grid-cols-4') || document.querySelector('.grid');
     if (!productGrid) return;
 
-    // Hiển thị trạng thái đang tải (Loading)
     productGrid.innerHTML = `<div class="col-span-full text-center py-8 text-on-surface-variant">Đang tải sản phẩm...</div>`;
 
-    // Thực hiện hàm Fetch kết nối API
     fetch(url)
-        .then(response => {
-            if (!response.ok) throw new Error('Không thể kết nối API Backend');
-            return response.json();
-        })
+        .then(response => response.json())
         .then(result => {
-            // Giả sử định dạng JSON Backend trả về có dạng { status: true, data: [...] }
             const products = result.data || [];
-            
             if (products.length === 0) {
                 productGrid.innerHTML = `<div class="col-span-full text-center py-8 text-outline">Không tìm thấy sản phẩm nào phù hợp.</div>`;
                 return;
             }
 
-            // Xóa sạch lưới cũ để chuẩn bị render dữ liệu động thật
             productGrid.innerHTML = '';
-
-            // Vòng lặp duyệt qua mảng sản phẩm đổ lên giao diện (Task 1 của Triết)
             products.forEach(product => {
-                // Định dạng giá tiền VND đẹp mắt
                 const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price);
-                // Xử lý ảnh mặc định nếu sản phẩm chưa có ảnh upload
                 const productImage = product.image ? `/Project-Web-Programming/backend/uploads/products/${product.image}` : '';
                 
                 const cardHTML = `
-                    <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-outline-variant/10 flex flex-col group">
+                    <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${product.id}" 
+                       class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-primary transition-all border border-outline-variant/10 flex flex-col group block">
                         <div class="aspect-square bg-surface-container flex items-center justify-center relative text-outline/50 overflow-hidden">
-                            <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm z-10 uppercase tracking-wider">Độc Bản (SL=1)</span>
-                            ${productImage ? 
-                                `<img src="${productImage}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">` : 
-                                `<span class="material-symbols-outlined text-5xl select-none">image</span>`
+                            <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm z-10 uppercase tracking-wider">Độc Bản</span>
+                            \${productImage ? 
+                                \`<img src="\${productImage}" alt="\${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">\` : 
+                                \`<span class="material-symbols-outlined text-5xl select-none">image</span>\`
                             }
                         </div>
                         <div class="p-4 flex flex-col flex-grow space-y-2">
-                            <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${product.id}" class="font-semibold text-[15px] line-clamp-2 hover:text-primary transition-colors h-11 block leading-snug">
-                                ${escapeHtml(product.name)}
-                            </a>
-                            <div class="text-primary font-bold text-lg">${formattedPrice}</div>
+                            <h3 class="font-semibold text-[15px] line-clamp-2 text-on-surface group-hover:text-primary transition-colors h-11 block leading-snug">
+                                \${escapeHtml(product.name)}
+                            </h3>
+                            <div class="text-primary font-bold text-lg">\${formattedPrice}</div>
                         </div>
-                    </div>
+                    </a>
                 `;
                 productGrid.insertAdjacentHTML('beforeend', cardHTML);
             });
         })
-        .catch(error => {
-            console.error('Lỗi:', error);
-            productGrid.innerHTML = `<div class="col-span-full text-center py-8 text-error">Có lỗi xảy ra khi tải dữ liệu từ máy chủ.</div>`;
+        .catch(err => {
+            console.error(err);
+            productGrid.innerHTML = `<div class="col-span-full text-center py-8 text-error">Không thể kết nối Server Backend.</div>`;
         });
 }
 
-// Hàm chống mã độc XSS khi render chuỗi text do người dùng nhập
+// ==========================================================================
+// HÀM 2: GỌI API CHI TIẾT 1 SẢN PHẨM (TRANG DETAIL)
+// ==========================================================================
+function loadProductDetail() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+    if (!productId) return;
+
+    fetch(`/Project-Web-Programming/backend/api/products/\${productId}`)
+        .then(response => response.json())
+        .then(result => {
+            const product = result.data;
+            if (!product) return;
+
+            if (document.getElementById('product-name')) document.getElementById('product-name').innerText = product.name;
+            if (document.getElementById('product-price')) {
+                document.getElementById('product-price').innerText = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price);
+            }
+            if (document.getElementById('product-description')) document.getElementById('product-description').innerText = product.description;
+            if (document.getElementById('product-category')) document.getElementById('product-category').innerText = product.danh_muc || 'Đồ cũ';
+            if (document.getElementById('product-seller')) document.getElementById('product-seller').innerText = product.nguoi_ban || 'Thành viên Chợ Cũ';
+            
+            const imgContainer = document.getElementById('product-image-container');
+            if (imgContainer) {
+                imgContainer.innerHTML = product.image ? 
+                    `<img src="/Project-Web-Programming/backend/uploads/products/\${product.image}" class="w-full h-full object-contain rounded-2xl">` :
+                    `<span class="material-symbols-outlined text-6xl text-outline/50">image</span>`;
+            }
+        });
+}
+
+// Hàm mã hóa ký tự đặc biệt chống XSS độc hại
 function escapeHtml(text) {
     return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
 }
-// HÀM XỬ LÝ RIÊNG CHO TRANG CHI TIẾT SẢN PHẨM (detail.php)
-function loadProductDetail() {
-    // 1. Bốc mã ID sản phẩm từ thanh URL (Ví dụ: detail.php?id=3)
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('id');
-
-    // Nếu không phải đang ở trang chi tiết hoặc không có ID trên URL thì dừng lại
-    if (!productId || !document.getElementById('product-detail-container')) return;
-
-    // Đường dẫn API lấy chi tiết 1 món đồ cụ thể (Task BE1 Tuần 2)
-    const DETAIL_API_URL = `/Project-Web-Programming/backend/api/products/${productId}`;
-
-    // 2. Tiến hành gọi kết nối API thật từ Backend
-    fetch(DETAIL_API_URL)
-        .then(response => {
-            if (!response.ok) throw new Error('Không thể lấy thông tin chi tiết sản phẩm');
-            return response.json();
-        })
-        .then(result => {
-            const product = result.data; // Dữ liệu sản phẩm thật từ DB bốc lên
-            
-            if (!product) {
-                document.getElementById('product-detail-container').innerHTML = 
-                    `<div class="text-center py-12 text-error">Sản phẩm không tồn tại hoặc đã bị xóa.</div>`;
-                return;
-            }
-
-            // 3. Đổ dữ liệu động thật vào các phần tử HTML trên giao diện của FE2
-            
-            // Đổ tên sản phẩm
-            const nameElem = document.getElementById('product-name');
-            if (nameElem) nameElem.innerText = product.name;
-
-            // Đổ giá tiền (định dạng VND)
-            const priceElem = document.getElementById('product-price');
-            if (priceElem) {
-                priceElem.innerText = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price);
-            }
-
-            // Đổ mô tả tình trạng đồ cũ
-            const descElem = document.getElementById('product-description');
-            if (descElem) descElem.innerText = product.description || 'Không có mô tả chi tiết cho sản phẩm này.';
-
-            // Đổ tên Danh mục
-            const categoryElem = document.getElementById('product-category');
-            if (categoryElem) categoryElem.innerText = product.danh_muc || 'Đồ cũ';
-
-            // Đổ tên Người bán (Seller)
-            const sellerElem = document.getElementById('product-seller');
-            if (sellerElem) sellerElem.innerText = product.nguoi_ban || 'Thành viên Chợ Cũ';
-
-            // Xử lý hình ảnh sản phẩm thật
-            const imgContainer = document.getElementById('product-image-container');
-            if (imgContainer) {
-                if (product.image) {
-                    imgContainer.innerHTML = `<img src="/Project-Web-Programming/backend/uploads/products/${product.image}" 
-                        alt="${product.name}" class="w-full h-full object-contain rounded-2xl">`;
-                } else {
-                    imgContainer.innerHTML = `<span class="material-symbols-outlined text-6xl text-outline/50">image</span>`;
-                }
-            }
-
-            // 4. KIỂM TRA TRẠNG THÁI ĐỂ BẬT/TẮT NÚT MUA (Task nâng cao)
-            const buyBtn = document.getElementById('btn-buy-now');
-            if (buyBtn) {
-                if (product.status === 'sold') {
-                    buyBtn.innerText = 'ĐÃ BÁN ĐỨT';
-                    buyBtn.disabled = true;
-                    buyBtn.className = "w-full bg-outline text-white py-4 rounded-full font-bold cursor-not-allowed opacity-50 text-[16px]";
-                } else {
-                    // Gắn mã ID sản phẩm vào nút mua để bạn FE2 xử lý Giỏ hàng / Checkout ở task kế tiếp
-                    buyBtn.setAttribute('data-product-id', product.id);
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Lỗi trang chi tiết:', error);
-            document.getElementById('product-detail-container').innerHTML = 
-                `<div class="text-center py-12 text-error">Có lỗi xảy ra khi tải thông tin sản phẩm.</div>`;
-        });
-}
-
-// Bổ sung lệnh chạy hàm này vào trình bắt sự kiện DOMContentLoaded có sẵn của Triết
-document.addEventListener('DOMContentLoaded', function() {
-    // Các lệnh bắt sự kiện Tìm kiếm / Bộ lọc cũ của Triết giữ nguyên ở đây...
-    
-    // Chạy thêm hàm này để kiểm tra xem có cần load chi tiết sản phẩm không
-    loadProductDetail();
-});
