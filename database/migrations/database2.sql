@@ -1,0 +1,22 @@
+CREATE TABLE order_details (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT DEFAULT 1,
+    price DECIMAL(12,2) NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+ALTER TABLE order_details
+ADD CONSTRAINT fk_orderdetails_order
+FOREIGN KEY (order_id)
+REFERENCES orders(ID)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE order_details
+ADD CONSTRAINT fk_orderdetails_product
+FOREIGN KEY (product_id)
+REFERENCES products(ID)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
