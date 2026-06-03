@@ -18,18 +18,23 @@
     </div>
 
     <div class="flex items-center gap-4">
-      <a href="/Project-Web-Programming/frontend/pages/cart/index.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative block">
-        shopping_cart
-      </a>
-      
-      <a href="/Project-Web-Programming/frontend/pages/auth/login.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors block">
-        account_circle
-      </a>
-      
-      <button class="bg-primary text-on-primary px-6 py-2 rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm text-[15px]">
-        Đăng tin
-      </button>
-    </div>
+  <a href="/Project-Web-Programming/frontend/pages/cart/index.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative block">
+    shopping_cart
+  </a>
+  
+  <a href="/Project-Web-Programming/frontend/pages/auth/login.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors block">
+    account_circle
+  </a>
+  
+  <?php
+    $isLoggedIn = isset($_SESSION['user_id']) ? 'true' : 'false';
+  ?>
+
+  <button id="btn-create-post" data-logged-in="<?php echo $isLoggedIn; ?>" 
+          class="bg-primary text-on-primary px-6 py-2 rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm text-[15px] cursor-pointer">
+    Đăng tin
+  </button>
+</div>
     
   </div>
 </header>

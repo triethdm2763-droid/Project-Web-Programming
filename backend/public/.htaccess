@@ -1,6 +1,10 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteCond %{REQUEST_FILENAME} !-f
+    
+    # Nếu yêu cầu là một thư mục hoặc file có thật thì bỏ qua, cho truy cập thẳng
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ index.php [QSA,L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    
+    # Nếu là đường dẫn ảo (như /api/products), ép Apache ném về cho public/index.php xử lý
+    RewriteRule ^(.*)$ public/index.php [QSA,L]
 </IfModule>

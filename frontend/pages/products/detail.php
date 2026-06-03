@@ -43,6 +43,11 @@
                         >
                             Đang tải sản phẩm...
                         </h1>
+                        <div class="text-sm text-on-surface-variant mt-2">
+                            <span id="product-seller">Người bán ẩn danh</span>
+                            <span class="mx-2">•</span>
+                            <span id="product-category">Danh mục</span>
+                        </div>
                     </div>
 
                     <div class="flex items-center gap-3">
@@ -137,7 +142,8 @@
                 return;
             }
 
-            const response = await fetch(`http://localhost/api/products/${productId}`);
+            // Call backend public router with query param id
+            const response = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products/detail?id=${productId}`, { headers: { Accept: 'application/json' } });
             const data = await response.json();
 
             currentProduct = data.data || data;
@@ -167,10 +173,10 @@
             let statusText = "Còn hàng";
             let statusColor = "bg-green-500"; 
             
-            if (currentProduct.status === "sold") {
+            if (status === "sold") {
                 statusText = "Đã bán";
                 statusColor = "bg-red-500";
-            } else if (currentProduct.status === "pending") {
+            } else if (status === "pending") {
                 statusText = "Chờ duyệt";
                 statusColor = "bg-yellow-500";
             }
