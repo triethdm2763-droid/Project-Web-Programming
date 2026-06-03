@@ -11,6 +11,10 @@
             <h2 class="font-headline-md text-headline-md text-primary text-center mb-6">Đăng nhập tài khoản</h2>
             <div class="space-y-5">
                 <div>
+                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Tên đăng nhập</label>
+                    <input type="text" id="username" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Nhập tên đăng nhập của bạn...">
+                </div>
+                <div>
                     <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Địa chỉ Email</label>
                     <input type="text" id="email" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Nhập email của bạn...">
                 </div>
@@ -26,10 +30,11 @@
     <?php include '../../components/footer.php'; ?>
     <script>
     async function login() {
+        let username = document.getElementById("username").value;
         let email = document.getElementById("email").value;
         let password = document.getElementById("password").value;
         
-        if (!email || !password) { 
+        if (!username || !email || !password) { 
             alert("Vui lòng điền đầy đủ thông tin."); 
             return; 
         }
@@ -37,7 +42,7 @@
         let res = await fetch("http://localhost/api/auth/login", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ username, email, password })
         });
         
         let data = await res.json(); 
