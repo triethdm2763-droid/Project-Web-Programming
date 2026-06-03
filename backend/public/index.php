@@ -62,12 +62,20 @@ if ($method === 'OPTIONS') {
 // 3. DEFINE STATIC API ROUTES
 $routes = [
     'POST' => [
-        '/api/auth/register' => ['App\Controllers\AuthController', 'register'],
-        '/api/auth/login'    => ['App\Controllers\AuthController', 'login'],
-        '/api/auth/logout'   => ['App\Controllers\AuthController', 'logout']
+        '/api/auth/register'      => ['App\Controllers\AuthController', 'register'],
+        '/api/auth/login'         => ['App\Controllers\AuthController', 'login'],
+        '/api/auth/logout'        => ['App\Controllers\AuthController', 'logout'],
+        '/api/products'           => ['App\Controllers\ProductController', 'create'],
+        '/api/orders'             => ['App\Controllers\OrderController', 'create'],
+        '/api/notifications/read' => ['App\Controllers\NotificationController', 'markRead']
     ],
     'GET' => [
-        '/api/auth/me'       => ['App\Controllers\AuthController', 'me']
+        '/api/auth/me'            => ['App\Controllers\AuthController', 'me'],
+        '/api/products'           => ['App\Controllers\ProductController', 'list'],
+        '/api/products/detail'    => ['App\Controllers\ProductController', 'detail'],
+        '/api/orders/buyer'       => ['App\Controllers\OrderController', 'buyerOrders'],
+        '/api/orders/seller'      => ['App\Controllers\OrderController', 'sellerOrders'],
+        '/api/notifications'      => ['App\Controllers\NotificationController', 'list']
     ]
 ];
 
