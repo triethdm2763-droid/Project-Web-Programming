@@ -19,18 +19,16 @@
             <span class="text-on-surface">Chi tiết sản phẩm</span>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div id="product-detail-container" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
             <div class="lg:col-span-5">
-                <div class="bg-white rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
-
+                <div id="product-image-container" class="bg-white rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
                     <img
                         id="product-image"
                         src="https://placehold.co/600x600"
                         alt="Ảnh sản phẩm"
                         class="w-full aspect-square object-cover"
                     >
-
                 </div>
             </div>
 
@@ -67,7 +65,6 @@
 
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-green-500" id="status-dot"></span>
-
                         <span
                             id="product-status"
                             class="text-body-md text-on-surface-variant font-medium"
@@ -76,7 +73,18 @@
                         </span>
                     </div>
 
-                    <div class="border-t border-outline-variant/20 pt-5">
+                    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-body-md text-on-surface-variant border-t border-b border-outline-variant/10 py-3">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-outline">Danh mục:</span>
+                            <span id="product-category" class="font-medium text-on-surface">Đang tải...</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-outline">Người bán:</span>
+                            <span id="product-seller" class="font-medium text-on-surface">Đang tải...</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
                         <h3 class="font-headline-sm text-headline-sm mb-3">
                             Mô tả sản phẩm
                         </h3>
@@ -92,6 +100,7 @@
                     <div class="flex flex-col sm:flex-row gap-4 pt-4">
 
                         <button
+                            id="btn-buy-now"
                             onclick="buyNow()"
                             class="flex-1 bg-[#F97316] text-white py-4 rounded-xl font-headline-sm shadow-lg shadow-secondary/20 hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-wide"
                         >
@@ -137,38 +146,32 @@
             const response = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products/detail?id=${productId}`, { headers: { Accept: 'application/json' } });
             const data = await response.json();
 
-            // Backend may return object {status, code, data} or direct object or array
-            let payload = null;
-            if (Array.isArray(data) && data.length > 0) payload = data[0];
-            else if (data && data.data) payload = data.data;
-            else payload = data;
+            currentProduct = data.data || data;
 
-            currentProduct = payload || {};
+            // Cập nhật giao diện theo đúng các ID đã thiết lập
+            document.getElementById("product-image").src =
+                currentProduct.image || "https://placehold.co/600x600";
 
-            // Map fields from backend (Name/Price/Description/Image/SellerName/CategoryName)
-            const imageField = currentProduct.Image || currentProduct.image || '';
-            const title = currentProduct.Name || currentProduct.name || 'Sản phẩm chưa rõ tên';
-            const priceVal = parseFloat(currentProduct.Price || currentProduct.price || 0) || 0;
-            const desc = currentProduct.Description || currentProduct.description || '';
-            const status = (currentProduct.Status || currentProduct.status || '').toString();
-            const seller = currentProduct.SellerName || currentProduct.seller || '';
-            const category = currentProduct.CategoryName || currentProduct.category || '';
+            document.getElementById("product-name").innerText =
+                currentProduct.name || "Sản phẩm chưa rõ tên";
 
-            // Update UI
-            document.getElementById("product-image").src = imageField ? `/Project-Web-Programming/backend/uploads/products/${imageField}` : 'https://placehold.co/600x600';
-            document.getElementById("product-name").innerText = title;
-            document.getElementById("product-price").innerText = `₫${priceVal.toLocaleString('vi-VN')}`;
-            document.getElementById("product-description").innerText = desc || 'Chưa có mô tả cho sản phẩm này.';
+            document.getElementById("product-price").innerText =
+                `₫${Number(currentProduct.price).toLocaleString('vi-VN')}`;
 
-            // If seller/category elements exist, update them (we may add them below)
-            const sellerEl = document.getElementById('product-seller');
-            if (sellerEl) sellerEl.innerText = seller || 'Người bán ẩn danh';
-            const categoryEl = document.getElementById('product-category');
-            if (categoryEl) categoryEl.innerText = category || '';
+            document.getElementById("product-description").innerText =
+                currentProduct.description || "Chưa có mô tả cho sản phẩm này.";
+
+            // Tự động xử lý và đổ thêm dữ liệu Danh mục, Người bán từ API phản hồi về
+            if (document.getElementById("product-category")) {
+                document.getElementById("product-category").innerText = currentProduct.category_name || currentProduct.category || "Chưa phân loại";
+            }
+            if (document.getElementById("product-seller")) {
+                document.getElementById("product-seller").innerText = currentProduct.seller_name || currentProduct.seller || "Ẩn danh";
+            }
 
             // Xử lý dịch trạng thái (Status)
             let statusText = "Còn hàng";
-            let statusColor = "bg-green-500"; // Mặc định xanh lá
+            let statusColor = "bg-green-500"; 
             
             if (status === "sold") {
                 statusText = "Đã bán";
@@ -199,7 +202,6 @@
 
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-        // Tránh lỗi mua trùng 2 món đồ độc bản
         const isExist = cart.find(item => item.id === currentProduct.id);
         if(isExist) {
             alert("Sản phẩm này đã có sẵn trong giỏ hàng của bạn!");
@@ -207,9 +209,7 @@
         }
 
         cart.push(currentProduct);
-
         localStorage.setItem("cart", JSON.stringify(cart));
-
         alert("Đã thêm sản phẩm vào giỏ hàng thành công!");
 
     }
@@ -220,14 +220,12 @@
 
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
         
-        // Kiểm tra xem sản phẩm đã có trong giỏ chưa, nếu chưa thì mới thêm vào
         const isExist = cart.find(item => item.id === currentProduct.id);
         if(!isExist) {
             cart.push(currentProduct);
             localStorage.setItem("cart", JSON.stringify(cart));
         }
 
-        // Chuyển hướng thẳng sang trang giỏ hàng/thanh toán
         window.location.href = "../cart/index.php";
 
     }
