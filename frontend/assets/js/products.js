@@ -59,18 +59,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 // ==========================================================================
-// HÀM 1: GỌI API LẤY DANH SÁCH SẢN PHẨM (TRANG CHỦ)
+// HÀM 1: GỌI API LẤY DANH SÁCH SẢN PHẨM (ĐÃ NÂNG CẤP GIỐNG ẢNH MẪU)
 // ==========================================================================
 function fetchProducts(searchQuery = '', categoryId = '') {
-    let url = '/Project-Web-Programming/backend/api/products';
+    let url = '/Project-Web-Programming/backend/public/index.php/api/products';
     let params = [];
     if (searchQuery) params.push(`search=${encodeURIComponent(searchQuery)}`);
-    if (categoryId) params.push(`category=${categoryId}`);
+    if (categoryId) params.push(`category_id=${categoryId}`); 
+    
     if (params.length > 0) url += `?${params.join('&')}`;
 
-    // Tìm lưới sản phẩm dựa theo cấu trúc class Tailwind của nhóm
     const productGrid = document.querySelector('.grid-cols-2.md\\:grid-cols-4') || document.querySelector('.grid');
     if (!productGrid) return;
+
+    // If server already rendered the grid, skip client-side fetch to avoid overwriting
+    if (productGrid.getAttribute && productGrid.getAttribute('data-server-rendered') === '1') {
+        console.debug('[products.js] Server already rendered products; skipping client fetch.');
+        return;
+    }
 
     productGrid.innerHTML = `<div class="col-span-full text-center py-8 text-on-surface-variant">Đang tải sản phẩm...</div>`;
 
@@ -85,26 +91,61 @@ function fetchProducts(searchQuery = '', categoryId = '') {
 
             productGrid.innerHTML = '';
             products.forEach(product => {
-                const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price);
-                const productImage = product.image ? `/Project-Web-Programming/backend/uploads/products/${product.image}` : '';
-                
+                // normalize fields: accept Name/ name, Price/ price, Image/ image, ID/ id
+                const name = product.Name || product.name || '';
+                const id = product.ID || product.id || '';
+                const priceVal = parseFloat(product.Price || product.price || 0) || 0;
+                const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(priceVal);
+                const imageField = product.Image || product.image || '';
+                const productImage = imageField ? `/Project-Web-Programming/backend/uploads/products/${imageField}` : '';
+
+                // Xử lý hiển thị địa điểm và thời gian mặc định nếu DB chưa kịp cập nhật
+                const location = product.location || 'Quận 1, TP. HCM';
+                const timeAgo = product.time_ago || 'Vừa xong';
+
                 const cardHTML = `
-                    <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${product.id}" 
-                       class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-primary transition-all border border-outline-variant/10 flex flex-col group block">
-                        <div class="aspect-square bg-surface-container flex items-center justify-center relative text-outline/50 overflow-hidden">
-                            <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm z-10 uppercase tracking-wider">Độc Bản</span>
-                            \${productImage ? 
-                                \`<img src="\${productImage}" alt="\${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">\` : 
-                                \`<span class="material-symbols-outlined text-5xl select-none">image</span>\`
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-primary transition-all border border-outline-variant/20 flex flex-col group p-3 space-y-3 relative">
+                        <!-- Khung ảnh sản phẩm -->
+                        <div class="aspect-square bg-surface-container flex items-center justify-center relative text-outline/50 overflow-hidden rounded-xl">
+                            <!-- Tag Tình trạng góc trên bên trái -->
+                            <span class="absolute top-2 left-2 bg-black/60 text-white font-medium text-[10px] px-2 py-0.5 rounded shadow-sm z-10">Đã qua sử dụng</span>
+                            <!-- Nút Tim góc trên bên phải -->
+                            <button class="absolute top-2 right-2 z-10 bg-white/80 p-1.5 rounded-full shadow-sm text-on-surface hover:text-error transition-colors flex items-center justify-center">
+                                <span class="material-symbols-outlined text-[18px]">favorite</span>
+                            </button>
+                            
+                            ${productImage ? 
+                                `<img src="${productImage}" alt="${escapeHtml(name)}" class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300">` :
+                                `<span class="material-symbols-outlined text-5xl select-none">image</span>`
                             }
                         </div>
-                        <div class="p-4 flex flex-col flex-grow space-y-2">
-                            <h3 class="font-semibold text-[15px] line-clamp-2 text-on-surface group-hover:text-primary transition-colors h-11 block leading-snug">
-                                \${escapeHtml(product.name)}
+
+                        <!-- Thông tin chữ -->
+                        <div class="flex flex-col flex-grow space-y-1.5 px-1">
+                            <!-- Tên sản phẩm -->
+                            <h3 class="font-medium text-[14px] line-clamp-2 text-on-surface h-10 block leading-snug">
+                                ${escapeHtml(name)}
                             </h3>
-                            <div class="text-primary font-bold text-lg">\${formattedPrice}</div>
+                            <!-- Giá tiền -->
+                            <div class="text-primary font-bold text-[15px]">\${formattedPrice}</div>
+                            
+                            <!-- Địa điểm và Thời gian (Giao diện giống ảnh mẫu) -->
+                            <div class="text-[12px] text-on-surface-variant flex items-center gap-1 pt-1">
+                                <span class="material-symbols-outlined text-[14px]">location_on</span>
+                                <span class="truncate">\${escapeHtml(location)}</span>
+                            </div>
+                            <div class="text-[12px] text-on-surface-variant flex items-center gap-1 pb-2">
+                                <span class="material-symbols-outlined text-[14px]">schedule</span>
+                                <span>\${timeAgo}</span>
+                            </div>
+
+                            <!-- Nút Xem chi tiết riêng biệt ở đáy Card -->
+                            <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${id}" 
+                               class="w-full border border-primary text-primary text-center py-2 rounded-xl text-[13px] font-medium hover:bg-primary hover:text-white transition-colors block mt-auto">
+                                Xem chi tiết
+                            </a>
                         </div>
-                    </a>
+                    </div>
                 `;
                 productGrid.insertAdjacentHTML('beforeend', cardHTML);
             });
@@ -123,10 +164,12 @@ function loadProductDetail() {
     const productId = urlParams.get('id');
     if (!productId) return;
 
-    fetch(`/Project-Web-Programming/backend/api/products/\${productId}`)
+    // Use backend public index.php router and pass id as query param
+        fetch(`/Project-Web-Programming/backend/public/index.php/api/products/detail?id=${productId}`)       
         .then(response => response.json())
         .then(result => {
-            const product = result.data;
+            // Backend returns the product data directly (or inside result.data depending on implementation)
+            const product = Array.isArray(result) ? (result[0] || null) : (result.data || result);
             if (!product) return;
 
             if (document.getElementById('product-name')) document.getElementById('product-name').innerText = product.name;

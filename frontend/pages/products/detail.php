@@ -45,6 +45,11 @@
                         >
                             Đang tải sản phẩm...
                         </h1>
+                        <div class="text-sm text-on-surface-variant mt-2">
+                            <span id="product-seller">Người bán ẩn danh</span>
+                            <span class="mx-2">•</span>
+                            <span id="product-category">Danh mục</span>
+                        </div>
                     </div>
 
                     <div class="flex items-center gap-3">
@@ -128,33 +133,47 @@
                 return;
             }
 
-            const response = await fetch(`http://localhost/api/products/${productId}`);
+            // Call backend public router with query param id
+            const response = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products/detail?id=${productId}`, { headers: { Accept: 'application/json' } });
             const data = await response.json();
 
-            // Lấy đúng data từ cấu trúc JSON trả về (tùy thuộc vào BE đang trả về {data: {...}} hay {...})
-            currentProduct = data.data || data;
+            // Backend may return object {status, code, data} or direct object or array
+            let payload = null;
+            if (Array.isArray(data) && data.length > 0) payload = data[0];
+            else if (data && data.data) payload = data.data;
+            else payload = data;
 
-            // Cập nhật giao diện
-            document.getElementById("product-image").src =
-                currentProduct.image || "https://placehold.co/600x600";
+            currentProduct = payload || {};
 
-            document.getElementById("product-name").innerText =
-                currentProduct.name || "Sản phẩm chưa rõ tên";
+            // Map fields from backend (Name/Price/Description/Image/SellerName/CategoryName)
+            const imageField = currentProduct.Image || currentProduct.image || '';
+            const title = currentProduct.Name || currentProduct.name || 'Sản phẩm chưa rõ tên';
+            const priceVal = parseFloat(currentProduct.Price || currentProduct.price || 0) || 0;
+            const desc = currentProduct.Description || currentProduct.description || '';
+            const status = (currentProduct.Status || currentProduct.status || '').toString();
+            const seller = currentProduct.SellerName || currentProduct.seller || '';
+            const category = currentProduct.CategoryName || currentProduct.category || '';
 
-            document.getElementById("product-price").innerText =
-                `₫${Number(currentProduct.price).toLocaleString('vi-VN')}`;
+            // Update UI
+            document.getElementById("product-image").src = imageField ? `/Project-Web-Programming/backend/uploads/products/${imageField}` : 'https://placehold.co/600x600';
+            document.getElementById("product-name").innerText = title;
+            document.getElementById("product-price").innerText = `₫${priceVal.toLocaleString('vi-VN')}`;
+            document.getElementById("product-description").innerText = desc || 'Chưa có mô tả cho sản phẩm này.';
 
-            document.getElementById("product-description").innerText =
-                currentProduct.description || "Chưa có mô tả cho sản phẩm này.";
+            // If seller/category elements exist, update them (we may add them below)
+            const sellerEl = document.getElementById('product-seller');
+            if (sellerEl) sellerEl.innerText = seller || 'Người bán ẩn danh';
+            const categoryEl = document.getElementById('product-category');
+            if (categoryEl) categoryEl.innerText = category || '';
 
             // Xử lý dịch trạng thái (Status)
             let statusText = "Còn hàng";
             let statusColor = "bg-green-500"; // Mặc định xanh lá
             
-            if (currentProduct.status === "sold") {
+            if (status === "sold") {
                 statusText = "Đã bán";
                 statusColor = "bg-red-500";
-            } else if (currentProduct.status === "pending") {
+            } else if (status === "pending") {
                 statusText = "Chờ duyệt";
                 statusColor = "bg-yellow-500";
             }

@@ -13,11 +13,12 @@ class ProductRepository extends BaseRepository {
      * @return array
      */
     public function findAllActive(array $filters = []): array {
-        $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName 
-                FROM `products` p
-                JOIN `categories` c ON p.Category_ID = c.ID
-                JOIN `users` u ON p.Seller_ID = u.ID
-                WHERE p.Status = 'active'";
+    $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName 
+        FROM `products` p
+        JOIN `categories` c ON p.Category_ID = c.ID
+        JOIN `users` u ON p.Seller_ID = u.ID
+        -- Treat both 'active' and legacy 'available' as visible
+        WHERE p.Status IN ('active', 'available')";
         
         $params = [];
 

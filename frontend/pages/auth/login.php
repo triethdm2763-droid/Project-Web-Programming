@@ -37,7 +37,7 @@
         let res = await fetch("http://localhost/api/auth/login", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ username: email, password })
         });
         
         let data = await res.json(); 
