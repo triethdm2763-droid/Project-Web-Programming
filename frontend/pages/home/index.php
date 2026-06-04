@@ -9,8 +9,11 @@ use App\Config\Database;
 $database = Database::getInstance();
 $db = $database->getConnection(); // Gọi đúng hàm getConnection() của các bạn viết
 
-// 4. Bốc 4 sản phẩm mẫu từ Database ra
-$query = "SELECT * FROM products LIMIT 4";
+$query = "SELECT p.ID AS id, p.Name AS name, p.Price AS price, p.Image AS image, u.Username AS seller, c.Name AS category
+          FROM products p
+          LEFT JOIN users u ON p.Seller_ID = u.ID
+          LEFT JOIN categories c ON p.Category_ID = c.ID
+          LIMIT 4";
 $stmt = $db->prepare($query);
 $stmt->execute();
 $products = $stmt->fetchAll();
@@ -62,30 +65,37 @@ $products = $stmt->fetchAll();
                 <span class="material-symbols-outlined text-primary">grid_view</span> Danh Mục Nổi Bật
             </h2>
             <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+                
+                <a href="#" data-id="1" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
                     <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">devices</span>
                     <span class="text-label-sm font-semibold text-on-surface">Đồ Điện Tử</span>
                 </a>
-                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+
+                <a href="#" data-id="2" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
                     <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">apparel</span>
                     <span class="text-label-sm font-semibold text-on-surface">Thời Trang</span>
                 </a>
-                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+
+                <a href="#" data-id="3" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
                     <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">chair</span>
                     <span class="text-label-sm font-semibold text-on-surface">Nhà Cửa & Đời Sống</span>
                 </a>
-                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+
+                <a href="#" data-id="4" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
                     <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">directions_bike</span>
                     <span class="text-label-sm font-semibold text-on-surface">Xe Cộ</span>
                 </a>
-                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+
+                <a href="#" data-id="5" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
                     <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">menu_book</span>
                     <span class="text-label-sm font-semibold text-on-surface">Sách & Giải Trí</span>
                 </a>
-                <a href="#" class="bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+
+                <a href="#" data-id="6" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
                     <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">sports_esports</span>
                     <span class="text-label-sm font-semibold text-on-surface">Máy Game / Console</span>
                 </a>
+
             </div>
         </section>
 
@@ -93,13 +103,13 @@ $products = $stmt->fetchAll();
            3. PRODUCT MARKETPLACE GRID (Lưới trống chờ đổ dữ liệu Tuần 2)
            ========================================================================== -->
         <section class="space-y-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-gutter">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-gutter" <?php if (!empty($products)) echo 'data-server-rendered="1"'; ?>>
     <?php if (!empty($products)): ?>
         <?php foreach ($products as $row): ?>
             <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-outline-variant/10 flex flex-col">
-                <div class="aspect-square bg-surface-container flex items-center justify-center relative text-outline/50">
+                <div class="h-48 bg-surface-container flex items-center justify-center relative text-outline/50 overflow-hidden">
                     <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm">Độc Bản (SL=1)</span>
-                    <span class="material-symbols-outlined text-5xl">image</span>
+                    <img src="/Project-Web-Programming/backend/uploads/products/<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'" class="w-full h-full object-contain p-4">
                 </div>
                 <div class="p-4 flex flex-col flex-grow space-y-2">
                     <h3 class="font-semibold text-[15px] line-clamp-2 h-11 block">
@@ -107,6 +117,12 @@ $products = $stmt->fetchAll();
                     </h3>
                     <div class="text-primary font-bold text-lg">
                         <?php echo number_format($row['price'], 0, ',', '.'); ?> đ
+                    </div>
+                    <div class="text-[13px] text-on-surface-variant">
+                        <?php echo htmlspecialchars($row['seller'] ?? 'Người bán ẩn danh'); ?> • <?php echo htmlspecialchars($row['category'] ?? ''); ?>
+                    </div>
+                    <div class="mt-3">
+                        <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=<?php echo $row['id']; ?>" class="inline-block w-full text-center border border-primary text-primary rounded-md px-4 py-2 hover:bg-primary/10">Xem chi tiết</a>
                     </div>
                 </div>
             </div>
@@ -120,5 +136,8 @@ $products = $stmt->fetchAll();
 
     <!-- Nhúng chân trang Footer -->
     <?php include '../../components/footer.php'; ?>
+    <!-- Nhúng file JavaScript để xử lý tương tác sản phẩm -->
+    <script src="/Project-Web-Programming/frontend/assets/js/products.js"></script>
+
 </body>
 </html>
