@@ -1,29 +1,8 @@
 <?php
-// 1. Nhúng file Database Singleton của Backend vào
-require_once '../../../backend/src/config/Database.php';
-
-// 2. Vì Backend dùng Namespace nên ta phải chỉ định rõ tên Class đầy đủ
-use App\Config\Database;
-
-// 3. Gọi kết nối theo chuẩn Singleton (Dùng getInstance() chứ không dùng "new")
-$database = Database::getInstance();
-$db = $database->getConnection(); // Gọi đúng hàm getConnection() của các bạn viết
-
-$query = "SELECT p.ID AS id, p.Name AS name, p.Price AS price, p.Image AS image, u.Username AS seller, c.Name AS category, p.created_at
-          FROM products p
-          LEFT JOIN users u ON p.Seller_ID = u.ID
-          LEFT JOIN categories c ON p.Category_ID = c.ID
-          WHERE p.Status IN ('active', 'available')
-          ORDER BY p.created_at DESC
-          LIMIT 4";
-$stmt = $db->prepare($query);
-$stmt->execute();
-$products = $stmt->fetchAll();
-
-// Load categories for the Browse section from the database (seeded data)
-$catsStmt = $db->prepare("SELECT ID, Name FROM categories ORDER BY Name ASC LIMIT 6");
-$catsStmt->execute();
-$categories = $catsStmt->fetchAll();
+// Frontend trang chủ - Hoàn toàn không truy vấn cơ sở dữ liệu trực tiếp nữa
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -80,62 +59,24 @@ $categories = $catsStmt->fetchAll();
                 <h2 class="font-headline-md text-xl md:text-2xl font-bold text-on-background flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary">grid_view</span> Danh Mục Nổi Bật
                 </h2>
-                <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-                    <?php if (!empty($categories)): ?>
-                        <?php foreach ($categories as $cat): ?>
-                            <a href="/Project-Web-Programming/frontend/pages/products/category.php?category=<?php echo $cat['ID']; ?>" data-id="<?php echo $cat['ID']; ?>" data-navigate="1" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
-                                <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">category</span>
-                                <span class="text-label-sm font-semibold text-on-surface"><?php echo htmlspecialchars($cat['Name']); ?></span>
-                            </a>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <!-- fallback hardcoded items if DB not available -->
-                        <a href="/Project-Web-Programming/frontend/pages/products/category.php?category=1" data-id="1" data-navigate="1" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
-                            <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">devices</span>
-                            <span class="text-label-sm font-semibold text-on-surface">Đồ Điện Tử</span>
-                        </a>
-                    <?php endif; ?>
+                <div class="grid grid-cols-3 md:grid-cols-6 gap-4" id="categories-container">
+                    <!-- Sẽ được tải động qua API -->
                 </div>
             </section>
 
         <!-- ==========================================================================
            3. PRODUCT MARKETPLACE GRID (Lưới trống chờ đổ dữ liệu Tuần 2)
            ========================================================================== -->
-        <section class="space-y-6">
+        <section class="space-y-6" id="products-section">
             <div>
                 <h2 class="font-headline-md text-xl font-bold text-on-background flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary">campaign</span>
                     Tin đăng mới nhất
                 </h2>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-gutter" <?php if (!empty($products)) { echo 'data-server-rendered="1"'; if (!empty($products[0]['created_at'])) echo ' data-last-created="'.htmlspecialchars($products[0]['created_at']).'"'; } ?>>
-    <?php if (!empty($products)): ?>
-        <?php foreach ($products as $row): ?>
-            <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-outline-variant/10 flex flex-col">
-                <div class="h-48 bg-surface-container flex items-center justify-center relative text-outline/50 overflow-hidden">
-                    <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm">Độc Bản (SL=1)</span>
-                    <img src="/Project-Web-Programming/backend/uploads/products/<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'" class="w-full h-full object-contain p-4">
-                </div>
-                <div class="p-4 flex flex-col flex-grow space-y-2">
-                    <h3 class="font-semibold text-[15px] line-clamp-2 h-11 block">
-                        <?php echo htmlspecialchars($row['name']); ?>
-                    </h3>
-                    <div class="text-primary font-bold text-lg">
-                        <?php echo number_format($row['price'], 0, ',', '.'); ?> đ
-                    </div>
-                    <div class="text-[13px] text-on-surface-variant">
-                        <?php echo htmlspecialchars($row['seller'] ?? 'Người bán ẩn danh'); ?> • <?php echo htmlspecialchars($row['category'] ?? ''); ?>
-                    </div>
-                    <div class="mt-3">
-                        <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=<?php echo $row['id']; ?>" class="inline-block w-full text-center border border-primary text-primary rounded-md px-4 py-2 hover:bg-primary/10">Xem chi tiết</a>
-                    </div>
-                </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-gutter" id="products-container">
+                <!-- Sẽ được tải động qua API -->
             </div>
-        <?php endforeach; ?>
-    <?php else: ?>
-        <p>Chưa có sản phẩm nào trong hệ thống.</p>
-    <?php endif; ?>
-</div>
         </section>
 
         <!-- ==========================================================================
@@ -177,5 +118,102 @@ $categories = $catsStmt->fetchAll();
     <!-- Nhúng file JavaScript để xử lý tương tác sản phẩm -->
     <script src="/Project-Web-Programming/frontend/assets/js/products.js"></script>
 
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        loadCategories();
+        loadProducts();
+        initBannerSlider();
+    });
+
+    async function loadCategories() {
+        let container = document.getElementById("categories-container");
+        container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Đang tải danh mục...</div>`;
+        
+        try {
+            let res = await fetch("/Project-Web-Programming/backend/public/api/categories");
+            let categories = await res.json();
+            
+            if (categories && categories.length > 0) {
+                // Hiển thị tối đa 6 danh mục
+                let limitCats = categories.slice(0, 6);
+                container.innerHTML = limitCats.map(cat => `
+                    <a href="/Project-Web-Programming/frontend/pages/products/category.php?category=${cat.ID}" data-id="${cat.ID}" data-navigate="1" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
+                        <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">category</span>
+                        <span class="text-label-sm font-semibold text-on-surface">${escapeHtml(cat.Name)}</span>
+                    </a>
+                `).join('');
+            } else {
+                container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Không có danh mục nào.</div>`;
+            }
+        } catch (error) {
+            console.error("Error loading categories:", error);
+            container.innerHTML = `<div class="col-span-full text-center text-red-500 py-4">Lỗi tải danh mục.</div>`;
+        }
+    }
+
+    async function loadProducts() {
+        let container = document.getElementById("products-container");
+        container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Đang tải sản phẩm...</div>`;
+        
+        try {
+            let res = await fetch("/Project-Web-Programming/backend/public/api/products");
+            let products = await res.json();
+            
+            if (products && products.length > 0) {
+                // Hiển thị tối đa 4 sản phẩm mới nhất
+                let latestProducts = products.slice(0, 4);
+                container.innerHTML = latestProducts.map(row => `
+                    <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-outline-variant/10 flex flex-col">
+                        <div class="h-48 bg-surface-container flex items-center justify-center relative text-outline/50 overflow-hidden">
+                            <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm">Độc Bản (SL=1)</span>
+                            <img src="/Project-Web-Programming/backend/uploads/products/${escapeHtml(row.Image || 'placeholder.png')}" alt="${escapeHtml(row.Name)}" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'" class="w-full h-full object-contain p-4">
+                        </div>
+                        <div class="p-4 flex flex-col flex-grow space-y-2">
+                            <h3 class="font-semibold text-[15px] line-clamp-2 h-11 block">
+                                ${escapeHtml(row.Name)}
+                            </h3>
+                            <div class="text-primary font-bold text-lg">
+                                ${new Intl.NumberFormat('vi-VN').format(row.Price)} đ
+                            </div>
+                            <div class="text-[13px] text-on-surface-variant">
+                                ${escapeHtml(row.SellerName || 'Người bán ẩn danh')} • ${escapeHtml(row.CategoryName || '')}
+                            </div>
+                            <div class="mt-3">
+                                <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${row.ID}" class="inline-block w-full text-center border border-primary text-primary rounded-md px-4 py-2 hover:bg-primary/10">Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Chưa có sản phẩm nào trong hệ thống.</div>`;
+            }
+        } catch (error) {
+            console.error("Error loading products:", error);
+            container.innerHTML = `<div class="col-span-full text-center text-red-500 py-4">Lỗi tải sản phẩm.</div>`;
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function initBannerSlider() {
+        const slides = document.querySelectorAll('.banner-slide');
+        if (slides.length <= 1) return;
+        let currentSlide = 0;
+        setInterval(() => {
+            slides[currentSlide].classList.replace('opacity-100', 'opacity-0');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.replace('opacity-0', 'opacity-100');
+        }, 5000);
+    }
+    </script>
 </body>
 </html>
