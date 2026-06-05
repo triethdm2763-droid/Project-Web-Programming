@@ -13,7 +13,8 @@ class ProductRepository extends BaseRepository {
      * @return array
      */
     public function findAllActive(array $filters = []): array {
-    $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName 
+    $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName,
+        (SELECT o.Shipping_address FROM orders o WHERE o.Product_ID = p.ID ORDER BY o.created_at DESC LIMIT 1) AS Location
         FROM `products` p
         JOIN `categories` c ON p.Category_ID = c.ID
         JOIN `users` u ON p.Seller_ID = u.ID
@@ -46,11 +47,12 @@ class ProductRepository extends BaseRepository {
      * @return array|null
      */
     public function findById(int $id) {
-        $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName, u.Email as SellerEmail, u.Phone as SellerPhone
-                FROM `products` p
-                JOIN `categories` c ON p.Category_ID = c.ID
-                JOIN `users` u ON p.Seller_ID = u.ID
-                WHERE p.ID = :id LIMIT 1";
+    $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName, u.Email as SellerEmail, u.Phone as SellerPhone,
+        (SELECT o.Shipping_address FROM orders o WHERE o.Product_ID = p.ID ORDER BY o.created_at DESC LIMIT 1) AS Location
+        FROM `products` p
+        JOIN `categories` c ON p.Category_ID = c.ID
+        JOIN `users` u ON p.Seller_ID = u.ID
+        WHERE p.ID = :id LIMIT 1";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);

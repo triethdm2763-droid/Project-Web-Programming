@@ -73,6 +73,9 @@ $routes = [
         '/api/auth/me'            => ['App\Controllers\AuthController', 'me'],
         '/api/products'           => ['App\Controllers\ProductController', 'list'],
         '/api/products/detail'    => ['App\Controllers\ProductController', 'detail'],
+        // Categories endpoints
+        '/api/categories'         => ['App\Controllers\CategoryController', 'list'],
+        '/api/categories/detail'  => ['App\Controllers\CategoryController', 'detail'],
         '/api/orders/buyer'       => ['App\Controllers\OrderController', 'buyerOrders'],
         '/api/orders/seller'      => ['App\Controllers\OrderController', 'sellerOrders'],
         '/api/notifications'      => ['App\Controllers\NotificationController', 'list']

@@ -146,33 +146,43 @@
             const response = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products/detail?id=${productId}`, { headers: { Accept: 'application/json' } });
             const data = await response.json();
 
-            currentProduct = data.data || data;
+            // Support various response shapes
+            let payload = null;
+            if (Array.isArray(data) && data.length > 0) payload = data[0];
+            else if (data && data.data) payload = data.data;
+            else payload = data;
 
-            // Cập nhật giao diện theo đúng các ID đã thiết lập
-            document.getElementById("product-image").src =
-                currentProduct.image || "https://placehold.co/600x600";
+            currentProduct = payload || {};
 
-            document.getElementById("product-name").innerText =
-                currentProduct.name || "Sản phẩm chưa rõ tên";
+            // normalize fields
+            const imageField = currentProduct.Image || currentProduct.image || '';
+            const title = currentProduct.Name || currentProduct.name || 'Sản phẩm chưa rõ tên';
+            const priceVal = parseFloat(currentProduct.Price || currentProduct.price || 0) || 0;
+            const desc = currentProduct.Description || currentProduct.description || '';
+            const status = (currentProduct.Status || currentProduct.status || '').toString();
+            const seller = currentProduct.SellerName || currentProduct.seller || currentProduct.seller_name || '';
+            const category = currentProduct.CategoryName || currentProduct.category || currentProduct.category_name || '';
 
-            document.getElementById("product-price").innerText =
-                `₫${Number(currentProduct.price).toLocaleString('vi-VN')}`;
+            // Update UI
+            const imgEl = document.getElementById("product-image");
+            if (imgEl) imgEl.src = imageField ? `/Project-Web-Programming/backend/uploads/products/${imageField}` : 'https://placehold.co/600x600';
 
-            document.getElementById("product-description").innerText =
-                currentProduct.description || "Chưa có mô tả cho sản phẩm này.";
+            const nameEl = document.getElementById("product-name");
+            if (nameEl) nameEl.innerText = title;
 
-            // Tự động xử lý và đổ thêm dữ liệu Danh mục, Người bán từ API phản hồi về
-            if (document.getElementById("product-category")) {
-                document.getElementById("product-category").innerText = currentProduct.category_name || currentProduct.category || "Chưa phân loại";
-            }
-            if (document.getElementById("product-seller")) {
-                document.getElementById("product-seller").innerText = currentProduct.seller_name || currentProduct.seller || "Ẩn danh";
-            }
+            const priceEl = document.getElementById("product-price");
+            if (priceEl) priceEl.innerText = `₫${priceVal.toLocaleString('vi-VN')}`;
 
-            // Xử lý dịch trạng thái (Status)
+            const descEl = document.getElementById("product-description");
+            if (descEl) descEl.innerText = desc || 'Chưa có mô tả cho sản phẩm này.';
+
+            // Update all elements that may have duplicate IDs in template
+            document.querySelectorAll('#product-category').forEach(el => el.innerText = category || 'Chưa phân loại');
+            document.querySelectorAll('#product-seller').forEach(el => el.innerText = seller || 'Ẩn danh');
+
+            // Status
             let statusText = "Còn hàng";
-            let statusColor = "bg-green-500"; 
-            
+            let statusColor = "bg-green-500";
             if (status === "sold") {
                 statusText = "Đã bán";
                 statusColor = "bg-red-500";
@@ -180,9 +190,10 @@
                 statusText = "Chờ duyệt";
                 statusColor = "bg-yellow-500";
             }
-
-            document.getElementById("product-status").innerText = statusText;
-            document.getElementById("status-dot").className = `w-2.5 h-2.5 rounded-full ${statusColor}`;
+            const statusTextEl = document.getElementById("product-status");
+            if (statusTextEl) statusTextEl.innerText = statusText;
+            const statusDotEl = document.getElementById("status-dot");
+            if (statusDotEl) statusDotEl.className = `w-2.5 h-2.5 rounded-full ${statusColor}`;
 
         } catch (error) {
 
