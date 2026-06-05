@@ -10,30 +10,27 @@
         
         <div class="mb-8">
             <h1 class="font-headline-lg text-headline-lg text-on-background mb-2 border-l-4 border-primary pl-3">Giỏ hàng của bạn</h1>
-            <p id="cart-item-count" class="text-on-surface-variant text-body-md pl-4">Đang kiểm tra giỏ hàng...</p>
+            <p id="cart-item-count" class="text-on-surface-variant text-body-md pl-4">Bạn đang có 0 sản phẩm trong giỏ hàng</p>
         </div>
 
-        <!-- 1. GIAO DIỆN KHI GIỎ HÀNG TRỐNG (Đã thêm nút Bắt đầu mua hàng) -->
         <div id="empty-cart-view" class="hidden flex-col items-center justify-center py-16 bg-white rounded-xl border border-outline-variant/20 shadow-sm text-center">
             <span class="material-symbols-outlined text-[80px] text-outline-variant mb-4">remove_shopping_cart</span>
-            <p class="text-body-lg text-on-surface-variant mb-6">Giỏ hàng của bạn hiện chưa có sản phẩm nào.</p>
+            <p class="text-body-lg text-on-surface-variant mb-6">Giỏ hàng của bạn hiện đang trống.</p>
             
-            <!-- ĐÂY LÀ NÚT FIX LỖI CỦA EM -->
-            <!-- Nếu trang danh mục của em là file khác, hãy sửa lại href cho đúng đường dẫn nhé -->
-            <a href="../home/index.php" class="bg-primary text-on-primary px-8 py-3.5 rounded-full font-label-md hover:opacity-90 active:scale-95 transition-all shadow-sm uppercase tracking-wide">
+            <a href="../categories.php" class="bg-primary text-on-primary px-8 py-3.5 rounded-full font-label-md hover:opacity-90 active:scale-95 transition-all shadow-sm uppercase tracking-wide">
                 Bắt đầu mua hàng
             </a>
         </div>
 
-        <!-- 2. GIAO DIỆN KHI CÓ SẢN PHẨM (Form gốc của em) -->
         <div id="cart-content-view" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
             <div class="lg:col-span-8 bg-white p-6 rounded-xl border border-outline-variant/20 shadow-sm min-h-[200px]">
                 <div id="cart-list" class="space-y-4"></div>
                 <div class="mt-6 pt-4 border-t border-outline-variant/20 flex justify-between items-center">
                     <a href="../../index.php" class="text-primary hover:underline font-medium text-sm flex items-center gap-2">
                         ← Tiếp tục mua sắm
                     </a>
-                    <button onclick="clearCart()" class="text-on-surface-variant hover:text-red-500 text-sm transition-colors">
+                    <button onclick="clearCartWithRefresh()" class="text-on-surface-variant hover:text-red-500 text-sm transition-colors">
                         Xóa toàn bộ giỏ hàng
                     </button>
                 </div>
@@ -92,30 +89,38 @@
     </main>
     <?php include '../../components/footer.php'; ?>
     
-    <!-- Đoạn script nhỏ thầy viết thêm để kiểm tra xem giỏ hàng có rỗng không -->
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Đọc giỏ hàng từ localStorage (nếu em dùng biến khác thì báo thầy)
+        function checkCartStatus() {
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
             
             const emptyView = document.getElementById("empty-cart-view");
             const contentView = document.getElementById("cart-content-view");
-            const itemCountDisplay = document.getElementById("cart-item-count");
+            const itemCount = document.getElementById("cart-item-count");
 
             if (cart.length === 0) {
-                // Nếu rỗng: Hiện nút Bắt đầu mua hàng
                 emptyView.classList.remove("hidden");
                 emptyView.classList.add("flex");
                 contentView.classList.add("hidden");
-                itemCountDisplay.innerText = "Bạn đang có 0 sản phẩm trong giỏ hàng";
+                if(itemCount) itemCount.innerText = "Bạn đang có 0 sản phẩm trong giỏ hàng";
             } else {
-                // Nếu có hàng: Hiện form đặt hàng
                 emptyView.classList.add("hidden");
                 emptyView.classList.remove("flex");
                 contentView.classList.remove("hidden");
-                itemCountDisplay.innerText = `Bạn đang có ${cart.length} sản phẩm trong giỏ hàng`;
+                if(itemCount) itemCount.innerText = `Bạn đang có ${cart.length} sản phẩm trong giỏ hàng`;
             }
-        });
+        }
+
+        function clearCartWithRefresh() {
+            if(typeof clearCart === 'function') {
+                clearCart();
+                setTimeout(checkCartStatus, 100);
+            } else {
+                localStorage.removeItem("cart");
+                checkCartStatus();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", checkCartStatus);
     </script>
     
     <script src="../../assets/js/cart.js"></script>
