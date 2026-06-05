@@ -11,8 +11,8 @@
             <h2 class="font-headline-md text-headline-md text-primary text-center mb-6">Tạo tài khoản mới</h2>
             <div class="space-y-5">
                 <div>
-                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Họ và tên</label>
-                    <input type="text" id="fullname" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Nhập họ tên...">
+                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Tên đăng nhập</label>
+                    <input type="text" id="username" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Nhập tên đăng nhập...">
                 </div>
                 <div>
                     <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Địa chỉ Email</label>
@@ -37,14 +37,13 @@
     
     <script>
     async function register() {
-        let fullname = document.getElementById("fullname").value.trim();
+        let username = document.getElementById("username").value.trim();
         let email = document.getElementById("email").value.trim();
-        let phone = document.getElementById("phone").value.trim(); // Bổ sung biến phone
+        let phone = document.getElementById("phone").value.trim();
         let password = document.getElementById("password").value.trim();
         let btn = document.getElementById("registerBtn");
         
-        // Thêm biến phone vào điều kiện kiểm tra rỗng
-        if (!fullname || !email || !phone || !password) { 
+        if (!username || !email || !phone || !password) { 
             alert("Vui lòng điền đầy đủ tất cả các trường."); 
             return; 
         }
@@ -60,21 +59,29 @@
             btn.innerText = "ĐANG ĐĂNG KÝ...";
             btn.classList.add("opacity-70");
 
-            // Gọi API Đăng ký của BE1 (Tuần 1)
-            let res = await fetch("http://localhost/api/auth/register", {
+            // Gọi API Đăng ký của BE
+            let res = await fetch("/Project-Web-Programming/backend/public/api/auth/register", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                // Bổ sung phone vào body JSON
-                body: JSON.stringify({ fullname, email, phone, password })
+                body: JSON.stringify({ username, email, phone, password })
             });
 
             let data = await res.json(); 
             
-            if(res.ok && data.status !== false) {
+            if (res.ok) {
                 alert("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.");
                 window.location.href = "login.php"; // Điều hướng sang trang Login
             } else {
-                alert(data.message || "Email đã tồn tại hoặc xảy ra lỗi.");
+                // Hiển thị chi tiết lỗi validate nếu có
+                if (data.errors && typeof data.errors === 'object') {
+                    let errMsg = "";
+                    for (const field in data.errors) {
+                        errMsg += `${data.errors[field].join(", ")}\n`;
+                    }
+                    alert(errMsg || "Đăng ký thất bại.");
+                } else {
+                    alert(data.message || "Đăng ký thất bại. Tên đăng nhập hoặc Email có thể đã tồn tại.");
+                }
             }
 
         } catch (error) {
