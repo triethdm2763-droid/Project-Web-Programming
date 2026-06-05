@@ -42,22 +42,22 @@ $categories = $catsStmt->fetchAll();
         <!-- ==========================================================================
            1. HERO BANNER SECTION (Giao diện giới thiệu mô hình C2C Độc bản)
            ========================================================================== -->
-    <div class="relative w-full rounded-[24px] overflow-hidden shadow-sm h-[280px] md:h-[360px]">
+        <div class="relative w-full rounded-[24px] overflow-hidden shadow-sm h-[200px] md:h-[400px]">
     
             <div class="absolute inset-0 w-full h-full">
+                
                 <img src="/Project-Web-Programming/backend/uploads/products/banner1.jpg" 
-            class="banner-slide absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out opacity-100">
+                    class="banner-slide absolute inset-0 w-full h-full object-cover object-[center_66%] transition-opacity duration-1000 ease-in-out opacity-100">
+                <img src="/Project-Web-Programming/backend/uploads/products/banner2.jpg" 
+                    class="banner-slide absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ease-in-out opacity-0">
 
-            <img src="/Project-Web-Programming/backend/uploads/products/banner2.jpg" 
-            class="banner-slide absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out opacity-0">
-
-            <img src="/Project-Web-Programming/backend/uploads/products/banner3.jpg" 
-            class="banner-slide absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out opacity-0">
+                <img src="/Project-Web-Programming/backend/uploads/products/banner3.jpg" 
+                    class="banner-slide absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ease-in-out opacity-0">
                     
                 <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent z-10"></div>
             </div>
 
-                <div class="relative z-20 h-full flex flex-col justify-center px-6 md:px-10 max-w-xl space-y-4 text-white">
+            <div class="relative z-20 h-full flex flex-col justify-center px-6 md:px-10 max-w-xl space-y-4 text-white">
                 <span class="bg-orange-500 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-md w-max">
                     SÀN C2C UY TÍN TOÀN QUỐC
                 </span>
@@ -67,12 +67,12 @@ $categories = $catsStmt->fetchAll();
                 <p class="text-xs md:text-sm text-gray-200 leading-relaxed font-light">
                     Trải nghiệm luồng chốt đơn siêu tốc với mô hình <strong class="text-orange-400">"Mua Ngay"</strong> dành riêng cho các mặt hàng độc bản, số lượng chỉ có một. Ai đến trước, mua trước!
                 </p>
-                <a href="#products-section" class="bg-white text-primary font-semibold px-6 py-2.5 rounded-full text-[14px] w-max hover:bg-opacity-90 active:scale-95 transition-all text-center shadow">
+                <a href="/Project-Web-Programming/frontend/pages/products/category.php" class="bg-white text-primary font-semibold px-6 py-2.5 rounded-full text-[14px] w-max hover:bg-opacity-90 active:scale-95 transition-all text-center shadow">
                     Khám Phá Ngay
                 </a>
             </div>
+            
         </div>
-
             <!-- ==========================================================================
             2. BROWSE BY CATEGORIES (Bộ lọc danh mục trực quan)
             ========================================================================== -->

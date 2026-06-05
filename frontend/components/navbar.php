@@ -18,7 +18,7 @@ function nav_class($pathFragment, $currentPath) {
       <nav class="hidden md:flex gap-6 font-medium text-[16px]">
         <a class="<?php echo nav_class('/frontend/pages/home/index.php', $currentPath); ?>" href="/Project-Web-Programming/frontend/pages/home/index.php">Trang chủ</a>
         <a class="<?php echo nav_class('/frontend/pages/products/category.php', $currentPath); ?>" href="/Project-Web-Programming/frontend/pages/products/category.php" data-navigate="1">Danh mục</a>
-        <a class="<?php echo nav_class('/frontend/pages/promotions', $currentPath); ?>" href="#">Khuyến mãi</a>
+  <!-- Promotions link removed per request -->
       </nav>
     </div>
 
@@ -42,10 +42,11 @@ function nav_class($pathFragment, $currentPath) {
     $isLoggedIn = isset($_SESSION['user_id']) ? 'true' : 'false';
   ?>
 
-  <button id="btn-create-post" data-logged-in="<?php echo $isLoggedIn; ?>" 
-    class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm text-[15px] cursor-pointer">
+  <a id="btn-create-post" data-logged-in="<?php echo $isLoggedIn; ?>" 
+   href="/Project-Web-Programming/frontend/pages/user/post_ad.php" 
+   class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm text-[15px] cursor-pointer inline-block text-center">
     Đăng tin
-  </button>
+</a>
 </div>
     
   </div>
