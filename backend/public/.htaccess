@@ -5,6 +5,6 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     
-    # Nếu là đường dẫn ảo (như /api/products), ép Apache ném về cho public/index.php xử lý
-    RewriteRule ^(.*)$ public/index.php [QSA,L]
+    # Nếu là đường dẫn ảo (như /api/products), ép Apache ném về cho index.php xử lý
+    RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>

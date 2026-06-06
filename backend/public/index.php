@@ -13,24 +13,25 @@ spl_autoload_register(function ($class) {
         return;
     }
     $relative_class = substr($class, $len);
-    
+
     // Split namespace parts
     $parts = explode('\\', $relative_class);
     $className = array_pop($parts); // E.g., AuthController
-    
+
     // Convert directory names to lowercase (e.g., Controllers -> controllers)
     $dirs = array_map('strtolower', $parts);
-    
+
     $path = implode('/', $dirs);
     $file = $base_dir . ($path ? $path . '/' : '') . $className . '.php';
-    
+
     if (file_exists($file)) {
         require_once $file;
     }
 });
 
 // Helper response if route not found
-function sendJsonError($message, $code = 404) {
+function sendJsonError($message, $code = 404)
+{
     http_response_code($code);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['error' => $message], JSON_UNESCAPED_UNICODE);
@@ -93,16 +94,15 @@ try {
     if (!class_exists($controllerClass)) {
         sendJsonError("Controller class '{$controllerClass}' not found.", 500);
     }
-    
+
     $controllerInstance = new $controllerClass();
-    
+
     if (!method_exists($controllerInstance, $action)) {
         sendJsonError("Action '{$action}' not found in controller '{$controllerClass}'.", 500);
     }
-    
+
     // Call the action
     $controllerInstance->$action();
-    
 } catch (Exception $e) {
     sendJsonError("Internal Server Error: " . $e->getMessage(), 500);
 }
