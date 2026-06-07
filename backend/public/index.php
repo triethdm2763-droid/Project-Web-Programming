@@ -30,7 +30,8 @@ spl_autoload_register(function ($class) {
 });
 
 // Helper response if route not found
-function sendJsonError($message, $code = 404) {
+function sendJsonError($message, $code = 404) 
+{
     http_response_code($code);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['error' => $message], JSON_UNESCAPED_UNICODE);
