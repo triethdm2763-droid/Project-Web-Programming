@@ -37,13 +37,19 @@ function renderCart() {
 
     // Render danh sách sản phẩm
     cart.forEach((item, index) => {
-        const price = Number(item.price) || 0;
+        const price = Number(item.Price || item.price) || 0;
+        const name = item.Name || item.name || 'Sản phẩm chưa rõ tên';
+        const image = item.Image || item.image || '';
+        const imgUrl = image ? 
+            (image.startsWith('http://') || image.startsWith('https://') ? image : `/Project-Web-Programming/backend/uploads/products/${image}`) 
+            : 'https://placehold.co/100x100';
+
         total += price;
         html += `
             <div class="flex items-center gap-4 border-b border-outline-variant/20 pb-4 last:border-0 last:pb-0 pt-4 first:pt-0">
-                <img src="${item.image || 'https://placehold.co/100x100'}" alt="${item.name}" class="w-20 h-20 object-cover rounded-lg border border-outline-variant/20">
+                <img src="${imgUrl}" alt="${name}" class="w-20 h-20 object-cover rounded-lg border border-outline-variant/20">
                 <div class="flex-grow">
-                    <h4 class="font-medium text-on-background line-clamp-2">${item.name}</h4>
+                    <h4 class="font-medium text-on-background line-clamp-2">${name}</h4>
                     <p class="text-secondary font-bold mt-1">${formatCurrency(price)}</p>
                 </div>
                 <button onclick="removeFromCart(${index})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Xóa khỏi giỏ">
@@ -90,24 +96,18 @@ async function checkout() {
     const phone = document.getElementById("phone").value.trim();
     const address = document.getElementById("address").value.trim();
     const notes = document.getElementById("notes").value.trim();
+    const paymentMethodEl = document.getElementById("payment_method");
+    const paymentMethod = paymentMethodEl ? paymentMethodEl.value : 'COD';
 
     if (!fullname || !phone || !address) {
         alert("Vui lòng điền đầy đủ các thông tin: Họ tên, Số điện thoại và Địa chỉ giao hàng!");
         return;
     }
 
-    // Tính tổng tiền gửi xuống DB
-    const totalPrice = cart.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-
-    // Chuẩn bị Payload khớp với thiết kế Database (DB2) [cite: 43, 44]
-    const payload = {
-        fullname: fullname,
-        phone: phone,
-        shipping_address: address,
-        notes: notes,
-        total_price: totalPrice,
-        items: cart.map(item => ({ product_id: item.id, price: item.price }))
-    };
+    if (address.length < 10) {
+        alert("Địa chỉ giao hàng phải có ít nhất 10 ký tự để giao hàng!");
+        return;
+    }
 
     const btn = document.getElementById("checkoutBtn");
     const originalText = btn.innerHTML;
@@ -118,23 +118,60 @@ async function checkout() {
         btn.innerHTML = 'ĐANG XỬ LÝ...';
         btn.classList.add("opacity-70");
 
-        // Gọi API đặt hàng của BE2 [cite: 61]
-        let res = await fetch("http://localhost/api/orders/checkout", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
-        });
+        let successCount = 0;
+        let errors = [];
+        let successfulIds = [];
 
-        let data = await res.json(); 
+        // Vì DB chỉ hỗ trợ mỗi đơn hàng một sản phẩm (C2C), chúng ta sẽ gửi yêu cầu đặt hàng lần lượt cho từng sản phẩm
+        for (const item of cart) {
+            const itemId = item.ID || item.id;
+            const itemName = item.Name || item.name || 'Sản phẩm';
+            
+            const payload = {
+                product_id: itemId,
+                shipping_address: address,
+                payment_method: paymentMethod,
+                fullname: fullname,
+                phone: phone,
+                notes: notes
+            };
 
-        if (res.ok && data.status !== false) {
-            alert("🎉 Đặt hàng thành công! Đơn hàng của bạn đang chờ phê duyệt.");
-            localStorage.removeItem("cart"); // Xóa giỏ hàng sau khi mua xong
-            window.location.href = "../../index.php"; // Điều hướng về Home 
+            try {
+                let res = await fetch("/Project-Web-Programming/backend/public/api/orders", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                let data = await res.json(); 
+
+                if (res.ok && !data.error) {
+                    successCount++;
+                    successfulIds.push(itemId);
+                } else {
+                    errors.push(`Sản phẩm "${itemName}": ${data.error || 'Có lỗi xảy ra'}`);
+                }
+            } catch (err) {
+                errors.push(`Sản phẩm "${itemName}": Lỗi kết nối mạng.`);
+            }
+        }
+
+        if (successCount > 0) {
+            // Lọc bỏ những sản phẩm đã đặt mua thành công khỏi giỏ hàng
+            let cartAfterCheckout = cart.filter(item => !successfulIds.includes(item.ID || item.id));
+            localStorage.setItem("cart", JSON.stringify(cartAfterCheckout));
+            
+            if (successCount === cart.length) {
+                alert("🎉 Đặt hàng thành công tất cả sản phẩm!");
+                window.location.href = "../../index.php";
+            } else {
+                alert(`Đặt hàng thành công ${successCount}/${cart.length} sản phẩm.\n\nMột số sản phẩm gặp lỗi:\n` + errors.join('\n'));
+                renderCart();
+            }
         } else {
-            alert("Lỗi: " + (data.message || "Đã có lỗi xảy ra. Sản phẩm có thể đã bị mua mất!"));
+            alert("Đặt hàng thất bại!\n\nChi tiết lỗi:\n" + errors.join('\n'));
         }
 
     } catch (error) {

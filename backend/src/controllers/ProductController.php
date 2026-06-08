@@ -67,4 +67,57 @@ class ProductController extends BaseController {
             'errors' => $result['errors'] ?? null
         ], $result['code']);
     }
+
+    /**
+     * POST /api/products/upload
+     * Upload an image for a product
+     */
+    public function uploadImage() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (empty($_SESSION['user_id'])) {
+            return $this->json(['error' => 'Bạn phải đăng nhập để tải ảnh lên.'], 401);
+        }
+
+        if (empty($_FILES['image'])) {
+            return $this->json(['error' => 'Không tìm thấy file ảnh gửi lên.'], 400);
+        }
+
+        $file = $_FILES['image'];
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return $this->json(['error' => 'Lỗi khi upload file: ' . $file['error']], 400);
+        }
+
+        // Validate extension
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowedExtensions)) {
+            return $this->json(['error' => 'Chỉ chấp nhận các định dạng ảnh: ' . implode(', ', $allowedExtensions)], 400);
+        }
+
+        // Validate file size (max 5MB)
+        if ($file['size'] > 5 * 1024 * 1024) {
+            return $this->json(['error' => 'Dung lượng ảnh tối đa là 5MB.'], 400);
+        }
+
+        // Create target directory if it doesn't exist
+        $targetDir = __DIR__ . '/../../uploads/products/';
+        if (!file_exists($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        // Generate unique filename
+        $newFilename = uniqid('prod_', true) . '.' . $ext;
+        $targetFile = $targetDir . $newFilename;
+
+        if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+            return $this->json([
+                'status' => 'success',
+                'filename' => $newFilename
+            ], 200);
+        } else {
+            return $this->json(['error' => 'Không thể lưu file ảnh lên máy chủ.'], 500);
+        }
+    }
 }

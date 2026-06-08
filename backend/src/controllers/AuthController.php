@@ -114,4 +114,45 @@ class AuthController extends BaseController {
             'error' => $result['message']
         ], $result['code']);
     }
+
+    /**
+     * POST /api/auth/forgot-password
+     * Request a password reset OTP
+     */
+    public function requestReset() {
+        $data = $this->getRequestBody();
+        $result = $this->authService->requestPasswordReset($data);
+
+        if ($result['status'] === 'success') {
+            return $this->json([
+                'message' => $result['message'],
+                'otp'     => $result['otp'] ?? null // Simulation
+            ], 200);
+        }
+
+        return $this->json([
+            'error'  => $result['message'] ?? 'Yêu cầu thất bại.',
+            'errors' => $result['errors'] ?? null
+        ], $result['code']);
+    }
+
+    /**
+     * POST /api/auth/reset-password
+     * Verify OTP and change password
+     */
+    public function performReset() {
+        $data = $this->getRequestBody();
+        $result = $this->authService->resetPassword($data);
+
+        if ($result['status'] === 'success') {
+            return $this->json([
+                'message' => $result['message']
+            ], 200);
+        }
+
+        return $this->json([
+            'error'  => $result['message'] ?? 'Đặt lại mật khẩu thất bại.',
+            'errors' => $result['errors'] ?? null
+        ], $result['code']);
+    }
 }

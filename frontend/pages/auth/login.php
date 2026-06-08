@@ -17,6 +17,9 @@
                 <div>
                     <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Mật khẩu</label>
                     <input type="password" id="password" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Nhập mật khẩu...">
+                    <div class="text-right mt-1.5">
+                        <a href="forgot-password.php" class="text-xs text-primary font-medium hover:underline">Quên mật khẩu?</a>
+                    </div>
                 </div>
                 <button onclick="login()" id="loginBtn" class="w-full bg-primary text-on-primary py-3.5 rounded-full font-label-md hover:opacity-90 active:scale-95 transition-all shadow-sm mt-2 uppercase tracking-wide">Đăng nhập</button>
             </div>

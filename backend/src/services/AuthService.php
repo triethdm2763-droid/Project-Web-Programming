@@ -171,4 +171,126 @@ class AuthService {
             'user'   => $user
         ];
     }
+
+    /**
+     * Request password reset OTP
+     * 
+     * @param array $data
+     * @return array
+     */
+    public function requestPasswordReset(array $data): array {
+        $rules = [
+            'email' => 'required|email'
+        ];
+
+        $errors = Validator::validate($data, $rules);
+        if (!empty($errors)) {
+            return [
+                'status' => 'error',
+                'code'   => 400,
+                'errors' => $errors
+            ];
+        }
+
+        $email = trim($data['email']);
+        $user = $this->userRepository->findByEmail($email);
+        if ($user === null) {
+            return [
+                'status'  => 'error',
+                'code'    => 404,
+                'message' => 'Địa chỉ email này chưa được đăng ký trên hệ thống.'
+            ];
+        }
+
+        // Generate 6 digit OTP code
+        $otp = (string)mt_rand(100000, 999999);
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $_SESSION['reset_email'] = $email;
+        $_SESSION['reset_otp'] = $otp;
+        $_SESSION['reset_expiry'] = time() + 300; // valid for 5 mins
+
+        return [
+            'status'  => 'success',
+            'code'    => 200,
+            'message' => 'Mã OTP khôi phục mật khẩu đã được tạo (Mô phỏng).',
+            'otp'     => $otp // Return OTP in response for simulation/local testing
+        ];
+    }
+
+    /**
+     * Verify OTP and reset password
+     * 
+     * @param array $data
+     * @return array
+     */
+    public function resetPassword(array $data): array {
+        $rules = [
+            'otp'      => 'required',
+            'password' => 'required|min:6'
+        ];
+
+        $errors = Validator::validate($data, $rules);
+        if (!empty($errors)) {
+            return [
+                'status' => 'error',
+                'code'   => 400,
+                'errors' => $errors
+            ];
+        }
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (empty($_SESSION['reset_email']) || empty($_SESSION['reset_otp']) || empty($_SESSION['reset_expiry'])) {
+            return [
+                'status'  => 'error',
+                'code'    => 400,
+                'message' => 'Phiên làm việc hết hạn hoặc không hợp lệ. Vui lòng yêu cầu lại OTP.'
+            ];
+        }
+
+        if (time() > $_SESSION['reset_expiry']) {
+            // clear expired session variables
+            unset($_SESSION['reset_email'], $_SESSION['reset_otp'], $_SESSION['reset_expiry']);
+            return [
+                'status'  => 'error',
+                'code'    => 400,
+                'message' => 'Mã OTP đã hết hạn (chỉ có hiệu lực trong 5 phút).'
+            ];
+        }
+
+        if (trim($data['otp']) !== $_SESSION['reset_otp']) {
+            return [
+                'status'  => 'error',
+                'code'    => 400,
+                'message' => 'Mã OTP không chính xác. Vui lòng thử lại.'
+            ];
+        }
+
+        $email = $_SESSION['reset_email'];
+        $user = $this->userRepository->findByEmail($email);
+        if ($user === null) {
+            return [
+                'status'  => 'error',
+                'code'    => 404,
+                'message' => 'Không tìm thấy tài khoản gắn liền với email này.'
+            ];
+        }
+
+        $newPasswordHash = password_hash($data['password'], PASSWORD_BCRYPT);
+        $this->userRepository->updatePassword((int)$user['ID'], $newPasswordHash);
+
+        // Clear session variables after successful reset
+        unset($_SESSION['reset_email'], $_SESSION['reset_otp'], $_SESSION['reset_expiry']);
+
+        return [
+            'status'  => 'success',
+            'code'    => 200,
+            'message' => 'Đổi mật khẩu mới thành công!'
+        ];
+    }
 }
