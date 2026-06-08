@@ -20,45 +20,65 @@ Cấu trúc khởi tạo cho đồ án web đấu giá realtime sử dụng PHP 
    - Database name: `c2c_used_marketplace`
    - Username: `root`
    - Password: `""` (để trống)
-3. Chạy script tự động khởi tạo database và nạp dữ liệu mẫu (seeding) từ thư mục gốc của dự án:
+3. Thực hiện nạp cấu trúc (schema) và dữ liệu mẫu (seed) theo một trong hai cách dưới đây:
+
+   **Cách A: Sử dụng Script tự động (Khuyên dùng - Nhanh nhất)**
+   Mở terminal tại thư mục gốc của dự án và chạy lệnh:
 
    ```powershell
    php import_db.php
    ```
 
-   *Lưu ý: Nếu bị kẹt hoặc lỗi kết nối, vui lòng Restart Apache trên XAMPP và thử lại.*
+   _Lưu ý: Nếu bị kẹt hoặc lỗi kết nối, vui lòng Restart Apache trên XAMPP và chạy lại lệnh._
 
-### 2. Khởi chạy Backend API Server
+   **Cách B: Nhập thủ công qua phpMyAdmin**
+   - Truy cập [http://localhost/phpmyadmin/](http://localhost/phpmyadmin/).
+   - Tạo mới CSDL có tên là `c2c_used_marketplace`.
+   - Chọn CSDL vừa tạo, nhấp vào tab **Import** (Nhập).
+   - Chọn tệp [database/schema.sql](file:///d:/xampp/htdocs/Project-Web-Programming/database/schema.sql) rồi nhấn **Go** (Thực hiện) để tạo cấu trúc bảng.
+   - Nhấp lại vào tab **Import** (Nhập), chọn tệp [database/seed.sql](file:///d:/xampp/htdocs/Project-Web-Programming/database/seed.sql) rồi nhấn **Go** (Thực hiện) để nạp dữ liệu mẫu.
 
-Mở terminal/cmd tại thư mục gốc dự án và chạy:
+### 2. Truy cập ứng dụng qua XAMPP
 
-```powershell
-cd backend/public
-php -S localhost:8000
-```
+Sau khi cài đặt xong CSDL, dự án sẽ được phục vụ toàn bộ (cả Frontend và Backend API) thông qua máy chủ Apache của XAMPP.
 
-API lúc này sẽ hoạt động tại địa chỉ: `http://localhost:8000/api`
-
-### 3. Truy cập giao diện người dùng (Frontend)
-
-Mở trình duyệt và truy cập theo đường dẫn XAMPP mặc định:
+Mở trình duyệt web của bạn và truy cập trực tiếp theo đường dẫn:
 
 ```text
 http://localhost/Project-Web-Programming/index.php
 ```
 
-Hệ thống sẽ tự động chuyển hướng bạn đến trang chủ của ứng dụng.
+Hệ thống sẽ tự động khởi chạy và chuyển hướng bạn đến giao diện trang chủ của ứng dụng. Bạn không cần phải mở server PHP CLI (`php -S`) riêng biệt.
 
 ### 4. Tài khoản kiểm thử có sẵn (Seed Accounts)
 
-Sử dụng các tài khoản sau để đăng nhập và kiểm tra chức năng:
+Sử dụng các tài khoản sau (nạp từ `seed.sql` mới) để đăng nhập và kiểm tra chức năng. Mật khẩu mặc định của tất cả tài khoản mẫu là **`280606`**:
 
-- **Người bán (Seller):** `seller1` / mật khẩu: `seller123`
-- **Người mua (Buyer):** `buyer1` / mật khẩu: `buyer123`
-- **Quản trị viên (Admin):** `admin` / mật khẩu: `admin123`
-- Hoặc bạn có thể tự đăng ký tài khoản mới trực tiếp trên giao diện.
+- **Quản trị viên (Admin):**
+  - Tên đăng nhập: `admin`
+- **Người bán (Sellers):**
+  - Tên đăng nhập: `nguyen_ban`, `tran_shop`, `le_secondhand`, `pham_cu`
+- **Người mua (Buyers):**
+  - Tên đăng nhập: `buyer_minh`, `buyer_lan`, `buyer_hung`, `buyer_thu`
+  - _(Tài khoản `buyer_nam` ở trạng thái bị khóa để thử nghiệm)_
 
-### 5. Kiểm thử tự động (Optional)
+---
+
+### 5. Các tính năng mới được tích hợp
+
+1. **Khôi phục mật khẩu (Forgot Password):**
+   - Cho phép khôi phục qua mã OTP mô phỏng lưu trong Session.
+   - Giao diện đẹp mắt tích hợp tại `/frontend/pages/auth/forgot-password.php`.
+2. **AJAX Upload ảnh người bán:**
+   - Cho phép tải ảnh trực tiếp lên thư mục `/backend/uploads/products/` qua API `/api/products/upload`.
+   - Giao diện Đăng tin mới có khu vực xem trước (Preview) ảnh mượt mà.
+3. **Giỏ hàng & Đặt hàng tuần tự (C2C):**
+   - Hỗ trợ chọn phương thức thanh toán trực tiếp.
+   - Đồng bộ cơ chế thanh toán C2C tuần tự (loop API) cho từng mặt hàng trong giỏ hàng.
+
+---
+
+### 6. Kiểm thử tự động (Optional)
 
 Chạy script kiểm thử tích hợp API để kiểm tra kết nối:
 

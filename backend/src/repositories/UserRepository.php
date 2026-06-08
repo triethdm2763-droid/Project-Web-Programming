@@ -70,4 +70,20 @@ class UserRepository extends BaseRepository {
 
         return (int)$this->db->lastInsertId();
     }
+
+    /**
+     * Update user password
+     * 
+     * @param int $userId
+     * @param string $passwordHash
+     * @return bool
+     */
+    public function updatePassword(int $userId, string $passwordHash): bool {
+        $sql = "UPDATE `users` SET `Password` = :password WHERE `ID` = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'password' => $passwordHash,
+            'id'       => $userId
+        ]);
+    }
 }

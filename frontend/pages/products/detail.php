@@ -217,7 +217,8 @@
 
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-        const isExist = cart.find(item => item.id === currentProduct.id);
+        const currentId = currentProduct.ID || currentProduct.id;
+        const isExist = cart.find(item => (item.ID || item.id) === currentId);
         if(isExist) {
             alert("Sản phẩm này đã có sẵn trong giỏ hàng của bạn!");
             return;
@@ -235,7 +236,8 @@
 
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
         
-        const isExist = cart.find(item => item.id === currentProduct.id);
+        const currentId = currentProduct.ID || currentProduct.id;
+        const isExist = cart.find(item => (item.ID || item.id) === currentId);
         if(!isExist) {
             cart.push(currentProduct);
             localStorage.setItem("cart", JSON.stringify(cart));

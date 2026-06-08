@@ -59,6 +59,14 @@
                         <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Ghi chú (Tùy chọn)</label>
                         <input type="text" id="notes" class="w-full px-4 py-2.5 bg-surface border border-outline-variant/40 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-[15px]" placeholder="Ví dụ: Giao giờ hành chính">
                     </div>
+
+                    <div>
+                        <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Phương thức thanh toán</label>
+                        <select id="payment_method" class="w-full px-4 py-2.5 bg-surface border border-outline-variant/40 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-[15px]">
+                            <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+                            <option value="Bank Transfer">Chuyển khoản ngân hàng</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="border-t border-outline-variant/20 pt-4 mt-6 space-y-3">

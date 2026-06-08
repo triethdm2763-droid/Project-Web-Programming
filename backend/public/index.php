@@ -63,12 +63,15 @@ if ($method === 'OPTIONS') {
 // 3. DEFINE STATIC API ROUTES
 $routes = [
     'POST' => [
-        '/api/auth/register'      => ['App\Controllers\AuthController', 'register'],
-        '/api/auth/login'         => ['App\Controllers\AuthController', 'login'],
-        '/api/auth/logout'        => ['App\Controllers\AuthController', 'logout'],
-        '/api/products'           => ['App\Controllers\ProductController', 'create'],
-        '/api/orders'             => ['App\Controllers\OrderController', 'create'],
-        '/api/notifications/read' => ['App\Controllers\NotificationController', 'markRead']
+        '/api/auth/register'        => ['App\Controllers\AuthController', 'register'],
+        '/api/auth/login'           => ['App\Controllers\AuthController', 'login'],
+        '/api/auth/logout'          => ['App\Controllers\AuthController', 'logout'],
+        '/api/auth/forgot-password' => ['App\Controllers\AuthController', 'requestReset'],
+        '/api/auth/reset-password'  => ['App\Controllers\AuthController', 'performReset'],
+        '/api/products'             => ['App\Controllers\ProductController', 'create'],
+        '/api/products/upload'      => ['App\Controllers\ProductController', 'uploadImage'],
+        '/api/orders'               => ['App\Controllers\OrderController', 'create'],
+        '/api/notifications/read'   => ['App\Controllers\NotificationController', 'markRead']
     ],
     'GET' => [
         '/api/auth/me'            => ['App\Controllers\AuthController', 'me'],
