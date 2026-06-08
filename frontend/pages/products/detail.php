@@ -165,7 +165,11 @@
 
             // Update UI
             const imgEl = document.getElementById("product-image");
-            if (imgEl) imgEl.src = imageField ? `/Project-Web-Programming/backend/uploads/products/${imageField}` : 'https://placehold.co/600x600';
+            if (imgEl) {
+                imgEl.src = imageField ? 
+                    (imageField.startsWith('http://') || imageField.startsWith('https://') ? imageField : `/Project-Web-Programming/backend/uploads/products/${imageField}`) 
+                    : 'https://placehold.co/600x600';
+            }
 
             const nameEl = document.getElementById("product-name");
             if (nameEl) nameEl.innerText = title;

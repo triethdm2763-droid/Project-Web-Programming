@@ -6,10 +6,12 @@
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <title>Đăng tin mới | Chợ Cũ</title>
     <?php include '../../components/header.php'; ?>
 </head>
+
 <body class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col">
     <?php include '../../components/navbar.php'; ?>
 
@@ -20,7 +22,7 @@
         </div>
 
         <form class="space-y-6" id="post-ad-form" method="POST" action="" enctype="multipart/form-data">
-            
+
             <div class="glass-card p-6 rounded-xl border border-outline-variant/40 shadow-sm bg-white">
                 <label class="block text-label-md font-semibold text-on-surface mb-3">Hình ảnh sản phẩm</label>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -47,9 +49,10 @@
                         <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Danh mục *</label>
                         <select name="category_id" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl outline-none" required>
                             <option value="">Chọn danh mục</option>
-                            <?php if(!empty($categories)): foreach($categories as $cat): ?>
-                                <option value="<?= htmlspecialchars($cat['id']) ?>"><?= htmlspecialchars($cat['name']) ?></option>
-                            <?php endforeach; endif; ?>
+                            <?php if (!empty($categories)): foreach ($categories as $cat): ?>
+                                    <option value="<?= htmlspecialchars($cat['id']) ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                            <?php endforeach;
+                            endif; ?>
                         </select>
                     </div>
                     <div>
@@ -82,11 +85,12 @@
                 <div class="space-y-2">
                     <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Bảo hành</label>
                     <div class="flex flex-wrap gap-4 mb-2">
-                        <?php if(!empty($warranties)): foreach($warranties as $war): ?>
-                        <label class="flex items-center gap-1.5 text-body-sm cursor-pointer">
-                            <input type="radio" name="war_shortcut" value="<?= htmlspecialchars($war['name']) ?>" class="accent-primary" onclick="syncValue('warranty', this.value)"> <?= htmlspecialchars($war['name']) ?>
-                        </label>
-                        <?php endforeach; endif; ?>
+                        <?php if (!empty($warranties)): foreach ($warranties as $war): ?>
+                                <label class="flex items-center gap-1.5 text-body-sm cursor-pointer">
+                                    <input type="radio" name="war_shortcut" value="<?= htmlspecialchars($war['name']) ?>" class="accent-primary" onclick="syncValue('warranty', this.value)"> <?= htmlspecialchars($war['name']) ?>
+                                </label>
+                        <?php endforeach;
+                        endif; ?>
                     </div>
                     <input type="text" id="input-warranty" name="warranty" value="" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl outline-none text-body-md" placeholder="Hoặc tự nhập thông tin bảo hành...">
                 </div>
@@ -109,9 +113,10 @@
                         <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Thành phố / Tỉnh *</label>
                         <select name="location" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl outline-none" required>
                             <option value="">Chọn khu vực</option>
-                            <?php if(!empty($locations)): foreach($locations as $loc): ?>
-                                <option value="<?= htmlspecialchars($loc['id']) ?>"><?= htmlspecialchars($loc['name']) ?></option>
-                            <?php endforeach; endif; ?>
+                            <?php if (!empty($locations)): foreach ($locations as $loc): ?>
+                                    <option value="<?= htmlspecialchars($loc['id']) ?>"><?= htmlspecialchars($loc['name']) ?></option>
+                            <?php endforeach;
+                            endif; ?>
                         </select>
                     </div>
                     <div>
@@ -131,10 +136,11 @@
     <?php include '../../components/footer.php'; ?>
 
     <script>
-    // Chỉ giữ lại hàm đồng bộ cho các phần có radio button (Thời gian sử dụng, Bảo hành)
-    function syncValue(fieldId, val) {
-        document.getElementById('input-' + fieldId).value = val;
-    }
+        // Chỉ giữ lại hàm đồng bộ cho các phần có radio button (Thời gian sử dụng, Bảo hành)
+        function syncValue(fieldId, val) {
+            document.getElementById('input-' + fieldId).value = val;
+        }
     </script>
 </body>
+
 </html>

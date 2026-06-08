@@ -139,7 +139,9 @@ function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false) 
                 const priceVal = parseFloat(product.Price || product.price || 0) || 0;
                 const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(priceVal);
                 const imageField = product.Image || product.image || '';
-                const productImage = imageField ? `/Project-Web-Programming/backend/uploads/products/${imageField}` : '';
+                const productImage = imageField ? 
+                    (imageField.startsWith('http://') || imageField.startsWith('https://') ? imageField : `/Project-Web-Programming/backend/uploads/products/${imageField}`) 
+                    : '';
                 const location = product.Location || product.location || 'Quận 1, TP. HCM';
 
                 const cardHTML = `
@@ -255,8 +257,10 @@ function switchSellerTab(status) {
                 const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.price || 0);
                 
                 // Tránh lỗi vỡ hình: Nếu không có ảnh thật trong DB, nạp ngay Icon Material
-                const imageHTML = p.image 
-                    ? `<img src="/Project-Web-Programming/backend/uploads/products/${p.image}" class="w-full h-full object-cover">`
+                const imgVal = p.image || p.Image || '';
+                const imgSrc = imgVal ? (imgVal.startsWith('http://') || imgVal.startsWith('https://') ? imgVal : `/Project-Web-Programming/backend/uploads/products/${imgVal}`) : '';
+                const imageHTML = imgSrc 
+                    ? `<img src="${imgSrc}" class="w-full h-full object-cover">`
                     : `<span class="material-symbols-outlined text-2xl text-slate-300">image</span>`;
 
                 let badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-100';

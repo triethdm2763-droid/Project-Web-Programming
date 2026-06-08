@@ -1,4 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // Determine current path so we can highlight active nav link
 $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
 
@@ -34,20 +38,53 @@ function nav_class($pathFragment, $currentPath) {
     shopping_cart
   </a>
   
-  <a href="/Project-Web-Programming/frontend/pages/auth/login.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors block">
-    account_circle
-  </a>
-  
   <?php
-    $isLoggedIn = isset($_SESSION['user_id']) ? 'true' : 'false';
+    $isLoggedIn = isset($_SESSION['user_id']);
   ?>
 
-  <a id="btn-create-post" data-logged-in="<?php echo $isLoggedIn; ?>" 
+  <?php if ($isLoggedIn): ?>
+    <div class="flex items-center gap-2">
+      <a href="<?php echo ($_SESSION['role'] === 'admin') ? '/Project-Web-Programming/frontend/pages/admin/dashboard.php' : '/Project-Web-Programming/frontend/pages/user/dashboard.php'; ?>" class="flex items-center gap-1.5 p-1.5 hover:bg-surface-container rounded-full transition-colors text-on-surface-variant hover:text-primary">
+        <span class="material-symbols-outlined">account_circle</span>
+        <span class="text-sm font-semibold max-w-[100px] truncate"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
+      </a>
+      <button onclick="logout()" class="material-symbols-outlined p-2 text-on-surface-variant hover:text-error hover:bg-surface-container rounded-full transition-colors" title="Đăng xuất">
+        logout
+      </button>
+    </div>
+  <?php else: ?>
+    <a href="/Project-Web-Programming/frontend/pages/auth/login.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors block" title="Đăng nhập">
+      account_circle
+    </a>
+  <?php endif; ?>
+  
+  <a id="btn-create-post" data-logged-in="<?php echo $isLoggedIn ? 'true' : 'false'; ?>" 
    href="/Project-Web-Programming/frontend/pages/user/post_ad.php" 
    class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm text-[15px] cursor-pointer inline-block text-center">
     Đăng tin
-</a>
+  </a>
 </div>
     
   </div>
 </header>
+
+<script>
+async function logout() {
+    if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+        try {
+            let res = await fetch("/Project-Web-Programming/backend/public/api/auth/logout", {
+                method: "POST"
+            });
+            if (res.ok) {
+                alert("Đăng xuất thành công!");
+                window.location.href = "/Project-Web-Programming/frontend/pages/home/index.php";
+            } else {
+                alert("Đăng xuất thất bại.");
+            }
+        } catch (error) {
+            console.error("Logout error:", error);
+            alert("Lỗi kết nối đến máy chủ.");
+        }
+    }
+}
+</script>
