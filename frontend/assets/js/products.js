@@ -126,7 +126,25 @@ function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false) 
     fetch(url)
         .then(response => response.json())
         .then(result => {
-            const products = Array.isArray(result) ? result : (result.data || []);
+            let products = Array.isArray(result) ? result : (result.data || []);
+
+            // ================= ĐOẠN CODE: LỌC TÌM KIẾM SẢN PHẨM =================
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchKeyword = (searchQuery || urlParams.get('search') || '').trim().toLowerCase();
+
+            if (searchKeyword) {
+                products = products.filter(product => {
+                    // Lấy tên sản phẩm (hỗ trợ cả chữ hoa/thường Name hoặc name)
+                    const productName = (product.Name || product.name || '').toLowerCase();
+                    return productName.includes(searchKeyword);
+                });
+            }
+
+            if (products.length === 0) {
+                productGrid.innerHTML = `<div class="col-span-full text-center py-8 text-outline">Không tìm thấy sản phẩm nào phù hợp.</div>`;
+                return;
+            }
+            
             if (products.length === 0) {
                 productGrid.innerHTML = `<div class="col-span-full text-center py-8 text-outline">Không tìm thấy sản phẩm nào phù hợp.</div>`;
                 return;
