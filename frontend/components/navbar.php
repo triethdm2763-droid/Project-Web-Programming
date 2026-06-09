@@ -27,7 +27,7 @@ function nav_class($pathFragment, $currentPath) {
 
     <div class="flex-1 max-w-xl mx-8 hidden md:block">
       <div class="relative group">
-        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">search</span>
+        <span id="search-btn" class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors cursor-pointer hover:text-primary">search</span>
         <input id="search-input" class="w-full pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary/20 transition-all text-[15px]" placeholder="Tìm kiếm sản phẩm đồ cũ..." type="text"/>
       </div>
     </div>
@@ -68,6 +68,36 @@ function nav_class($pathFragment, $currentPath) {
 </header>
 
 <script>
+// Hàm thực hiện hành động tìm kiếm toàn cục
+function executeGlobalSearch() {
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        const keyword = searchInput.value.trim();
+        if (keyword) {
+            // Chuyển hướng sang trang danh mục sản phẩm kèm tham số tìm kiếm (?search=...)
+            window.location.href = "/Project-Web-Programming/frontend/pages/products/category.php?search=" + encodeURIComponent(keyword);
+        }
+    }
+}
+
+// Chờ giao diện tải xong để bắt các sự kiện click / gõ phím
+document.addEventListener("DOMContentLoaded", function() {
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+
+    // 1. Xử lý khi người dùng nhấn phím Enter trong ô tìm kiếm
+    searchInput?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            executeGlobalSearch();
+        }
+    });
+
+    // 2. Xử lý khi người dùng click chuột trực tiếp vào kính lúp
+    searchBtn?.addEventListener('click', function() {
+        executeGlobalSearch();
+    });
+});
+    
 async function logout() {
     if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
         try {
