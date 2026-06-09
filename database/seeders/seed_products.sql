@@ -1,6 +1,6 @@
 USE c2c_used_marketplace;
 
-INSERT INTO products (name, description, image, category_id, seller_id, price, stock_quantity, status, location) VALUES
+INSERT INTO products (name, description, image, category_id, seller_id, price, stock_quantity, status) VALUES
 ('Laptop Điện tử & Công nghệ #1', 'Laptop thuộc danh mục Điện tử & Công nghệ. Thông số/đặc điểm: Core i5 Gen 10, RAM 8GB, SSD 256GB, Pin ~4h, Vỏ còn đẹp 90%. Tình trạng: dùng kỹ, còn bền. Phụ kiện: không kèm phụ kiện. Khu vực: Quận 7, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p001.jpg', 1, 5, 12200000, 1, 'pending'),
 ('PC mini Điện tử & Công nghệ #2', 'PC mini thuộc danh mục Điện tử & Công nghệ. Thông số/đặc điểm: Ryzen 5, RAM 16GB, SSD 512GB, Gọn nhẹ, Phù hợp học tập/VP. Tình trạng: mới 90%. Phụ kiện: đủ phụ kiện. Khu vực: Thủ Đức, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p002.jpg', 1, 5, 5000000, 1, 'sold'),
 ('Màn hình Điện tử & Công nghệ #3', 'Màn hình thuộc danh mục Điện tử & Công nghệ. Thông số/đặc điểm: 24 inch IPS, Full HD, Màu đẹp, Ít hở sáng, Chân đế chắc chắn. Tình trạng: ngoại hình 90%. Phụ kiện: có hộp. Khu vực: Hà Đông, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p003.jpg', 1, 4, 11700000, 1, 'available'),
