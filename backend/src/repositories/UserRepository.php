@@ -39,10 +39,39 @@ class UserRepository extends BaseRepository {
      * @return array|null The user data array, or null if not found
      */
     public function findById(int $id) {
-        $stmt = $this->db->prepare("SELECT `ID`, `Username`, `Email`, `Phone`, `Role`, `Status`, `created_at` FROM `users` WHERE `ID` = :id LIMIT 1");
+        $stmt = $this->db->prepare("SELECT `ID`, `Username`, `Email`, `Phone`, `Fullname`, `Address`, `Avatar`, `Role`, `Status`, `created_at` FROM `users` WHERE `ID` = :id LIMIT 1");
         $stmt->execute(['id' => $id]);
         $user = $stmt->fetch();
         return $user ?: null;
+    }
+
+    /**
+     * Update user profile information.
+     * 
+     * @param int $id User ID
+     * @param array $data Data containing phone, fullname, address, and optionally avatar
+     * @return bool
+     */
+    public function updateProfile(int $id, array $data): bool {
+        $sql = "UPDATE `users` SET 
+                `Phone` = :phone, 
+                `Fullname` = :fullname, 
+                `Address` = :address" . 
+                (isset($data['avatar']) ? ", `Avatar` = :avatar" : "") . 
+                " WHERE `ID` = :id";
+        
+        $params = [
+            'phone' => $data['phone'] ?? null,
+            'fullname' => $data['fullname'] ?? null,
+            'address' => $data['address'] ?? null,
+            'id' => $id
+        ];
+        if (isset($data['avatar'])) {
+            $params['avatar'] = $data['avatar'];
+        }
+        
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($params);
     }
 
     /**
