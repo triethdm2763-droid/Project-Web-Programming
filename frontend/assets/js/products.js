@@ -128,15 +128,38 @@ function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false) 
         .then(result => {
             let products = Array.isArray(result) ? result : (result.data || []);
 
-            // ================= ĐOẠN CODE: LỌC TÌM KIẾM SẢN PHẨM =================
+            // ===================================================================================
+            // ĐOẠN CODE LỌC TÌM KIẾM: CÓ DẤU, KHÔNG DẤU, VIẾT HOA, VIẾT THƯỜNG
+            // ===================================================================================
             const urlParams = new URLSearchParams(window.location.search);
             const searchKeyword = (searchQuery || urlParams.get('search') || '').trim().toLowerCase();
 
             if (searchKeyword) {
+                // 1. Định nghĩa hàm loại bỏ dấu tiếng Việt siêu chuẩn (Xử lý cả chữ đ/Đ)
+                const clearAccents = (str) => {
+                    return str
+                        .normalize("NFD")                  
+                        .replace(/[\u0300-\u036f]/g, "")   
+                        .replace(/đ/g, "d")                
+                        .replace(/Đ/g, "d");              
+                };
+
+                // 2. Chuyển từ khóa tìm kiếm của người dùng thành KHÔNG DẤU (Vì đã .toLowerCase() ở trên)
+                const cleanKeyword = clearAccents(searchKeyword);
+                console.log("[Search Debug] Từ khóa gốc:", searchKeyword, "-> Đã chuyển đổi:", cleanKeyword);
+
+                // 3. Tiến hành lọc mảng sản phẩm
                 products = products.filter(product => {
-                    // Lấy tên sản phẩm (hỗ trợ cả chữ hoa/thường Name hoặc name)
-                    const productName = (product.Name || product.name || '').toLowerCase();
-                    return productName.includes(searchKeyword);
+                    // Lấy Tên sản phẩm, đưa về chữ thường và xóa sạch dấu tiếng Việt
+                    const rawName = (product.Name || product.name || '').toLowerCase();
+                    const cleanProductName = clearAccents(rawName);
+                    
+                    // Lấy Mô tả sản phẩm, đưa về chữ thường và xóa sạch dấu tiếng Việt (để tìm kiếm thông minh hơn)
+                    const rawDesc = (product.Description || product.description || '').toLowerCase();
+                    const cleanProductDesc = clearAccents(rawDesc);
+
+                    // Kiểm tra xem từ khóa không dấu có nằm trong tên hoặc mô tả không dấu hay không
+                    return cleanProductName.includes(cleanKeyword) || cleanProductDesc.includes(cleanKeyword);
                 });
             }
 
