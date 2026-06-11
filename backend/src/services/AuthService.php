@@ -293,4 +293,42 @@ class AuthService {
             'message' => 'Đổi mật khẩu mới thành công!'
         ];
     }
+
+    /**
+     * Update current authenticated user profile.
+     * 
+     * @param int $userId
+     * @param array $data
+     * @return array
+     */
+    public function updateProfile(int $userId, array $data): array {
+        $rules = [
+            'fullname' => 'required|min:3|max:100',
+            'phone'    => 'phone'
+        ];
+
+        $errors = Validator::validate($data, $rules);
+        if (!empty($errors)) {
+            return [
+                'status' => 'error',
+                'code'   => 400,
+                'errors' => $errors
+            ];
+        }
+
+        $success = $this->userRepository->updateProfile($userId, $data);
+        if ($success) {
+            return [
+                'status'  => 'success',
+                'code'    => 200,
+                'message' => 'Cập nhật thông tin cá nhân thành công!'
+            ];
+        }
+
+        return [
+            'status'  => 'error',
+            'code'    => 500,
+            'message' => 'Lỗi máy chủ khi cập nhật thông tin cá nhân.'
+        ];
+    }
 }

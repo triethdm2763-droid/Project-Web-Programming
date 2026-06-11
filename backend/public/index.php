@@ -68,6 +68,7 @@ $routes = [
         '/api/auth/logout'          => ['App\Controllers\AuthController', 'logout'],
         '/api/auth/forgot-password' => ['App\Controllers\AuthController', 'requestReset'],
         '/api/auth/reset-password'  => ['App\Controllers\AuthController', 'performReset'],
+        '/api/auth/profile/update'  => ['App\Controllers\AuthController', 'updateProfile'],
         '/api/products'             => ['App\Controllers\ProductController', 'create'],
         '/api/products/upload'      => ['App\Controllers\ProductController', 'uploadImage'],
         '/api/orders'               => ['App\Controllers\OrderController', 'create'],

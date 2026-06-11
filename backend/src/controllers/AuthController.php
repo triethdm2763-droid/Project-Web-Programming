@@ -155,4 +155,64 @@ class AuthController extends BaseController {
             'errors' => $result['errors'] ?? null
         ], $result['code']);
     }
+
+    /**
+     * POST /api/auth/profile/update
+     * Update authenticated user profile details.
+     */
+    public function updateProfile() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (empty($_SESSION['user_id'])) {
+            return $this->json(['error' => 'Bạn chưa đăng nhập.'], 401);
+        }
+
+        $userId = (int)$_SESSION['user_id'];
+        
+        // Since we might upload files (multipart/form-data), $_POST will contain the fields
+        // and $_FILES will contain the avatar file.
+        $data = $_POST;
+        
+        // Handle avatar upload if exists
+        if (!empty($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['avatar'];
+            
+            // Validate extension
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            
+            if (in_array($ext, $allowedExtensions)) {
+                // Validate size (max 2MB for avatars)
+                if ($file['size'] <= 2 * 1024 * 1024) {
+                    $targetDir = __DIR__ . '/../../uploads/avatars/';
+                    if (!file_exists($targetDir)) {
+                        mkdir($targetDir, 0777, true);
+                    }
+                    
+                    $newFilename = 'avatar_' . $userId . '_' . time() . '.' . $ext;
+                    $targetFile = $targetDir . $newFilename;
+                    
+                    if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+                        // Relative path to be stored in DB and returned
+                        $data['avatar'] = '/Project-Web-Programming/backend/uploads/avatars/' . $newFilename;
+                    }
+                }
+            }
+        }
+
+        $result = $this->authService->updateProfile($userId, $data);
+
+        if ($result['status'] === 'success') {
+            return $this->json([
+                'message' => $result['message'],
+                'avatar'  => $data['avatar'] ?? null
+            ], 200);
+        }
+
+        return $this->json([
+            'error'  => $result['message'] ?? 'Cập nhật thất bại.',
+            'errors' => $result['errors'] ?? null
+        ], $result['code']);
+    }
 }
