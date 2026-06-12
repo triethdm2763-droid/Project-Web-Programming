@@ -175,28 +175,40 @@ class AuthController extends BaseController {
         $data = $_POST;
         
         // Handle avatar upload if exists
-        if (!empty($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
-            $file = $_FILES['avatar'];
+        if (!empty($_FILES['avatar'])) {
+            if ($_FILES['avatar']['error'] !== UPLOAD_ERR_OK && $_FILES['avatar']['error'] !== UPLOAD_ERR_NO_FILE) {
+                return $this->json(['error' => 'Lỗi khi tải ảnh lên. Mã lỗi PHP: ' . $_FILES['avatar']['error']], 400);
+            }
             
-            // Validate extension
-            $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-            
-            if (in_array($ext, $allowedExtensions)) {
+            if ($_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+                $file = $_FILES['avatar'];
+                
+                // Validate extension
+                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                
+                if (!in_array($ext, $allowedExtensions)) {
+                    return $this->json(['error' => 'Định dạng ảnh không hợp lệ. Chỉ chấp nhận: ' . implode(', ', $allowedExtensions)], 400);
+                }
+                
                 // Validate size (max 2MB for avatars)
-                if ($file['size'] <= 2 * 1024 * 1024) {
-                    $targetDir = __DIR__ . '/../../uploads/avatars/';
-                    if (!file_exists($targetDir)) {
-                        mkdir($targetDir, 0777, true);
-                    }
-                    
-                    $newFilename = 'avatar_' . $userId . '_' . time() . '.' . $ext;
-                    $targetFile = $targetDir . $newFilename;
-                    
-                    if (move_uploaded_file($file['tmp_name'], $targetFile)) {
-                        // Relative path to be stored in DB and returned
-                        $data['avatar'] = '/Project-Web-Programming/backend/uploads/avatars/' . $newFilename;
-                    }
+                if ($file['size'] > 2 * 1024 * 1024) {
+                    return $this->json(['error' => 'Dung lượng ảnh tối đa là 2MB.'], 400);
+                }
+                
+                $targetDir = __DIR__ . '/../../uploads/avatars/';
+                if (!file_exists($targetDir)) {
+                    mkdir($targetDir, 0777, true);
+                }
+                
+                $newFilename = 'avatar_' . $userId . '_' . time() . '.' . $ext;
+                $targetFile = $targetDir . $newFilename;
+                
+                if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+                    // Relative path to be stored in DB and returned
+                    $data['avatar'] = '/Project-Web-Programming/backend/uploads/avatars/' . $newFilename;
+                } else {
+                    return $this->json(['error' => 'Không thể lưu file ảnh vào thư mục backend/uploads/avatars.'], 500);
                 }
             }
         }

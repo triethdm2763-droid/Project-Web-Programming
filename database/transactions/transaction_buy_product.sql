@@ -40,7 +40,7 @@ UPDATE products
 SET stock_quantity = stock_quantity - 1
 WHERE id = 1
   AND stock_quantity > 0
-  AND status = 'available';
+  AND status IN ('active', 'available');
 
 -- Bước 5: Kiểm tra UPDATE có ảnh hưởng đúng 1 dòng không
 -- Nếu ROW_COUNT() = 0 tức là hàng đã hết → ROLLBACK

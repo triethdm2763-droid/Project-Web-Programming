@@ -34,7 +34,7 @@
         let btn = document.getElementById("loginBtn");
         
         if (!username || !password) { 
-            alert("Vui lòng điền đầy đủ thông tin."); 
+            showAlert("Thiếu thông tin", "Vui lòng điền đầy đủ thông tin.", "warning"); 
             return; 
         }
         
@@ -51,14 +51,16 @@
             
             let data = await res.json(); 
             if (res.ok) {
-                alert("Đăng nhập thành công!");
-                window.location.href = "../home/index.php";
+                showToast("Đăng nhập thành công!", "success");
+                setTimeout(() => {
+                    window.location.href = "../home/index.php";
+                }, 1200);
             } else {
-                alert(data.error || data.message || "Tên đăng nhập hoặc mật khẩu không chính xác.");
+                showAlert("Thất bại", data.error || data.message || "Tên đăng nhập hoặc mật khẩu không chính xác.", "error");
             }
         } catch (error) {
             console.error("Login Error:", error);
-            alert("Lỗi kết nối đến máy chủ.");
+            showAlert("Lỗi hệ thống", "Lỗi kết nối đến máy chủ.", "error");
         } finally {
             btn.disabled = false;
             btn.innerText = "ĐĂNG NHẬP";

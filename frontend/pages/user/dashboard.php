@@ -223,7 +223,16 @@ if (!isset($_SESSION['user_id'])) {
                                 <td class="py-4 px-4">${order.SellerName}</td>
                                 <td class="py-4 px-4 font-semibold">${priceFormatted}</td>
                                 <td class="py-4 px-4 text-outline-variant">${orderDate}</td>
-                                <td class="py-4 px-4"><span class="${statusColor} px-2.5 py-1 rounded-full text-xs font-medium">${translateStatus(order.Status)}</span></td>
+                                <td class="py-4 px-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="${statusColor} px-2.5 py-1 rounded-full text-xs font-medium">${translateStatus(order.Status)}</span>
+                                        ${order.Status.toLowerCase() === 'pending' ? `
+                                            <button onclick="cancelOrder(${order.ID})" class="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 text-xs font-semibold rounded-lg transition-colors border border-red-200/50" title="Hủy đơn hàng này">
+                                                Hủy đơn
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                </td>
                             </tr>
                         `;
                     });
@@ -236,6 +245,35 @@ if (!isset($_SESSION['user_id'])) {
             document.getElementById('purchase-history-rows').innerHTML = rowsHtml;
         } catch (error) {
             console.error("Error loading purchase history:", error);
+        }
+    }
+
+    // Cancel order
+    async function cancelOrder(orderId) {
+        if (!await showConfirm("Hủy đơn hàng", "Bạn có chắc chắn muốn hủy đơn hàng này không?")) {
+            return;
+        }
+
+        try {
+            let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/orders/cancel", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ order_id: orderId })
+            });
+
+            let data = await res.json();
+            if (res.ok) {
+                showToast(data.message || "Hủy đơn hàng thành công!", "success");
+                loadPurchaseHistory(); // Reload purchase tab
+                loadSalesHistory();    // Reload sales tab
+            } else {
+                showAlert("Thất bại", data.error || "Hủy đơn hàng thất bại.", "error");
+            }
+        } catch (error) {
+            console.error("Cancel Order Error:", error);
+            showAlert("Lỗi hệ thống", "Lỗi kết nối đến máy chủ.", "error");
         }
     }
 
@@ -324,17 +362,17 @@ if (!isset($_SESSION['user_id'])) {
 
             let result = await res.json();
             if (res.ok) {
-                alert(result.message || "Cập nhật thông tin thành công!");
+                showToast(result.message || "Cập nhật thông tin thành công!", "success");
                 loadUserProfile();
             } else {
-                alert(result.error || "Cập nhật thất bại. Vui lòng kiểm tra lại thông tin.");
+                showAlert("Thất bại", result.error || "Cập nhật thất bại. Vui lòng kiểm tra lại thông tin.", "error");
                 if (result.errors) {
                     console.error("Validation errors:", result.errors);
                 }
             }
         } catch (error) {
             console.error("Error updating profile:", error);
-            alert("Lỗi kết nối đến máy chủ.");
+            showAlert("Lỗi hệ thống", "Lỗi kết nối đến máy chủ.", "error");
         }
     });
 

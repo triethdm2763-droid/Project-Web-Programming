@@ -27,6 +27,9 @@ CREATE TABLE `users` (
   `Password` varchar(255) NOT NULL,
   `Email` varchar(100) NOT NULL,
   `Phone` varchar(10) DEFAULT NULL,
+  `Fullname` varchar(100) DEFAULT NULL,
+  `Address` text DEFAULT NULL,
+  `Avatar` text DEFAULT NULL,
   `Role` varchar(100) NOT NULL DEFAULT 'user',
   `Status` varchar(100) NOT NULL DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()

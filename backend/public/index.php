@@ -72,6 +72,7 @@ $routes = [
         '/api/products'             => ['App\Controllers\ProductController', 'create'],
         '/api/products/upload'      => ['App\Controllers\ProductController', 'uploadImage'],
         '/api/orders'               => ['App\Controllers\OrderController', 'create'],
+        '/api/orders/cancel'        => ['App\Controllers\OrderController', 'cancel'],
         '/api/notifications/read'   => ['App\Controllers\NotificationController', 'markRead']
     ],
     'GET' => [

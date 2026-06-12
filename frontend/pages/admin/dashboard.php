@@ -1,3 +1,13 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+// Chặn người dùng không phải admin truy cập trực tiếp qua URL
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: /Project-Web-Programming/frontend/pages/auth/login.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -45,7 +55,7 @@
                         <span class="text-[10px] uppercase font-bold text-red-500 tracking-wider">Super Admin</span>
                     </div>
                 </div>
-                <button class="text-slate-400 hover:text-red-500 transition-colors">
+                <button onclick="logout()" class="text-slate-400 hover:text-red-500 transition-colors" title="Đăng xuất">
                     <span class="material-symbols-outlined">logout</span>
                 </button>
             </div>
@@ -193,7 +203,28 @@
 
         function approveProduct(id, action) {
             // Kết nối trực tiếp đến API PUT của BE2: /api/admin/approve/{id}
-            alert(`Gửi yêu cầu xử lý lệnh: ${action.toUpperCase()} cho sản phẩm mang ID = ${id}`);
+            showAlert("Yêu cầu duyệt tin", `Gửi yêu cầu xử lý lệnh: ${action.toUpperCase()} cho sản phẩm mang ID = ${id}`, "info");
+        }
+
+        async function logout() {
+            if (await showConfirm("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", "warning")) {
+                try {
+                    let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/logout", {
+                        method: "POST"
+                    });
+                    if (res.ok) {
+                        showToast("Đăng xuất thành công!", "success");
+                        setTimeout(() => {
+                            window.location.href = "/Project-Web-Programming/frontend/pages/auth/login.php";
+                        }, 1200);
+                    } else {
+                        showAlert("Thất bại", "Đăng xuất thất bại.", "error");
+                    }
+                } catch (e) {
+                    console.error("Lỗi đăng xuất:", e);
+                    showAlert("Lỗi hệ thống", "Lỗi kết nối đến máy chủ.", "error");
+                }
+            }
         }
     </script>
 </body>

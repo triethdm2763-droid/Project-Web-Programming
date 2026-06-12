@@ -25,7 +25,7 @@ function renderCart() {
         cartList.innerHTML = `
             <div class="text-center py-10">
                 <p class="text-on-surface-variant mb-4">Giỏ hàng của bạn đang trống.</p>
-                <a href="../../index.php" class="inline-block bg-primary text-white px-6 py-2 rounded-lg font-medium hover:opacity-90">Đi mua sắm ngay</a>
+                <a href="/Project-Web-Programming/frontend/pages/home/index.php" class="inline-block bg-primary text-white px-6 py-2 rounded-lg font-medium hover:opacity-90">Đi mua sắm ngay</a>
             </div>`;
         summarySubtotal.innerText = '0đ';
         summaryTotal.innerText = '0đ';
@@ -70,16 +70,18 @@ function removeFromCart(index) {
     cart.splice(index, 1);
     localStorage.setItem("cart", JSON.stringify(cart));
     renderCart(); // Cập nhật lại UI lập tức
+    showToast("Đã xóa sản phẩm khỏi giỏ hàng!", "info");
 }
 
 // Hàm xóa toàn bộ giỏ hàng
-function clearCart() {
+async function clearCart() {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     if (cart.length === 0) return;
     
-    if (confirm("Bạn có chắc chắn muốn xóa toàn bộ giỏ hàng?")) {
+    if (await showConfirm("Xóa giỏ hàng", "Bạn có chắc chắn muốn xóa toàn bộ sản phẩm khỏi giỏ hàng không?")) {
         localStorage.removeItem("cart");
         renderCart();
+        showToast("Đã xóa toàn bộ giỏ hàng!", "success");
     }
 }
 
@@ -87,7 +89,7 @@ function clearCart() {
 async function checkout() {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     if (cart.length === 0) {
-        alert("Giỏ hàng đang trống. Vui lòng thêm sản phẩm trước khi đặt hàng!");
+        showAlert("Giỏ hàng trống", "Giỏ hàng của bạn đang trống. Vui lòng thêm sản phẩm trước khi đặt hàng!", "warning");
         return;
     }
 
@@ -100,12 +102,18 @@ async function checkout() {
     const paymentMethod = paymentMethodEl ? paymentMethodEl.value : 'COD';
 
     if (!fullname || !phone || !address) {
-        alert("Vui lòng điền đầy đủ các thông tin: Họ tên, Số điện thoại và Địa chỉ giao hàng!");
+        showAlert("Thiếu thông tin", "Vui lòng điền đầy đủ các thông tin nhận hàng: Họ tên, Số điện thoại và Địa chỉ giao hàng!", "warning");
+        return;
+    }
+
+    // Kiểm tra định dạng số điện thoại Việt Nam (10 chữ số bắt đầu bằng số 0)
+    if (!/^0[0-9]{9}$/.test(phone)) {
+        showAlert("Số điện thoại không hợp lệ", "Vui lòng nhập đúng 10 chữ số bắt đầu bằng số 0.", "warning");
         return;
     }
 
     if (address.length < 10) {
-        alert("Địa chỉ giao hàng phải có ít nhất 10 ký tự để giao hàng!");
+        showAlert("Địa chỉ không hợp lệ", "Địa chỉ giao hàng phải có ít nhất 10 ký tự để giao hàng!", "warning");
         return;
     }
 
@@ -137,7 +145,7 @@ async function checkout() {
             };
 
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/api/orders", {
+                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/orders", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -145,16 +153,37 @@ async function checkout() {
                     body: JSON.stringify(payload)
                 });
 
-                let data = await res.json(); 
+                let text = await res.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (jsonErr) {
+                    errors.push(`Sản phẩm "${itemName}": Lỗi phản hồi hệ thống (Mã lỗi: ${res.status}). Chi tiết phản hồi: ${text.substring(0, 150)}...`);
+                    continue;
+                }
 
                 if (res.ok && !data.error) {
                     successCount++;
                     successfulIds.push(itemId);
                 } else {
-                    errors.push(`Sản phẩm "${itemName}": ${data.error || 'Có lỗi xảy ra'}`);
+                    let errMsg = data.error || 'Có lỗi xảy ra';
+                    if (data.errors && typeof data.errors === 'object') {
+                        const detailMsgs = [];
+                        for (const key in data.errors) {
+                            if (Array.isArray(data.errors[key])) {
+                                detailMsgs.push(...data.errors[key]);
+                            } else {
+                                detailMsgs.push(data.errors[key]);
+                            }
+                        }
+                        if (detailMsgs.length > 0) {
+                            errMsg += ` (Chi tiết: ${detailMsgs.join(', ')})`;
+                        }
+                    }
+                    errors.push(`Sản phẩm "${itemName}": ${errMsg}`);
                 }
             } catch (err) {
-                errors.push(`Sản phẩm "${itemName}": Lỗi kết nối mạng.`);
+                errors.push(`Sản phẩm "${itemName}": Lỗi kết nối mạng (${err.message}).`);
             }
         }
 
@@ -164,19 +193,21 @@ async function checkout() {
             localStorage.setItem("cart", JSON.stringify(cartAfterCheckout));
             
             if (successCount === cart.length) {
-                alert("🎉 Đặt hàng thành công tất cả sản phẩm!");
-                window.location.href = "../../index.php";
+                showToast("🎉 Đơn hàng của bạn đã được đặt mua thành công!", "success");
+                setTimeout(() => {
+                    window.location.href = "/Project-Web-Programming/frontend/pages/home/index.php";
+                }, 1200);
             } else {
-                alert(`Đặt hàng thành công ${successCount}/${cart.length} sản phẩm.\n\nMột số sản phẩm gặp lỗi:\n` + errors.join('\n'));
+                await showAlert("Đặt hàng hoàn thành một phần", `Đã đặt mua thành công ${successCount}/${cart.length} sản phẩm.\n\nMột số sản phẩm gặp lỗi:\n` + errors.join('\n'), "warning");
                 renderCart();
             }
         } else {
-            alert("Đặt hàng thất bại!\n\nChi tiết lỗi:\n" + errors.join('\n'));
+            await showAlert("Đặt hàng thất bại", "Có lỗi xảy ra khi tạo đơn hàng:\n\n" + errors.join('\n'), "error");
         }
 
     } catch (error) {
         console.error("Checkout Error:", error);
-        alert("Lỗi kết nối mạng hoặc máy chủ không phản hồi.");
+        showAlert("Lỗi hệ thống", "Lỗi kết nối mạng hoặc máy chủ không phản hồi.", "error");
     } finally {
         // Trả lại trạng thái UI cho nút bấm
         btn.disabled = false;
