@@ -44,12 +44,12 @@
         let btn = document.getElementById("registerBtn");
         
         if (!username || !email || !phone || !password) { 
-            alert("Vui lòng điền đầy đủ tất cả các trường."); 
+            showAlert("Thiếu thông tin", "Vui lòng điền đầy đủ tất cả các trường.", "warning"); 
             return; 
         }
 
         if (password.length < 6) {
-            alert("Mật khẩu phải chứa ít nhất 6 ký tự.");
+            showAlert("Mật khẩu yếu", "Mật khẩu phải chứa ít nhất 6 ký tự.", "warning");
             return;
         }
 
@@ -69,24 +69,26 @@
             let data = await res.json(); 
             
             if (res.ok) {
-                alert("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.");
-                window.location.href = "login.php"; // Điều hướng sang trang Login
+                showToast("🎉 Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.", "success");
+                setTimeout(() => {
+                    window.location.href = "login.php"; // Điều hướng sang trang Login
+                }, 1200);
             } else {
                 // Hiển thị chi tiết lỗi validate nếu có
                 if (data.errors && typeof data.errors === 'object') {
-                    let errMsg = "";
+                    let errMsg = [];
                     for (const field in data.errors) {
-                        errMsg += `${data.errors[field].join(", ")}\n`;
+                        errMsg.push(...data.errors[field]);
                     }
-                    alert(errMsg || "Đăng ký thất bại.");
+                    showAlert("Đăng ký thất bại", errMsg.join(", ") || "Vui lòng kiểm tra lại thông tin.", "error");
                 } else {
-                    alert(data.message || "Đăng ký thất bại. Tên đăng nhập hoặc Email có thể đã tồn tại.");
+                    showAlert("Đăng ký thất bại", data.message || "Tên đăng nhập hoặc Email có thể đã tồn tại.", "error");
                 }
             }
 
         } catch (error) {
             console.error("Register Error:", error);
-            alert("Lỗi kết nối đến máy chủ.");
+            showAlert("Lỗi hệ thống", "Lỗi kết nối đến máy chủ.", "error");
         } finally {
             btn.disabled = false;
             btn.innerText = "ĐĂNG KÝ";

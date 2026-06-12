@@ -205,11 +205,11 @@
                     // Ẩn nút upload đi (vì hiện tại dự án hỗ trợ 1 hình ảnh chính trong database)
                     trigger.style.display = 'none';
                 } else {
-                    alert("Lỗi upload ảnh: " + (data.error || "Không rõ nguyên nhân"));
+                    showAlert("Lỗi upload ảnh", data.error || "Không rõ nguyên nhân", "error");
                 }
             } catch (err) {
                 console.error(err);
-                alert("Lỗi kết nối khi tải ảnh lên server.");
+                showAlert("Lỗi kết nối", "Lỗi kết nối khi tải ảnh lên server.", "error");
             } finally {
                 trigger.innerHTML = originalHTML;
                 trigger.style.pointerEvents = 'auto';
@@ -239,7 +239,7 @@
             const imageName = document.getElementById('uploaded-image-name').value;
 
             if (!imageName) {
-                alert("Vui lòng tải lên 1 hình ảnh mô tả cho sản phẩm!");
+                showAlert("Thiếu ảnh sản phẩm", "Vui lòng tải lên 1 hình ảnh mô tả cho sản phẩm!", "warning");
                 return;
             }
 
@@ -278,14 +278,16 @@
                 let data = await res.json();
 
                 if (res.ok && !data.error) {
-                    alert("🎉 Đăng tin thanh lý thành công!");
-                    window.location.href = "/Project-Web-Programming/frontend/pages/seller/my-store.php";
+                    showToast("🎉 Đăng tin thanh lý thành công!", "success");
+                    setTimeout(() => {
+                        window.location.href = "/Project-Web-Programming/frontend/pages/seller/my-store.php";
+                    }, 1200);
                 } else {
-                    alert("Lỗi: " + (data.error || "Không thể đăng tin"));
+                    showAlert("Đăng tin thất bại", data.error || "Không thể đăng tin", "error");
                 }
             } catch (err) {
                 console.error(err);
-                alert("Lỗi kết nối khi gửi dữ liệu lên máy chủ.");
+                showAlert("Lỗi hệ thống", "Lỗi kết nối khi gửi dữ liệu lên máy chủ.", "error");
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;

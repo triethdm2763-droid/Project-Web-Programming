@@ -99,21 +99,23 @@ document.addEventListener("DOMContentLoaded", function() {
 });
     
 async function logout() {
-    if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+    if (await showConfirm("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", "warning")) {
         try {
             // Đã fix lại đường dẫn gọi API đăng xuất chuẩn qua index.php
             let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/logout", {
                 method: "POST"
             });
             if (res.ok) {
-                alert("Đăng xuất thành công!");
-                window.location.href = "/Project-Web-Programming/frontend/pages/home/index.php";
+                showToast("Đăng xuất thành công!", "success");
+                setTimeout(() => {
+                    window.location.href = "/Project-Web-Programming/frontend/pages/home/index.php";
+                }, 1200);
             } else {
-                alert("Đăng xuất thất bại.");
+                showAlert("Thất bại", "Đăng xuất thất bại.", "error");
             }
         } catch (error) {
             console.error("Logout error:", error);
-            alert("Lỗi kết nối đến máy chủ.");
+            showAlert("Lỗi hệ thống", "Lỗi kết nối đến máy chủ.", "error");
         }
     }
 }

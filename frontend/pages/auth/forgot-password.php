@@ -66,7 +66,7 @@
         const btn = document.getElementById("requestBtn");
         
         if (!email) {
-            alert("Vui lòng nhập địa chỉ email.");
+            showAlert("Thiếu thông tin", "Vui lòng nhập địa chỉ email.", "warning");
             return;
         }
 
@@ -95,11 +95,11 @@
                 document.getElementById("step-request").classList.add("hidden");
                 document.getElementById("step-reset").classList.remove("hidden");
             } else {
-                alert(data.error || "Không thể yêu cầu đặt lại mật khẩu.");
+                showAlert("Thất bại", data.error || "Không thể yêu cầu đặt lại mật khẩu.", "error");
             }
         } catch (error) {
             console.error(error);
-            alert("Lỗi kết nối đến máy chủ.");
+            showAlert("Lỗi hệ thống", "Lỗi kết nối đến máy chủ.", "error");
         } finally {
             btn.disabled = false;
             btn.innerHTML = "GỬI YÊU CẦU";
@@ -113,12 +113,12 @@
         const btn = document.getElementById("resetBtn");
 
         if (!otp || !password) {
-            alert("Vui lòng điền đầy đủ mã OTP và mật khẩu mới.");
+            showAlert("Thiếu thông tin", "Vui lòng điền đầy đủ mã OTP và mật khẩu mới.", "warning");
             return;
         }
 
         if (password.length < 6) {
-            alert("Mật khẩu mới phải dài tối thiểu 6 ký tự.");
+            showAlert("Mật khẩu yếu", "Mật khẩu mới phải dài tối thiểu 6 ký tự.", "warning");
             return;
         }
 
@@ -136,14 +136,16 @@
             let data = await res.json();
 
             if (res.ok && !data.error) {
-                alert("🎉 Đặt lại mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới.");
-                window.location.href = "login.php";
+                showToast("🎉 Đặt lại mật khẩu thành công!", "success");
+                setTimeout(() => {
+                    window.location.href = "login.php";
+                }, 1200);
             } else {
-                alert(data.error || "Đặt lại mật khẩu thất bại.");
+                showAlert("Thất bại", data.error || "Đặt lại mật khẩu thất bại.", "error");
             }
         } catch (error) {
             console.error(error);
-            alert("Lỗi kết nối đến máy chủ.");
+            showAlert("Lỗi hệ thống", "Lỗi kết nối đến máy chủ.", "error");
         } finally {
             btn.disabled = false;
             btn.innerHTML = "ĐẶT LẠI MẬT KHẨU";

@@ -33,6 +33,25 @@ class OrderController extends BaseController {
     }
 
     /**
+     * POST /api/orders/cancel
+     * Cancel an order
+     */
+    public function cancel() {
+        $data = $this->getRequestBody();
+        $result = $this->orderService->cancelOrder($data);
+
+        if ($result['status'] === 'success') {
+            return $this->json([
+                'message' => 'Hủy đơn hàng thành công!'
+            ], 200);
+        }
+
+        return $this->json([
+            'error' => $result['message'] ?? 'Hủy đơn hàng thất bại.'
+        ], $result['code']);
+    }
+
+    /**
      * GET /api/orders/buyer
      * Get purchase history of the current user
      */

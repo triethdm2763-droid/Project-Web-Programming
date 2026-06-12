@@ -12,7 +12,7 @@
     <main class="max-w-container-max mx-auto px-gutter py-8 flex-grow w-full">
 
         <div class="text-sm text-outline mb-6">
-            <a href="../../index.php" class="hover:text-primary transition-colors">
+            <a href="/Project-Web-Programming/frontend/pages/home/index.php" class="hover:text-primary transition-colors">
                 Trang chủ
             </a>
             <span class="mx-2">/</span>
@@ -138,7 +138,7 @@
             const productId = params.get("id");
 
             if (!productId) {
-                alert("Không tìm thấy ID sản phẩm trên đường dẫn.");
+                await showAlert("Lỗi đường dẫn", "Không tìm thấy ID sản phẩm trên đường dẫn.", "error");
                 return;
             }
 
@@ -202,7 +202,7 @@
         } catch (error) {
 
             console.error(error);
-            alert("Lỗi kết nối máy chủ. Không thể tải thông tin chi tiết sản phẩm.");
+            await showAlert("Lỗi kết nối", "Lỗi kết nối máy chủ. Không thể tải thông tin chi tiết sản phẩm.", "error");
 
         }
 
@@ -211,7 +211,7 @@
     function addToCart() {
 
         if (!currentProduct) {
-            alert("Sản phẩm chưa được tải xong, vui lòng thử lại!");
+            showAlert("Chưa sẵn sàng", "Sản phẩm chưa được tải xong, vui lòng thử lại!", "warning");
             return;
         }
 
@@ -220,13 +220,13 @@
         const currentId = currentProduct.ID || currentProduct.id;
         const isExist = cart.find(item => (item.ID || item.id) === currentId);
         if(isExist) {
-            alert("Sản phẩm này đã có sẵn trong giỏ hàng của bạn!");
+            showAlert("Thông báo", "Sản phẩm này đã có sẵn trong giỏ hàng của bạn!", "info");
             return;
         }
 
         cart.push(currentProduct);
         localStorage.setItem("cart", JSON.stringify(cart));
-        alert("Đã thêm sản phẩm vào giỏ hàng thành công!");
+        showToast("Đã thêm sản phẩm vào giỏ hàng thành công!", "success");
 
     }
 

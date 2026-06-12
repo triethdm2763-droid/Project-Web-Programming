@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
 <link rel="stylesheet" href="../../assets/css/style.css">
+<script src="/Project-Web-Programming/frontend/assets/js/ui-helpers.js"></script>
 
 <script id="tailwind-config">
       tailwind.config = {

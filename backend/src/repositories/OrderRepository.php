@@ -25,7 +25,7 @@ class OrderRepository extends BaseRepository {
             $prodStmt->execute(['id' => $orderData['product_id']]);
             $product = $prodStmt->fetch();
 
-            if (!$product || $product['Status'] !== 'active' || $product['Stock_quantity'] < 1) {
+            if (!$product || !in_array($product['Status'], ['active', 'available']) || $product['Stock_quantity'] < 1) {
                 throw new Exception("Sản phẩm đã bán hoặc không còn khả dụng.");
             }
 
@@ -65,6 +65,39 @@ class OrderRepository extends BaseRepository {
             $this->db->commit();
             return $orderId;
 
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Cancel order and release product stock/status under transaction
+     * 
+     * @param int $orderId
+     * @param int $productId
+     * @throws Exception
+     */
+    public function cancelWithTransaction(int $orderId, int $productId) {
+        $this->db->beginTransaction();
+
+        try {
+            // 1. Update order status to 'cancelled'
+            $orderSql = "UPDATE `orders` SET `Status` = 'cancelled' WHERE `ID` = :order_id";
+            $orderStmt = $this->db->prepare($orderSql);
+            $orderStmt->execute(['order_id' => $orderId]);
+
+            // 2. Update payment status to 'cancelled' (if matching record exists)
+            $paySql = "UPDATE `payments` SET `Status` = 'cancelled' WHERE `Order_ID` = :order_id";
+            $payStmt = $this->db->prepare($paySql);
+            $payStmt->execute(['order_id' => $orderId]);
+
+            // 3. Revert product status to 'available' and stock quantity to 1
+            $prodSql = "UPDATE `products` SET `Status` = 'available', `Stock_quantity` = 1 WHERE `ID` = :product_id";
+            $prodStmt = $this->db->prepare($prodSql);
+            $prodStmt->execute(['product_id' => $productId]);
+
+            $this->db->commit();
         } catch (Exception $e) {
             $this->db->rollBack();
             throw $e;

@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- KHU VỰC 1: XỬ LÝ NÚT ĐĂNG TIN TRÊN NAVBAR ---
     const btnCreatePost = document.getElementById('btn-create-post');
     if (btnCreatePost) {
-        btnCreatePost.addEventListener('click', function(e) {
+        btnCreatePost.addEventListener('click', async function(e) {
             e.preventDefault();
             // Đọc trạng thái đăng nhập từ nút HTML do PHP truyền sang
             const isLoggedIn = this.getAttribute('data-logged-in') === 'true';
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.href = '/Project-Web-Programming/frontend/pages/seller/my-store.php';
             } else {
                 // Chưa đăng nhập -> Bật thông báo rồi ép qua trang đăng nhập
-                alert('Bạn cần phải đăng nhập tài khoản trước khi thực hiện chức năng đăng tin thanh lý đồ cũ!');
+                await showAlert('Yêu cầu đăng nhập', 'Bạn cần phải đăng nhập tài khoản trước khi thực hiện chức năng đăng tin thanh lý đồ cũ!', 'warning');
                 window.location.href = '/Project-Web-Programming/frontend/pages/auth/login.php';
             }
         });
@@ -355,9 +355,9 @@ function editProduct(id) {
     window.location.href = `/Project-Web-Programming/frontend/pages/seller/edit-product.php?id=${id}`;
 }
 
-function deleteProduct(id) {
-    if (confirm("Triết có chắc chắn muốn xóa vĩnh viễn tin thanh lý này không?")) {
-        alert("Đã gửi lệnh xóa sản phẩm mang ID: " + id);
+async function deleteProduct(id) {
+    if (await showConfirm("Xóa tin", "Triết có chắc chắn muốn xóa vĩnh viễn tin thanh lý này không?")) {
+        showToast("Đã gửi lệnh xóa sản phẩm mang ID: " + id, "info");
     }
 }
 

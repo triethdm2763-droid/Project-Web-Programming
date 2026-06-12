@@ -27,7 +27,7 @@
             <div class="lg:col-span-8 bg-white p-6 rounded-xl border border-outline-variant/20 shadow-sm min-h-[200px]">
                 <div id="cart-list" class="space-y-4"></div>
                 <div class="mt-6 pt-4 border-t border-outline-variant/20 flex justify-between items-center">
-                    <a href="../../index.php" class="text-primary hover:underline font-medium text-sm flex items-center gap-2">
+                    <a href="/Project-Web-Programming/frontend/pages/home/index.php" class="text-primary hover:underline font-medium text-sm flex items-center gap-2">
                         ← Tiếp tục mua sắm
                     </a>
                     <button onclick="clearCart()" class="text-on-surface-variant hover:text-red-500 text-sm transition-colors">
@@ -97,9 +97,28 @@
     </main>
     <?php include '../../components/footer.php'; ?>
     
-    <!-- Đoạn script nhỏ thầy viết thêm để kiểm tra xem giỏ hàng có rỗng không -->
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", async function() {
+            // Kiểm tra trạng thái đăng nhập và tự động điền thông tin người mua
+            try {
+                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/me");
+                if (!res.ok) {
+                    await showAlert("Yêu cầu đăng nhập", "Bạn vui lòng đăng nhập để xem giỏ hàng và thanh toán.", "warning");
+                    window.location.href = "../auth/login.php";
+                    return;
+                }
+                
+                let data = await res.json();
+                let user = data.user;
+                if (user) {
+                    document.getElementById('fullname').value = user.Fullname || '';
+                    document.getElementById('phone').value = user.Phone || '';
+                    document.getElementById('address').value = user.Address || '';
+                }
+            } catch (error) {
+                console.error("Lỗi kiểm tra trạng thái đăng nhập:", error);
+            }
+
             // Đọc giỏ hàng từ localStorage (nếu em dùng biến khác thì báo thầy)
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
             
