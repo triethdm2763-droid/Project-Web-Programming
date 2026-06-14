@@ -1,0 +1,428 @@
+-- ============================================================
+--  FILE: ebay_mini_final.sql
+--  Dự án: Chợ Đồ Cũ C2C (eBay Mini)
+--  Mô tả: File database hoàn chỉnh - cấu trúc + dữ liệu mẫu
+--  Cách dùng: Import vào phpMyAdmin hoặc chạy lệnh:
+--             mysql -u root -p < ebay_mini_final.sql
+--  Lưu ý: File tự động tạo database, không cần tạo trước
+--  Mật khẩu mẫu: 280606 (đã hash bcrypt)
+-- ============================================================
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+SET NAMES utf8mb4;
+
+-- ============================================================
+-- BƯỚC 1: TẠO DATABASE
+-- ============================================================
+
+CREATE DATABASE IF NOT EXISTS c2c_used_marketplace
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE c2c_used_marketplace;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ============================================================
+-- BƯỚC 2: XÓA BẢNG CŨ NẾU CÓ
+-- ============================================================
+
+DROP TABLE IF EXISTS `order_details`;
+DROP TABLE IF EXISTS `payments`;
+DROP TABLE IF EXISTS `notifications`;
+DROP TABLE IF EXISTS `orders`;
+DROP TABLE IF EXISTS `products`;
+DROP TABLE IF EXISTS `categories`;
+DROP TABLE IF EXISTS `users`;
+
+-- ============================================================
+-- BƯỚC 3: TẠO CẤU TRÚC BẢNG
+-- ============================================================
+
+-- Bảng 1: users
+CREATE TABLE `users` (
+  `ID`         int(11)      NOT NULL AUTO_INCREMENT,
+  `Username`   varchar(50)  NOT NULL,
+  `Password`   varchar(255) NOT NULL,
+  `Email`      varchar(100) NOT NULL,
+  `Phone`      varchar(10)  DEFAULT NULL,
+  `Fullname`   varchar(100) DEFAULT NULL,
+  `Address`    text         DEFAULT NULL,
+  `Avatar`     text         DEFAULT NULL,
+  `Role`       varchar(100) NOT NULL DEFAULT 'user',
+  `Status`     varchar(100) NOT NULL DEFAULT 'active',
+  `created_at` timestamp    NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `username` (`Username`),
+  UNIQUE KEY `email` (`Email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bảng 2: categories
+CREATE TABLE `categories` (
+  `ID`   int(11)      NOT NULL AUTO_INCREMENT,
+  `Name` varchar(100) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bảng 3: products
+CREATE TABLE `products` (
+  `ID`             int(11)       NOT NULL AUTO_INCREMENT,
+  `Name`           varchar(255)  NOT NULL,
+  `Description`    text          DEFAULT NULL,
+  `Image`          text          DEFAULT NULL,
+  `Category_ID`    int(11)       NOT NULL,
+  `Seller_ID`      int(11)       NOT NULL,
+  `Price`          decimal(15,2) NOT NULL,
+  `Stock_quantity` int(11)       NOT NULL DEFAULT 1,
+  `Status`         varchar(20)   NOT NULL DEFAULT 'pending',
+  `created_at`     timestamp     NOT NULL DEFAULT current_timestamp(),
+  `updated_at`     timestamp     NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`ID`),
+  KEY `fk_product_category` (`Category_ID`),
+  KEY `fk_product_seller`   (`Seller_ID`),
+  CONSTRAINT `fk_product_category` FOREIGN KEY (`Category_ID`) REFERENCES `categories` (`ID`),
+  CONSTRAINT `fk_product_seller`   FOREIGN KEY (`Seller_ID`)   REFERENCES `users`      (`ID`),
+  CONSTRAINT `chk_product_price`   CHECK (`Price` > 0),
+  CONSTRAINT `chk_product_stock`   CHECK (`Stock_quantity` IN (0, 1)),
+  CONSTRAINT `chk_product_status`  CHECK (`Status` IN ('pending','available','sold'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bảng 4: orders
+CREATE TABLE `orders` (
+  `ID`               int(11)       NOT NULL AUTO_INCREMENT,
+  `Buyer_ID`         int(11)       NOT NULL,
+  `Seller_ID`        int(11)       NOT NULL,
+  `Product_ID`       int(11)       NOT NULL,
+  `Total_price`      decimal(15,2) NOT NULL,
+  `Shipping_address` text          NOT NULL,
+  `Status`           varchar(20)   NOT NULL DEFAULT 'pending',
+  `created_at`       timestamp     NOT NULL DEFAULT current_timestamp(),
+  `updated_at`       timestamp     NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`ID`),
+  KEY `fk_order_buyer`   (`Buyer_ID`),
+  KEY `fk_order_seller`  (`Seller_ID`),
+  KEY `fk_order_product` (`Product_ID`),
+  CONSTRAINT `fk_order_buyer`    FOREIGN KEY (`Buyer_ID`)   REFERENCES `users`    (`ID`),
+  CONSTRAINT `fk_order_seller`   FOREIGN KEY (`Seller_ID`)  REFERENCES `users`    (`ID`),
+  CONSTRAINT `fk_order_product`  FOREIGN KEY (`Product_ID`) REFERENCES `products` (`ID`),
+  CONSTRAINT `chk_order_price`   CHECK (`Total_price` > 0),
+  CONSTRAINT `chk_order_status`  CHECK (`Status` IN ('pending','confirmed','completed','cancelled'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bảng 5: order_details
+CREATE TABLE `order_details` (
+  `id`         int(11)       NOT NULL AUTO_INCREMENT,
+  `order_id`   int(11)       NOT NULL,
+  `product_id` int(11)       NOT NULL,
+  `quantity`   int(11)       DEFAULT 1,
+  `price`      decimal(12,2) NOT NULL,
+  `updated_at` timestamp     DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_orderdetails_order`   FOREIGN KEY (`order_id`)   REFERENCES `orders`   (`ID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_orderdetails_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `chk_detail_quantity`     CHECK (`quantity` = 1),
+  CONSTRAINT `chk_detail_price`        CHECK (`price` > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bảng 6: payments
+CREATE TABLE `payments` (
+  `ID`             int(11)       NOT NULL AUTO_INCREMENT,
+  `Order_ID`       int(11)       NOT NULL,
+  `Amount`         decimal(15,2) NOT NULL,
+  `Payment_method` varchar(50)   NOT NULL DEFAULT 'COD',
+  `Status`         varchar(20)   NOT NULL DEFAULT 'pending',
+  `created_at`     timestamp     NOT NULL DEFAULT current_timestamp(),
+  `updated_at`     timestamp     NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`ID`),
+  KEY `fk_payment_order` (`Order_ID`),
+  CONSTRAINT `fk_payment_order`   FOREIGN KEY (`Order_ID`) REFERENCES `orders` (`ID`),
+  CONSTRAINT `chk_payment_amount` CHECK (`Amount` > 0),
+  CONSTRAINT `chk_payment_method` CHECK (`Payment_method` IN ('COD','bank_transfer','momo','vnpay')),
+  CONSTRAINT `chk_payment_status` CHECK (`Status` IN ('pending','paid','failed','refunded'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bảng 7: notifications
+CREATE TABLE `notifications` (
+  `ID`         int(11)      NOT NULL AUTO_INCREMENT,
+  `User_ID`    int(11)      NOT NULL,
+  `Title`      varchar(255) NOT NULL,
+  `Content`    text         NOT NULL,
+  `Is_read`    tinyint(1)   NOT NULL DEFAULT 0,
+  `created_at` timestamp    NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp    NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`ID`),
+  KEY `fk_notification_user` (`User_ID`),
+  CONSTRAINT `fk_notification_user`  FOREIGN KEY (`User_ID`) REFERENCES `users` (`ID`),
+  CONSTRAINT `chk_notification_read` CHECK (`Is_read` IN (0, 1))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ============================================================
+-- BƯỚC 4: SEED DỮ LIỆU MẪU
+-- ============================================================
+
+-- Seed users
+INSERT INTO `users` (`Username`, `Password`, `Email`, `Phone`, `Fullname`, `Address`, `Avatar`, `Role`, `Status`) VALUES
+('admin',        '$2y$10$tZ2cK.2L7F/D.r9u8y7GVuM8B3jYn1l3iY2rZq4O7Xz.m1N8b.eG2', 'admin@c2c.vn',        '0901000001', 'Quản trị viên',      'Hệ thống Chợ Cũ',                              'https://placehold.co/150x150', 'admin', 'active'),
+('nguyen_ban',   '$2y$10$tZ2cK.2L7F/D.r9u8y7GVuM8B3jYn1l3iY2rZq4O7Xz.m1N8b.eG2', 'nguyenban@gmail.com', '0901000002', 'Nguyễn Văn Bán',     '123 Đường Bán Hàng, Quận 1, TP.HCM',           'https://placehold.co/150x150', 'user',  'active'),
+('tran_shop',    '$2y$10$tZ2cK.2L7F/D.r9u8y7GVuM8B3jYn1l3iY2rZq4O7Xz.m1N8b.eG2', 'transhop@gmail.com',  '0901000003', 'Trần Thị Shop',      '456 Đường Cửa Hàng, Quận 3, TP.HCM',           'https://placehold.co/150x150', 'user',  'active'),
+('le_secondhand','$2y$10$tZ2cK.2L7F/D.r9u8y7GVuM8B3jYn1l3iY2rZq4O7Xz.m1N8b.eG2', 'leshop@gmail.com',    '0901000004', 'Lê Đồ Cũ',           '789 Đường Thanh Lý, Bình Thạnh, TP.HCM',       'https://placehold.co/150x150', 'user',  'active'),
+('pham_cu',      '$2y$10$tZ2cK.2L7F/D.r9u8y7GVuM8B3jYn1l3iY2rZq4O7Xz.m1N8b.eG2', 'phamcu@gmail.com',    '0901000005', 'Phạm Hữu Cũ',        '321 Đường Mua Bán, Quận 10, TP.HCM',           'https://placehold.co/150x150', 'user',  'active'),
+('buyer_minh',   '$2y$10$tZ2cK.2L7F/D.r9u8y7GVuM8B3jYn1l3iY2rZq4O7Xz.m1N8b.eG2', 'minhbuyer@gmail.com', '0901000006', 'Nguyễn Quang Minh',  '12 Đường Mua Sắm, Tân Bình, TP.HCM',           'https://placehold.co/150x150', 'user',  'active'),
+('buyer_lan',    '$2y$10$tZ2cK.2L7F/D.r9u8y7GVuM8B3jYn1l3iY2rZq4O7Xz.m1N8b.eG2', 'lanbuyer@gmail.com',  '0901000007', 'Lê Thị Ngọc Lan',    '88 Đường Hoa Hồng, Gò Vấp, TP.HCM',            'https://placehold.co/150x150', 'user',  'active'),
+('buyer_hung',   '$2y$10$tZ2cK.2L7F/D.r9u8y7GVuM8B3jYn1l3iY2rZq4O7Xz.m1N8b.eG2', 'hungbuyer@gmail.com', '0901000008', 'Phạm Quốc Hùng',     '19 Đường Lê Lợi, Quận 5, TP.HCM',              'https://placehold.co/150x150', 'user',  'active'),
+('buyer_thu',    '$2y$10$tZ2cK.2L7F/D.r9u8y7GVuM8B3jYn1l3iY2rZq4O7Xz.m1N8b.eG2', 'thubuyer@gmail.com',  '0901000009', 'Đỗ Hoài Thu',        '99 Đường Lý Thường Kiệt, Quận 11, TP.HCM',     'https://placehold.co/150x150', 'user',  'active'),
+('buyer_nam',    '$2y$10$tZ2cK.2L7F/D.r9u8y7GVuM8B3jYn1l3iY2rZq4O7Xz.m1N8b.eG2', 'nambuyer@gmail.com',  '0901000010', 'Trịnh Hữu Nam',      '55 Đường Cách Mạng Tháng 8, Quận 3, TP.HCM',   'https://placehold.co/150x150', 'user',  'banned');
+
+-- Seed categories
+INSERT INTO `categories` (`ID`, `Name`) VALUES
+(1,  'Điện tử & Công nghệ'),
+(2,  'Điện thoại & Máy tính bảng'),
+(3,  'Thời trang Nam'),
+(4,  'Thời trang Nữ'),
+(5,  'Sách & Tài liệu'),
+(6,  'Đồ gia dụng & Nội thất'),
+(7,  'Xe cộ & Phụ tùng'),
+(8,  'Thể thao & Dã ngoại'),
+(9,  'Mẹ & Bé'),
+(10, 'Nhạc cụ & Âm thanh');
+
+USE c2c_used_marketplace;
+
+INSERT INTO products (name, description, image, category_id, seller_id, price, stock_quantity, status) VALUES
+('Laptop Điện tử & Công nghệ #1', 'Laptop thuộc danh mục Điện tử & Công nghệ. Thông số/đặc điểm: Core i5 Gen 10, RAM 8GB, SSD 256GB, Pin ~4h, Vỏ còn đẹp 90%. Tình trạng: dùng kỹ, còn bền. Phụ kiện: không kèm phụ kiện. Khu vực: Quận 7, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p001.jpg', 1, 5, 12200000, 1, 'pending'),
+('PC mini Điện tử & Công nghệ #2', 'PC mini thuộc danh mục Điện tử & Công nghệ. Thông số/đặc điểm: Ryzen 5, RAM 16GB, SSD 512GB, Gọn nhẹ, Phù hợp học tập/VP. Tình trạng: mới 90%. Phụ kiện: đủ phụ kiện. Khu vực: Thủ Đức, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p002.jpg', 1, 5, 5000000, 0, 'sold'),
+('Màn hình Điện tử & Công nghệ #3', 'Màn hình thuộc danh mục Điện tử & Công nghệ. Thông số/đặc điểm: 24 inch IPS, Full HD, Màu đẹp, Ít hở sáng, Chân đế chắc chắn. Tình trạng: ngoại hình 90%. Phụ kiện: có hộp. Khu vực: Hà Đông, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p003.jpg', 1, 4, 11700000, 1, 'available'),
+('Bàn phím cơ Điện tử & Công nghệ #4', 'Bàn phím cơ thuộc danh mục Điện tử & Công nghệ. Thông số/đặc điểm: Switch Brown, LED trắng, Gõ êm, Keycap PBT, Có hộp. Tình trạng: còn đẹp 95%. Phụ kiện: không kèm phụ kiện. Khu vực: Cầu Giấy, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p004.jpg', 1, 2, 16500000, 0, 'sold'),
+('Chuột gaming Điện tử & Công nghệ #5', 'Chuột gaming thuộc danh mục Điện tử & Công nghệ. Thông số/đặc điểm: DPI cao, Click bền, Form ôm tay, Dây còn tốt, Chơi game mượt. Tình trạng: dùng kỹ, còn bền. Phụ kiện: có hóa đơn. Khu vực: Hải Châu, Đà Nẵng. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p005.jpg', 1, 3, 17000000, 0, 'sold'),
+('SSD Điện tử & Công nghệ #6', 'SSD thuộc danh mục Điện tử & Công nghệ. Thông số/đặc điểm: NVMe 512GB, Tốc độ cao, Health tốt, Test ổn định, Phù hợp nâng cấp. Tình trạng: còn đẹp 95%. Phụ kiện: không kèm phụ kiện. Khu vực: Ninh Kiều, Cần Thơ. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p006.jpg', 1, 2, 1900000, 1, 'available'),
+('Router Wifi Điện tử & Công nghệ #7', 'Router Wifi thuộc danh mục Điện tử & Công nghệ. Thông số/đặc điểm: WiFi 6, Băng tần kép, Phủ sóng tốt, Cài đặt dễ, Có adapter. Tình trạng: ngoại hình 90%. Phụ kiện: đủ phụ kiện. Khu vực: Biên Hòa, Đồng Nai. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p007.jpg', 1, 2, 15650000, 1, 'pending'),
+('Loa bluetooth Điện tử & Công nghệ #8', 'Loa bluetooth thuộc danh mục Điện tử & Công nghệ. Thông số/đặc điểm: Âm bass, Pin trâu, Kết nối ổn, Có mic, Nhỏ gọn. Tình trạng: ít sử dụng. Phụ kiện: có hóa đơn. Khu vực: Dĩ An, Bình Dương. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p008.jpg', 1, 3, 15400000, 1, 'pending'),
+('Webcam Điện tử & Công nghệ #9', 'Webcam thuộc danh mục Điện tử & Công nghệ. Thông số/đặc điểm: Full HD, Mic rõ, Tự động lấy nét, Cắm là chạy, Hợp học online. Tình trạng: ngoại hình 90%. Phụ kiện: tặng kèm ốp/bao. Khu vực: Nha Trang, Khánh Hòa. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p009.jpg', 1, 2, 13050000, 1, 'available'),
+('Máy in Điện tử & Công nghệ #10', 'Máy in thuộc danh mục Điện tử & Công nghệ. Thông số/đặc điểm: In WiFi, In 2 mặt, Còn mực, Ít dùng, Có dây nguồn. Tình trạng: dùng kỹ, còn bền. Phụ kiện: tặng kèm ốp/bao. Khu vực: Quận 1, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p010.jpg', 1, 2, 10700000, 1, 'available'),
+('iPhone Điện thoại & Máy tính bảng #1', 'iPhone thuộc danh mục Điện thoại & Máy tính bảng. Thông số/đặc điểm: Pin tốt, Ngoại hình đẹp, FaceID ổn, Không cấn móp, Kèm ốp. Tình trạng: ít sử dụng. Phụ kiện: đủ phụ kiện. Khu vực: Thủ Đức, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p011.jpg', 2, 4, 13400000, 1, 'available'),
+('Samsung Galaxy Điện thoại & Máy tính bảng #2', 'Samsung Galaxy thuộc danh mục Điện thoại & Máy tính bảng. Thông số/đặc điểm: Màn hình đẹp, RAM 8GB, Máy mượt, Loa to, Có sạc nhanh. Tình trạng: còn đẹp 95%. Phụ kiện: không kèm phụ kiện. Khu vực: Hà Đông, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p012.jpg', 2, 5, 3050000, 1, 'available'),
+('Xiaomi Điện thoại & Máy tính bảng #3', 'Xiaomi thuộc danh mục Điện thoại & Máy tính bảng. Thông số/đặc điểm: Cấu hình cao, Pin khỏe, Sạc nhanh, Chơi game tốt, Màn đẹp. Tình trạng: ít sử dụng. Phụ kiện: có hóa đơn. Khu vực: Cầu Giấy, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p013.jpg', 2, 2, 2000000, 1, 'available'),
+('iPad Điện thoại & Máy tính bảng #4', 'iPad thuộc danh mục Điện thoại & Máy tính bảng. Thông số/đặc điểm: Màn 10.2 inch, Pin tốt, Loa ổn, Học tập ok, Kèm bao da. Tình trạng: ngoại hình 90%. Phụ kiện: đủ phụ kiện. Khu vực: Hải Châu, Đà Nẵng. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p014.jpg', 2, 5, 1600000, 1, 'available'),
+('AirPods Điện thoại & Máy tính bảng #5', 'AirPods thuộc danh mục Điện thoại & Máy tính bảng. Thông số/đặc điểm: Nghe hay, Mic ổn, Pin tốt, Hộp sạc ok, Kết nối nhanh. Tình trạng: dùng kỹ, còn bền. Phụ kiện: có hóa đơn. Khu vực: Ninh Kiều, Cần Thơ. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p015.jpg', 2, 3, 2150000, 1, 'available'),
+('Sạc nhanh Điện thoại & Máy tính bảng #6', 'Sạc nhanh thuộc danh mục Điện thoại & Máy tính bảng. Thông số/đặc điểm: 65W, An toàn, Có PD, Dùng được nhiều máy, Nhỏ gọn. Tình trạng: ít sử dụng. Phụ kiện: có hộp. Khu vực: Biên Hòa, Đồng Nai. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p016.jpg', 2, 4, 8250000, 1, 'available'),
+('Cáp sạc Điện thoại & Máy tính bảng #7', 'Cáp sạc thuộc danh mục Điện thoại & Máy tính bảng. Thông số/đặc điểm: Type-C, Dày, Sạc ổn, Dài 1m, Chống đứt. Tình trạng: dùng kỹ, còn bền. Phụ kiện: có hộp. Khu vực: Dĩ An, Bình Dương. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p017.jpg', 2, 3, 3700000, 1, 'available'),
+('Kính cường lực Điện thoại & Máy tính bảng #8', 'Kính cường lực thuộc danh mục Điện thoại & Máy tính bảng. Thông số/đặc điểm: Chống xước, Trong, Dán dễ, Full màn, Kèm phụ kiện. Tình trạng: còn đẹp 95%. Phụ kiện: có hộp. Khu vực: Nha Trang, Khánh Hòa. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p018.jpg', 2, 5, 12200000, 1, 'available'),
+('Ốp lưng Điện thoại & Máy tính bảng #9', 'Ốp lưng thuộc danh mục Điện thoại & Máy tính bảng. Thông số/đặc điểm: Chống sốc, Ôm khít, Không ố, Cầm chắc, Mới 90%. Tình trạng: mới 90%. Phụ kiện: đủ phụ kiện. Khu vực: Quận 1, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p019.jpg', 2, 3, 11750000, 1, 'available'),
+('Dock sạc Điện thoại & Máy tính bảng #10', 'Dock sạc thuộc danh mục Điện thoại & Máy tính bảng. Thông số/đặc điểm: Để bàn, Gọn, Tiện, Sạc ổn định, Có cáp. Tình trạng: dùng kỹ, còn bền. Phụ kiện: có hóa đơn. Khu vực: Quận 7, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p020.jpg', 2, 5, 3250000, 1, 'available'),
+('Áo thun Thời trang Nam #1', 'Áo thun thuộc danh mục Thời trang Nam. Thông số/đặc điểm: Cotton 100%, Thoáng, Màu basic, Ít xù, Form đẹp. Tình trạng: ngoại hình 90%. Phụ kiện: có hộp. Khu vực: Hà Đông, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p021.jpg', 3, 4, 760000, 1, 'available'),
+('Áo khoác Thời trang Nam #2', 'Áo khoác thuộc danh mục Thời trang Nam. Thông số/đặc điểm: Dày dặn, Chống gió, Khóa kéo tốt, Ít sờn, Giữ ấm. Tình trạng: ngoại hình 90%. Phụ kiện: đủ phụ kiện. Khu vực: Cầu Giấy, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p022.jpg', 3, 2, 1080000, 1, 'available'),
+('Quần jean Thời trang Nam #3', 'Quần jean thuộc danh mục Thời trang Nam. Thông số/đặc điểm: Form slim, Co giãn, Không phai nhiều, Ít sờn, Dễ phối. Tình trạng: ngoại hình 90%. Phụ kiện: đủ phụ kiện. Khu vực: Hải Châu, Đà Nẵng. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p023.jpg', 3, 4, 1200000, 1, 'available'),
+('Giày sneaker Thời trang Nam #4', 'Giày sneaker thuộc danh mục Thời trang Nam. Thông số/đặc điểm: Size chuẩn, Đế êm, Ít mòn, Có hộp, Dễ vệ sinh. Tình trạng: mới 90%. Phụ kiện: tặng kèm ốp/bao. Khu vực: Ninh Kiều, Cần Thơ. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p024.jpg', 3, 5, 820000, 1, 'available'),
+('Đồng hồ Thời trang Nam #5', 'Đồng hồ thuộc danh mục Thời trang Nam. Thông số/đặc điểm: Pin mới, Chạy chuẩn, Dây còn tốt, Mặt ít xước, Lịch hoạt động. Tình trạng: còn đẹp 95%. Phụ kiện: có hộp. Khu vực: Biên Hòa, Đồng Nai. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p025.jpg', 3, 3, 600000, 1, 'available'),
+('Thắt lưng Thời trang Nam #6', 'Thắt lưng thuộc danh mục Thời trang Nam. Thông số/đặc điểm: Da thật, Khóa chắc, Ít tróc, Dễ chỉnh, Màu nâu. Tình trạng: mới 90%. Phụ kiện: tặng kèm ốp/bao. Khu vực: Dĩ An, Bình Dương. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p026.jpg', 3, 5, 1020000, 1, 'available'),
+('Áo sơ mi Thời trang Nam #7', 'Áo sơ mi thuộc danh mục Thời trang Nam. Thông số/đặc điểm: Ít nhăn, Vải mát, Form vừa, Cúc đầy đủ, Mới 90%. Tình trạng: mới 90%. Phụ kiện: có hóa đơn. Khu vực: Nha Trang, Khánh Hòa. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p027.jpg', 3, 3, 1540000, 1, 'available'),
+('Balo Thời trang Nam #8', 'Balo thuộc danh mục Thời trang Nam. Thông số/đặc điểm: Chống nước, Nhiều ngăn, Khóa tốt, Lót dày, Đeo êm. Tình trạng: ngoại hình 90%. Phụ kiện: đủ phụ kiện. Khu vực: Quận 1, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p028.jpg', 3, 3, 860000, 0, 'sold'),
+('Mũ lưỡi trai Thời trang Nam #9', 'Mũ lưỡi trai thuộc danh mục Thời trang Nam. Thông số/đặc điểm: Màu basic, Dễ phối, Vải bền, Ít phai, Size free. Tình trạng: ngoại hình 90%. Phụ kiện: đủ phụ kiện. Khu vực: Quận 7, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p029.jpg', 3, 3, 480000, 1, 'available'),
+('Áo hoodie Thời trang Nam #10', 'Áo hoodie thuộc danh mục Thời trang Nam. Thông số/đặc điểm: Nỉ ấm, Form rộng, Ít xù, Mũ dày, Dễ mặc. Tình trạng: dùng kỹ, còn bền. Phụ kiện: không kèm phụ kiện. Khu vực: Thủ Đức, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p030.jpg', 3, 5, 280000, 1, 'available'),
+('Váy Thời trang Nữ #1', 'Váy thuộc danh mục Thời trang Nữ. Thông số/đặc điểm: Dễ phối, Vải nhẹ, Không rách, Ít nhăn, Màu xinh. Tình trạng: còn đẹp 95%. Phụ kiện: có hộp. Khu vực: Cầu Giấy, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p031.jpg', 4, 4, 160000, 1, 'available'),
+('Áo len Thời trang Nữ #2', 'Áo len thuộc danh mục Thời trang Nữ. Thông số/đặc điểm: Mềm, Giữ ấm, Không xù nhiều, Form đẹp, Màu pastel. Tình trạng: dùng kỹ, còn bền. Phụ kiện: tặng kèm ốp/bao. Khu vực: Hải Châu, Đà Nẵng. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p032.jpg', 4, 5, 1140000, 1, 'available'),
+('Túi xách Thời trang Nữ #3', 'Túi xách thuộc danh mục Thời trang Nữ. Thông số/đặc điểm: Đẹp, Khóa tốt, Lót sạch, Ít trầy, Dễ phối. Tình trạng: mới 90%. Phụ kiện: đủ phụ kiện. Khu vực: Ninh Kiều, Cần Thơ. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p033.jpg', 4, 2, 1920000, 1, 'available'),
+('Giày cao gót Thời trang Nữ #4', 'Giày cao gót thuộc danh mục Thời trang Nữ. Thông số/đặc điểm: Êm, Đế chắc, Ít mòn, Size chuẩn, Đi tiệc ok. Tình trạng: ngoại hình 90%. Phụ kiện: có hóa đơn. Khu vực: Biên Hòa, Đồng Nai. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p034.jpg', 4, 2, 1500000, 1, 'available'),
+('Áo khoác Thời trang Nữ #5', 'Áo khoác thuộc danh mục Thời trang Nữ. Thông số/đặc điểm: Form chuẩn, Giữ ấm, Ít sờn, Khóa tốt, Màu dễ mặc. Tình trạng: ngoại hình 90%. Phụ kiện: đủ phụ kiện. Khu vực: Dĩ An, Bình Dương. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p035.jpg', 4, 2, 1980000, 1, 'available'),
+('Quần culottes Thời trang Nữ #6', 'Quần culottes thuộc danh mục Thời trang Nữ. Thông số/đặc điểm: Thoải mái, Vải mát, Dễ phối, Ống rộng, Mới 90%. Tình trạng: ít sử dụng. Phụ kiện: có hóa đơn. Khu vực: Nha Trang, Khánh Hòa. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p036.jpg', 4, 3, 1220000, 1, 'available'),
+('Áo blouse Thời trang Nữ #7', 'Áo blouse thuộc danh mục Thời trang Nữ. Thông số/đặc điểm: Nhẹ, Nữ tính, Ít nhăn, Form đẹp, Dễ giặt. Tình trạng: còn đẹp 95%. Phụ kiện: đủ phụ kiện. Khu vực: Quận 1, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p037.jpg', 4, 4, 800000, 1, 'pending'),
+('Chân váy Thời trang Nữ #8', 'Chân váy thuộc danh mục Thời trang Nữ. Thông số/đặc điểm: Xếp ly, Dáng đẹp, Khóa ổn, Màu trung tính, Mới 90%. Tình trạng: mới 90%. Phụ kiện: đủ phụ kiện. Khu vực: Quận 7, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p038.jpg', 4, 4, 300000, 1, 'available'),
+('Khăn choàng Thời trang Nữ #9', 'Khăn choàng thuộc danh mục Thời trang Nữ. Thông số/đặc điểm: Ấm, Mềm, Không xù, Dễ phối, Màu đẹp. Tình trạng: dùng kỹ, còn bền. Phụ kiện: tặng kèm ốp/bao. Khu vực: Thủ Đức, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p039.jpg', 4, 3, 1760000, 0, 'sold'),
+('Phụ kiện Thời trang Nữ #10', 'Phụ kiện thuộc danh mục Thời trang Nữ. Thông số/đặc điểm: Nhỏ xinh, Dễ dùng, Không gỉ, Còn mới, Tặng kèm. Tình trạng: còn đẹp 95%. Phụ kiện: có hộp. Khu vực: Hà Đông, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p040.jpg', 4, 4, 1280000, 1, 'available'),
+('Sách kỹ năng Sách & Tài liệu #1', 'Sách kỹ năng thuộc danh mục Sách & Tài liệu. Thông số/đặc điểm: Bản đẹp, Không rách, Không ghi chú, Bìa cứng, Nội dung hay. Tình trạng: còn đẹp 95%. Phụ kiện: có hộp. Khu vực: Hải Châu, Đà Nẵng. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p041.jpg', 5, 5, 70000, 1, 'available'),
+('Sách lập trình Sách & Tài liệu #2', 'Sách lập trình thuộc danh mục Sách & Tài liệu. Thông số/đặc điểm: Có ví dụ, Bản mới, Không rách, Học tốt, In rõ. Tình trạng: ít sử dụng. Phụ kiện: tặng kèm ốp/bao. Khu vực: Ninh Kiều, Cần Thơ. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p042.jpg', 5, 2, 110000, 1, 'available'),
+('Truyện Sách & Tài liệu #3', 'Truyện thuộc danh mục Sách & Tài liệu. Thông số/đặc điểm: Bản đầy đủ, Giấy đẹp, Không rách, Bìa sạch, Đọc giải trí. Tình trạng: dùng kỹ, còn bền. Phụ kiện: không kèm phụ kiện. Khu vực: Biên Hòa, Đồng Nai. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p043.jpg', 5, 2, 260000, 1, 'available'),
+('Sách kinh tế Sách & Tài liệu #4', 'Sách kinh tế thuộc danh mục Sách & Tài liệu. Thông số/đặc điểm: Nội dung hay, Sạch, Không note, Bìa đẹp, In rõ. Tình trạng: ít sử dụng. Phụ kiện: tặng kèm ốp/bao. Khu vực: Dĩ An, Bình Dương. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p044.jpg', 5, 5, 80000, 1, 'available'),
+('Giáo trình Sách & Tài liệu #5', 'Giáo trình thuộc danh mục Sách & Tài liệu. Thông số/đặc điểm: Dùng học, Sạch, Không rách, Có mục lục, In rõ. Tình trạng: dùng kỹ, còn bền. Phụ kiện: có hộp. Khu vực: Nha Trang, Khánh Hòa. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p045.jpg', 5, 2, 340000, 0, 'sold'),
+('Flashcard Sách & Tài liệu #6', 'Flashcard thuộc danh mục Sách & Tài liệu. Thông số/đặc điểm: Ôn tập, Đầy đủ, Không thiếu, Còn mới, Hộp còn. Tình trạng: dùng kỹ, còn bền. Phụ kiện: có hóa đơn. Khu vực: Quận 1, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p046.jpg', 5, 2, 30000, 1, 'available'),
+('Sách tiếng Anh Sách & Tài liệu #7', 'Sách tiếng Anh thuộc danh mục Sách & Tài liệu. Thông số/đặc điểm: Có bài tập, Sạch, In rõ, Phù hợp ôn, Bìa đẹp. Tình trạng: còn đẹp 95%. Phụ kiện: có hộp. Khu vực: Quận 7, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p047.jpg', 5, 5, 190000, 1, 'available'),
+('Sách marketing Sách & Tài liệu #8', 'Sách marketing thuộc danh mục Sách & Tài liệu. Thông số/đặc điểm: Thực chiến, Sạch, Không note, Bìa đẹp, In rõ. Tình trạng: dùng kỹ, còn bền. Phụ kiện: không kèm phụ kiện. Khu vực: Thủ Đức, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p048.jpg', 5, 5, 320000, 1, 'pending'),
+('Sách tài chính Sách & Tài liệu #9', 'Sách tài chính thuộc danh mục Sách & Tài liệu. Thông số/đặc điểm: Cơ bản, Dễ hiểu, Sạch, Không rách, In rõ. Tình trạng: mới 90%. Phụ kiện: có hộp. Khu vực: Hà Đông, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p049.jpg', 5, 4, 40000, 0, 'sold'),
+('Sách văn học Sách & Tài liệu #10', 'Sách văn học thuộc danh mục Sách & Tài liệu. Thông số/đặc điểm: Bìa đẹp, Giấy tốt, Sạch, Không note, Đọc hay. Tình trạng: còn đẹp 95%. Phụ kiện: có hóa đơn. Khu vực: Cầu Giấy, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p050.jpg', 5, 3, 40000, 1, 'available'),
+('Nồi cơm Đồ gia dụng & Nội thất #1', 'Nồi cơm thuộc danh mục Đồ gia dụng & Nội thất. Thông số/đặc điểm: Hoạt động tốt, Lòng nồi còn tốt, Nút bấm ok, Dễ vệ sinh, Cắm điện chạy. Tình trạng: dùng kỹ, còn bền. Phụ kiện: không kèm phụ kiện. Khu vực: Ninh Kiều, Cần Thơ. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p051.jpg', 6, 5, 2170000, 1, 'available'),
+('Máy xay Đồ gia dụng & Nội thất #2', 'Máy xay thuộc danh mục Đồ gia dụng & Nội thất. Thông số/đặc điểm: Còn bền, Lưỡi tốt, Xay ổn, Cốc sạch, Đầy phụ kiện. Tình trạng: còn đẹp 95%. Phụ kiện: tặng kèm ốp/bao. Khu vực: Biên Hòa, Đồng Nai. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p052.jpg', 6, 3, 1020000, 0, 'sold'),
+('Bàn học Đồ gia dụng & Nội thất #3', 'Bàn học thuộc danh mục Đồ gia dụng & Nội thất. Thông số/đặc điểm: Gỗ chắc, Ít trầy, Kết cấu vững, Dễ lắp, Kích thước vừa. Tình trạng: ngoại hình 90%. Phụ kiện: không kèm phụ kiện. Khu vực: Dĩ An, Bình Dương. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p053.jpg', 6, 4, 570000, 1, 'pending'),
+('Ghế Đồ gia dụng & Nội thất #4', 'Ghế thuộc danh mục Đồ gia dụng & Nội thất. Thông số/đặc điểm: Êm, Không rách, Chân chắc, Ngồi lâu ổn, Dễ vệ sinh. Tình trạng: dùng kỹ, còn bền. Phụ kiện: đủ phụ kiện. Khu vực: Nha Trang, Khánh Hòa. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p054.jpg', 6, 5, 1070000, 1, 'available'),
+('Kệ sách Đồ gia dụng & Nội thất #5', 'Kệ sách thuộc danh mục Đồ gia dụng & Nội thất. Thông số/đặc điểm: Dễ lắp, Vững, Ít trầy, Nhiều tầng, Gọn. Tình trạng: ngoại hình 90%. Phụ kiện: có hóa đơn. Khu vực: Quận 1, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p055.jpg', 6, 3, 2620000, 1, 'available'),
+('Đèn bàn Đồ gia dụng & Nội thất #6', 'Đèn bàn thuộc danh mục Đồ gia dụng & Nội thất. Thông số/đặc điểm: Ánh sáng vàng, Tiết kiệm điện, Bóng còn tốt, Chống chói, Đọc sách ok. Tình trạng: dùng kỹ, còn bền. Phụ kiện: đủ phụ kiện. Khu vực: Quận 7, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p056.jpg', 6, 4, 1920000, 1, 'available'),
+('Bộ chăn ga Đồ gia dụng & Nội thất #7', 'Bộ chăn ga thuộc danh mục Đồ gia dụng & Nội thất. Thông số/đặc điểm: Sạch, Không rách, Giặt thơm, Màu đẹp, Size chuẩn. Tình trạng: ngoại hình 90%. Phụ kiện: đủ phụ kiện. Khu vực: Thủ Đức, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p057.jpg', 6, 4, 1620000, 1, 'available'),
+('Quạt Đồ gia dụng & Nội thất #8', 'Quạt thuộc danh mục Đồ gia dụng & Nội thất. Thông số/đặc điểm: Êm, Gió mạnh, Ít rung, Có nhiều mức, Dễ lau. Tình trạng: còn đẹp 95%. Phụ kiện: tặng kèm ốp/bao. Khu vực: Hà Đông, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p058.jpg', 6, 3, 2670000, 1, 'available'),
+('Bếp điện Đồ gia dụng & Nội thất #9', 'Bếp điện thuộc danh mục Đồ gia dụng & Nội thất. Thông số/đặc điểm: An toàn, Nấu nhanh, Mặt kính tốt, Nút ổn, Dây còn. Tình trạng: dùng kỹ, còn bền. Phụ kiện: có hóa đơn. Khu vực: Cầu Giấy, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p059.jpg', 6, 3, 920000, 1, 'available'),
+('Bộ ly Đồ gia dụng & Nội thất #10', 'Bộ ly thuộc danh mục Đồ gia dụng & Nội thất. Thông số/đặc điểm: Đẹp, Không sứt, Trong, Dùng tốt, Set đủ. Tình trạng: dùng kỹ, còn bền. Phụ kiện: không kèm phụ kiện. Khu vực: Hải Châu, Đà Nẵng. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p060.jpg', 6, 4, 1620000, 0, 'sold'),
+('Xe đạp Xe cộ & Phụ tùng #1', 'Xe đạp thuộc danh mục Xe cộ & Phụ tùng. Thông số/đặc điểm: Ít dùng, Bánh còn tốt, Phanh ổn, Sên êm, Khung chắc. Tình trạng: dùng kỹ, còn bền. Phụ kiện: tặng kèm ốp/bao. Khu vực: Biên Hòa, Đồng Nai. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p061.jpg', 7, 2, 500000, 1, 'available'),
+('Mũ bảo hiểm Xe cộ & Phụ tùng #2', 'Mũ bảo hiểm thuộc danh mục Xe cộ & Phụ tùng. Thông số/đặc điểm: Còn mới, Kính trong, Khóa chắc, Không bể, Size vừa. Tình trạng: mới 90%. Phụ kiện: có hộp. Khu vực: Dĩ An, Bình Dương. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p062.jpg', 7, 4, 4350000, 0, 'sold'),
+('Áo mưa Xe cộ & Phụ tùng #3', 'Áo mưa thuộc danh mục Xe cộ & Phụ tùng. Thông số/đặc điểm: Dày, Không rách, Còn mới, Chống thấm, Gấp gọn. Tình trạng: ít sử dụng. Phụ kiện: tặng kèm ốp/bao. Khu vực: Nha Trang, Khánh Hòa. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p063.jpg', 7, 2, 4200000, 1, 'available'),
+('Bơm xe Xe cộ & Phụ tùng #4', 'Bơm xe thuộc danh mục Xe cộ & Phụ tùng. Thông số/đặc điểm: Nhỏ gọn, Bơm nhanh, Còn tốt, Có đầu bơm, Dễ mang. Tình trạng: dùng kỹ, còn bền. Phụ kiện: có hóa đơn. Khu vực: Quận 1, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p064.jpg', 7, 2, 1250000, 1, 'available'),
+('Khoá xe Xe cộ & Phụ tùng #5', 'Khoá xe thuộc danh mục Xe cộ & Phụ tùng. Thông số/đặc điểm: Chắc, Khóa mượt, Chống cắt, Có chìa, Bền. Tình trạng: ngoại hình 90%. Phụ kiện: đủ phụ kiện. Khu vực: Quận 7, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p065.jpg', 7, 2, 5100000, 1, 'available'),
+('Găng tay Xe cộ & Phụ tùng #6', 'Găng tay thuộc danh mục Xe cộ & Phụ tùng. Thông số/đặc điểm: Đi phượt, Bền, Ôm tay, Chống trượt, Còn mới. Tình trạng: dùng kỹ, còn bền. Phụ kiện: có hộp. Khu vực: Thủ Đức, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p066.jpg', 7, 4, 4050000, 1, 'available'),
+('Đèn xe Xe cộ & Phụ tùng #7', 'Đèn xe thuộc danh mục Xe cộ & Phụ tùng. Thông số/đặc điểm: Sáng, Pin tốt, Nhiều chế độ, Dễ lắp, Chống nước. Tình trạng: ngoại hình 90%. Phụ kiện: đủ phụ kiện. Khu vực: Hà Đông, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p067.jpg', 7, 5, 5300000, 1, 'available'),
+('Giá đỡ điện thoại Xe cộ & Phụ tùng #8', 'Giá đỡ điện thoại thuộc danh mục Xe cộ & Phụ tùng. Thông số/đặc điểm: Dễ lắp, Chắc, Xoay được, Không rung, Hợp xe máy. Tình trạng: ngoại hình 90%. Phụ kiện: có hộp. Khu vực: Cầu Giấy, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p068.jpg', 7, 5, 4850000, 1, 'pending'),
+('Dầu nhớt Xe cộ & Phụ tùng #9', 'Dầu nhớt thuộc danh mục Xe cộ & Phụ tùng. Thông số/đặc điểm: Chính hãng, Chưa mở, Loại tốt, Bảo quản ok, Giá tốt. Tình trạng: còn đẹp 95%. Phụ kiện: đủ phụ kiện. Khu vực: Hải Châu, Đà Nẵng. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p069.jpg', 7, 4, 1450000, 1, 'available'),
+('Bộ dụng cụ Xe cộ & Phụ tùng #10', 'Bộ dụng cụ thuộc danh mục Xe cộ & Phụ tùng. Thông số/đặc điểm: Đầy đủ, Gọn, Chất lượng, Dễ mang, Bền. Tình trạng: mới 90%. Phụ kiện: không kèm phụ kiện. Khu vực: Ninh Kiều, Cần Thơ. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p070.jpg', 7, 3, 3250000, 1, 'available'),
+('Giày chạy Thể thao & Dã ngoại #1', 'Giày chạy thuộc danh mục Thể thao & Dã ngoại. Thông số/đặc điểm: Êm, Ít mòn, Thoáng, Size chuẩn, Chạy ổn. Tình trạng: ngoại hình 90%. Phụ kiện: có hộp. Khu vực: Dĩ An, Bình Dương. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p071.jpg', 8, 5, 1360000, 1, 'available'),
+('Vợt cầu lông Thể thao & Dã ngoại #2', 'Vợt cầu lông thuộc danh mục Thể thao & Dã ngoại. Thông số/đặc điểm: Nhẹ, Căng dây tốt, Cầm chắc, Đánh ổn, Không nứt. Tình trạng: dùng kỹ, còn bền. Phụ kiện: có hóa đơn. Khu vực: Nha Trang, Khánh Hòa. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p072.jpg', 8, 2, 660000, 1, 'available'),
+('Bóng đá Thể thao & Dã ngoại #3', 'Bóng đá thuộc danh mục Thể thao & Dã ngoại. Thông số/đặc điểm: Chuẩn, Da tốt, Bơm căng, Ít mòn, Đá ổn. Tình trạng: mới 90%. Phụ kiện: không kèm phụ kiện. Khu vực: Quận 1, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p073.jpg', 8, 4, 2110000, 1, 'pending'),
+('Thảm yoga Thể thao & Dã ngoại #4', 'Thảm yoga thuộc danh mục Thể thao & Dã ngoại. Thông số/đặc điểm: Chống trượt, Dày, Không mùi, Dễ vệ sinh, Tặng dây. Tình trạng: ít sử dụng. Phụ kiện: đủ phụ kiện. Khu vực: Quận 7, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p074.jpg', 8, 2, 360000, 1, 'available'),
+('Dumbbell Thể thao & Dã ngoại #5', 'Dumbbell thuộc danh mục Thể thao & Dã ngoại. Thông số/đặc điểm: Tạ, Bọc cao su, Cầm chắc, Ít tróc, Set đôi. Tình trạng: ngoại hình 90%. Phụ kiện: có hóa đơn. Khu vực: Thủ Đức, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p075.jpg', 8, 4, 310000, 1, 'pending'),
+('Balo du lịch Thể thao & Dã ngoại #6', 'Balo du lịch thuộc danh mục Thể thao & Dã ngoại. Thông số/đặc điểm: Nhiều ngăn, Chống nước, Dây chắc, Gọn, Đi chơi ok. Tình trạng: ít sử dụng. Phụ kiện: tặng kèm ốp/bao. Khu vực: Hà Đông, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p076.jpg', 8, 2, 2960000, 1, 'available'),
+('Lều Thể thao & Dã ngoại #7', 'Lều thuộc danh mục Thể thao & Dã ngoại. Thông số/đặc điểm: 2 người, Dễ dựng, Chống mưa nhẹ, Đầy phụ kiện, Gọn. Tình trạng: mới 90%. Phụ kiện: có hộp. Khu vực: Cầu Giấy, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p077.jpg', 8, 5, 160000, 1, 'available'),
+('Bình nước Thể thao & Dã ngoại #8', 'Bình nước thuộc danh mục Thể thao & Dã ngoại. Thông số/đặc điểm: Giữ nhiệt, Không rò, Nắp tốt, Dễ mang, Còn mới. Tình trạng: mới 90%. Phụ kiện: có hóa đơn. Khu vực: Hải Châu, Đà Nẵng. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p078.jpg', 8, 4, 2510000, 1, 'pending'),
+('Áo thể thao Thể thao & Dã ngoại #9', 'Áo thể thao thuộc danh mục Thể thao & Dã ngoại. Thông số/đặc điểm: Thoáng, Co giãn, Dễ giặt, Mới 90%, Mặc êm. Tình trạng: còn đẹp 95%. Phụ kiện: đủ phụ kiện. Khu vực: Ninh Kiều, Cần Thơ. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p079.jpg', 8, 2, 2610000, 1, 'available'),
+('Găng tay gym Thể thao & Dã ngoại #10', 'Găng tay gym thuộc danh mục Thể thao & Dã ngoại. Thông số/đặc điểm: Bền, Chống trượt, Ôm tay, Đệm tốt, Mới. Tình trạng: còn đẹp 95%. Phụ kiện: đủ phụ kiện. Khu vực: Biên Hòa, Đồng Nai. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p080.jpg', 8, 4, 1760000, 1, 'available'),
+('Xe đẩy Mẹ & Bé #1', 'Xe đẩy thuộc danh mục Mẹ & Bé. Thông số/đặc điểm: Gấp gọn, Bánh êm, Đai an toàn, Vải sạch, Dễ đẩy. Tình trạng: dùng kỹ, còn bền. Phụ kiện: đủ phụ kiện. Khu vực: Nha Trang, Khánh Hòa. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p081.jpg', 9, 5, 1690000, 1, 'pending'),
+('Ghế ăn Mẹ & Bé #2', 'Ghế ăn thuộc danh mục Mẹ & Bé. Thông số/đặc điểm: An toàn, Chắc, Dễ lau, Đai đủ, Còn mới. Tình trạng: mới 90%. Phụ kiện: có hộp. Khu vực: Quận 1, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p082.jpg', 9, 3, 2440000, 1, 'pending'),
+('Đồ chơi Mẹ & Bé #3', 'Đồ chơi thuộc danh mục Mẹ & Bé. Thông số/đặc điểm: Không độc hại, Đủ bộ, Sạch, Bền, Bé thích. Tình trạng: mới 90%. Phụ kiện: không kèm phụ kiện. Khu vực: Quận 7, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p083.jpg', 9, 3, 940000, 1, 'pending'),
+('Bình sữa Mẹ & Bé #4', 'Bình sữa thuộc danh mục Mẹ & Bé. Thông số/đặc điểm: BPA free, Còn mới, Không ố, Núm tốt, Dễ rửa. Tình trạng: mới 90%. Phụ kiện: không kèm phụ kiện. Khu vực: Thủ Đức, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p084.jpg', 9, 4, 840000, 1, 'available'),
+('Quần áo bé Mẹ & Bé #5', 'Quần áo bé thuộc danh mục Mẹ & Bé. Thông số/đặc điểm: Mềm, Không phai, Size chuẩn, Sạch, Ít dùng. Tình trạng: mới 90%. Phụ kiện: đủ phụ kiện. Khu vực: Hà Đông, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p085.jpg', 9, 3, 990000, 1, 'pending'),
+('Sách thiếu nhi Mẹ & Bé #6', 'Sách thiếu nhi thuộc danh mục Mẹ & Bé. Thông số/đặc điểm: Hình đẹp, Sạch, Không rách, Bìa cứng, Bé học. Tình trạng: mới 90%. Phụ kiện: tặng kèm ốp/bao. Khu vực: Cầu Giấy, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p086.jpg', 9, 5, 1840000, 1, 'available'),
+('Gối Mẹ & Bé #7', 'Gối thuộc danh mục Mẹ & Bé. Thông số/đặc điểm: Êm, Sạch, Không rách, Mới 90%, Ngủ ngon. Tình trạng: dùng kỹ, còn bền. Phụ kiện: không kèm phụ kiện. Khu vực: Hải Châu, Đà Nẵng. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p087.jpg', 9, 2, 390000, 0, 'sold'),
+('Tã Mẹ & Bé #8', 'Tã thuộc danh mục Mẹ & Bé. Thông số/đặc điểm: Size M, Còn nguyên, Bảo quản tốt, Chưa mở, Date xa. Tình trạng: dùng kỹ, còn bền. Phụ kiện: có hộp. Khu vực: Ninh Kiều, Cần Thơ. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p088.jpg', 9, 2, 1740000, 1, 'pending'),
+('Máy hâm sữa Mẹ & Bé #9', 'Máy hâm sữa thuộc danh mục Mẹ & Bé. Thông số/đặc điểm: Nhanh, Hoạt động tốt, Ít dùng, Dễ vệ sinh, Có dây. Tình trạng: dùng kỹ, còn bền. Phụ kiện: không kèm phụ kiện. Khu vực: Biên Hòa, Đồng Nai. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p089.jpg', 9, 2, 2590000, 1, 'pending'),
+('Đèn ngủ Mẹ & Bé #10', 'Đèn ngủ thuộc danh mục Mẹ & Bé. Thông số/đặc điểm: Dịu, An toàn, Bóng tốt, Dễ dùng, Còn mới. Tình trạng: còn đẹp 95%. Phụ kiện: đủ phụ kiện. Khu vực: Dĩ An, Bình Dương. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p090.jpg', 9, 5, 240000, 1, 'available'),
+('Guitar Nhạc cụ & Âm thanh #1', 'Guitar thuộc danh mục Nhạc cụ & Âm thanh. Thông số/đặc điểm: Dễ chơi, Dây còn tốt, Không cong cần, Âm ổn, Kèm bao. Tình trạng: dùng kỹ, còn bền. Phụ kiện: tặng kèm ốp/bao. Khu vực: Quận 1, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p091.jpg', 10, 5, 6600000, 1, 'pending'),
+('Ukulele Nhạc cụ & Âm thanh #2', 'Ukulele thuộc danh mục Nhạc cụ & Âm thanh. Thông số/đặc điểm: Nhỏ gọn, Âm sáng, Dây mới, Còn đẹp, Kèm pick. Tình trạng: ngoại hình 90%. Phụ kiện: tặng kèm ốp/bao. Khu vực: Quận 7, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p092.jpg', 10, 5, 11400000, 1, 'pending'),
+('Micro Nhạc cụ & Âm thanh #3', 'Micro thuộc danh mục Nhạc cụ & Âm thanh. Thông số/đặc điểm: Thu âm, Rõ, Ít nhiễu, Có chân, Dùng tốt. Tình trạng: ít sử dụng. Phụ kiện: có hộp. Khu vực: Thủ Đức, TP.HCM. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p093.jpg', 10, 5, 5200000, 0, 'sold'),
+('Tai nghe studio Nhạc cụ & Âm thanh #4', 'Tai nghe studio thuộc danh mục Nhạc cụ & Âm thanh. Thông số/đặc điểm: Monitor, Bass tốt, Đệm êm, Dây còn, Nghe chuẩn. Tình trạng: còn đẹp 95%. Phụ kiện: tặng kèm ốp/bao. Khu vực: Hà Đông, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p094.jpg', 10, 2, 3600000, 1, 'available'),
+('Amp Nhạc cụ & Âm thanh #5', 'Amp thuộc danh mục Nhạc cụ & Âm thanh. Thông số/đặc điểm: Ổn định, Âm sạch, Nút tốt, Không rè, Dùng ok. Tình trạng: ngoại hình 90%. Phụ kiện: đủ phụ kiện. Khu vực: Cầu Giấy, Hà Nội. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p095.jpg', 10, 2, 6100000, 1, 'available'),
+('Loa Nhạc cụ & Âm thanh #6', 'Loa thuộc danh mục Nhạc cụ & Âm thanh. Thông số/đặc điểm: Công suất tốt, Âm rõ, Ít trầy, Kết nối ổn, Dùng tốt. Tình trạng: ít sử dụng. Phụ kiện: tặng kèm ốp/bao. Khu vực: Hải Châu, Đà Nẵng. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p096.jpg', 10, 5, 6550000, 1, 'available'),
+('Sound card Nhạc cụ & Âm thanh #7', 'Sound card thuộc danh mục Nhạc cụ & Âm thanh. Thông số/đặc điểm: Hỗ trợ livestream, Cắm là chạy, Ít lỗi, Âm ổn, Đủ dây. Tình trạng: dùng kỹ, còn bền. Phụ kiện: không kèm phụ kiện. Khu vực: Ninh Kiều, Cần Thơ. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p097.jpg', 10, 4, 3400000, 1, 'available'),
+('Trống cajon Nhạc cụ & Âm thanh #8', 'Trống cajon thuộc danh mục Nhạc cụ & Âm thanh. Thông số/đặc điểm: Gỗ, Âm hay, Không nứt, Còn đẹp, Dễ chơi. Tình trạng: mới 90%. Phụ kiện: có hóa đơn. Khu vực: Biên Hòa, Đồng Nai. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p098.jpg', 10, 5, 850000, 1, 'available'),
+('Stand mic Nhạc cụ & Âm thanh #9', 'Stand mic thuộc danh mục Nhạc cụ & Âm thanh. Thông số/đặc điểm: Chắc, Điều chỉnh được, Không rơ, Gọn, Dùng ổn. Tình trạng: mới 90%. Phụ kiện: không kèm phụ kiện. Khu vực: Dĩ An, Bình Dương. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p099.jpg', 10, 3, 4350000, 1, 'pending'),
+('Dây đàn Nhạc cụ & Âm thanh #10', 'Dây đàn thuộc danh mục Nhạc cụ & Âm thanh. Thông số/đặc điểm: Mới, Chưa dùng, Chính hãng, Âm tốt, Set đủ. Tình trạng: ngoại hình 90%. Phụ kiện: không kèm phụ kiện. Khu vực: Nha Trang, Khánh Hòa. Liên hệ để xem hàng/kiểm tra trực tiếp.', 'p100.jpg', 10, 3, 5800000, 1, 'available');
+
+-- Seed orders
+INSERT INTO `orders` (`Buyer_ID`, `Seller_ID`, `Product_ID`, `Total_price`, `Shipping_address`, `Status`) VALUES
+(6, 5, 2,  5000000,  '123 Vo Van Ngan, Thu Duc, TP.HCM',        'completed'),
+(7, 2, 4,  16500000, '45 Nguyen Ai Quoc, Bien Hoa, Dong Nai',   'completed'),
+(8, 3, 5,  17000000, '78 Tran Hung Dao, Ninh Kieu, Can Tho',    'completed'),
+(9, 3, 28, 860000,   '12 Le Loi, Tan An, Long An',              'completed'),
+(10, 3, 39, 1760000, '56 Bach Dang, Hoi An, Quang Nam',         'completed'),
+(6, 2, 45, 340000,   '90 Nguyen Van Linh, Quan 7, TP.HCM',      'completed'),
+(7, 4, 49, 40000,    '33 Ba Cu, Vung Tau',                      'completed'),
+(8, 3, 52, 1020000,  '25 Tran Phu, Nha Trang, Khanh Hoa',       'completed'),
+(9, 4, 60, 1620000,  '88 Dong Khoi, Ben Tre',                   'completed'),
+(10, 4, 62, 4350000, '11 Cach Mang Thang 8, Tay Ninh',          'completed'),
+(6, 2, 87, 390000,   '15 Xuan Huong, Da Lat, Lam Dong',         'completed'),
+(7, 5, 93, 5200000,  '120 Giai Phong, Ha Noi',                  'completed');
+
+-- Seed order_details
+INSERT INTO `order_details` (`order_id`, `product_id`, `quantity`, `price`) VALUES
+(1,  2,  1, 5000000),
+(2,  4,  1, 16500000),
+(3,  5,  1, 17000000),
+(4,  28, 1, 860000),
+(5,  39, 1, 1760000),
+(6,  45, 1, 340000),
+(7,  49, 1, 40000),
+(8,  52, 1, 1020000),
+(9,  60, 1, 1620000),
+(10, 62, 1, 4350000),
+(11, 87, 1, 390000),
+(12, 93, 1, 5200000);
+
+-- Seed payments
+INSERT INTO `payments` (`Order_ID`, `Amount`, `Payment_method`, `Status`) VALUES
+(1,  5000000,  'COD',           'paid'),
+(2,  16500000, 'bank_transfer', 'paid'),
+(3,  17000000, 'momo',          'paid'),
+(4,  860000,   'COD',           'paid'),
+(5,  1760000,  'vnpay',         'paid'),
+(6,  340000,   'COD',           'paid'),
+(7,  40000,    'momo',          'paid'),
+(8,  1020000,  'bank_transfer', 'paid'),
+(9,  1620000,  'COD',           'paid'),
+(10, 4350000,  'vnpay',         'paid'),
+(11, 390000,   'COD',           'paid'),
+(12, 5200000,  'bank_transfer', 'paid');
+
+-- Seed notifications
+INSERT INTO `notifications` (`User_ID`, `Title`, `Content`, `Is_read`) VALUES
+(6,  'Dat hang thanh cong',    'Don hang #1 da duoc tao thanh cong',  1),
+(7,  'Dat hang thanh cong',    'Don hang #2 da duoc tao thanh cong',  1),
+(8,  'Dat hang thanh cong',    'Don hang #3 da duoc tao thanh cong',  1),
+(9,  'Dat hang thanh cong',    'Don hang #4 da duoc tao thanh cong',  0),
+(10, 'Dat hang thanh cong',    'Don hang #5 da duoc tao thanh cong',  0),
+(6,  'Thanh toan thanh cong',  'Don hang #6 da thanh toan thanh cong',1),
+(7,  'Thanh toan thanh cong',  'Don hang #7 da thanh toan thanh cong',1),
+(8,  'Thanh toan thanh cong',  'Don hang #8 da thanh toan thanh cong',0),
+(9,  'Thanh toan thanh cong',  'Don hang #9 da thanh toan thanh cong',0),
+(10, 'Thanh toan thanh cong',  'Don hang #10 da thanh toan thanh cong',0),
+(6,  'Don hang hoan tat',      'Don hang #11 da giao thanh cong',     1),
+(7,  'Don hang hoan tat',      'Don hang #12 da giao thanh cong',     1);
+
+-- ============================================================
+-- BƯỚC 5: TẠO INDEX TỐI ƯU HIỆU NĂNG
+-- ============================================================
+
+CREATE INDEX idx_products_status      ON products(Status);
+CREATE INDEX idx_products_category_id ON products(Category_ID);
+CREATE INDEX idx_products_seller_id   ON products(Seller_ID);
+CREATE INDEX idx_products_price       ON products(Price);
+
+-- ============================================================
+-- BƯỚC 6: KIỂM TRA KẾT QUẢ SAU KHI IMPORT
+-- ============================================================
+
+SELECT 'users'         AS bang, COUNT(*) AS so_hang FROM users;
+SELECT 'categories'    AS bang, COUNT(*) AS so_hang FROM categories;
+SELECT 'products'      AS bang, COUNT(*) AS so_hang FROM products;
+SELECT 'orders'        AS bang, COUNT(*) AS so_hang FROM orders;
+SELECT 'order_details' AS bang, COUNT(*) AS so_hang FROM order_details;
+SELECT 'payments'      AS bang, COUNT(*) AS so_hang FROM payments;
+SELECT 'notifications' AS bang, COUNT(*) AS so_hang FROM notifications;
+
+-- ============================================================
+-- BƯỚC 7: KỊCH BẢN TRANSACTION CHỐNG RACE CONDITION
+-- Chạy riêng phần này để nghiệm thu tính năng chống mua trùng
+-- ============================================================
+
+-- Kịch bản 1: Mua thành công (hàng còn available)
+-- buyer_minh (ID=6) mua SSD (ID=6, status=available)
+START TRANSACTION;
+
+INSERT INTO orders (Buyer_ID, Seller_ID, Product_ID, Total_price, Shipping_address, Status)
+SELECT 6, Seller_ID, ID, Price, 'Quan 1, TP.HCM', 'pending'
+FROM products
+WHERE ID = 6
+  AND Stock_quantity > 0
+  AND Status = 'available';
+
+UPDATE products
+SET Stock_quantity = Stock_quantity - 1
+WHERE ID = 6
+  AND Stock_quantity > 0
+  AND Status = 'available';
+
+UPDATE products
+SET Status = 'sold'
+WHERE ID = 6
+  AND Stock_quantity = 0;
+
+COMMIT;
+
+-- Kiểm tra: SSD ID=6 phải là sold, stock=0
+SELECT ID, Name, Stock_quantity, Status FROM products WHERE ID = 6;
+
+-- Kịch bản 2: Mua thất bại - Race Condition
+-- buyer_lan (ID=7) cố mua SSD ID=6 đã sold
+START TRANSACTION;
+
+INSERT INTO orders (Buyer_ID, Seller_ID, Product_ID, Total_price, Shipping_address, Status)
+SELECT 7, Seller_ID, ID, Price, 'Quan 3, TP.HCM', 'pending'
+FROM products
+WHERE ID = 6
+  AND Stock_quantity > 0
+  AND Status = 'available';
+
+-- Không có hàng → INSERT 0 dòng → ROLLBACK
+ROLLBACK;
+
+-- Kiểm tra: buyer_lan không có đơn hàng mới
+SELECT o.ID, o.Buyer_ID, u.Username, o.Product_ID, o.Status
+FROM orders o
+JOIN users u ON o.Buyer_ID = u.ID
+WHERE o.Buyer_ID = 7
+ORDER BY o.ID DESC LIMIT 3;
