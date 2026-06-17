@@ -69,6 +69,7 @@ function removeFromCart(index) {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     cart.splice(index, 1);
     localStorage.setItem("cart", JSON.stringify(cart));
+    if (typeof updateNavCartBadge === 'function') updateNavCartBadge();
     renderCart(); // Cập nhật lại UI lập tức
     showToast("Đã xóa sản phẩm khỏi giỏ hàng!", "info");
 }
@@ -80,6 +81,7 @@ async function clearCart() {
     
     if (await showConfirm("Xóa giỏ hàng", "Bạn có chắc chắn muốn xóa toàn bộ sản phẩm khỏi giỏ hàng không?")) {
         localStorage.removeItem("cart");
+        if (typeof updateNavCartBadge === 'function') updateNavCartBadge();
         renderCart();
         showToast("Đã xóa toàn bộ giỏ hàng!", "success");
     }
@@ -191,6 +193,7 @@ async function checkout() {
             // Lọc bỏ những sản phẩm đã đặt mua thành công khỏi giỏ hàng
             let cartAfterCheckout = cart.filter(item => !successfulIds.includes(item.ID || item.id));
             localStorage.setItem("cart", JSON.stringify(cartAfterCheckout));
+            if (typeof updateNavCartBadge === 'function') updateNavCartBadge();
             
             if (successCount === cart.length) {
                 showToast("🎉 Đơn hàng của bạn đã được đặt mua thành công!", "success");

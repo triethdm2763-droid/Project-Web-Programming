@@ -13,14 +13,31 @@
     <main class="max-w-container-max mx-auto px-gutter py-8 flex-grow w-full space-y-6">
         <div class="max-w-5xl mx-auto px-4 py-0 space-y-6">
 
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$storeName = "Cửa Hàng " . ($_SESSION['fullname'] ?? $_SESSION['username'] ?? 'Thành Viên');
+$initials = '';
+if (!empty($_SESSION['fullname'])) {
+    $words = explode(' ', $_SESSION['fullname']);
+    $initials .= mb_substr($words[0], 0, 1, 'UTF-8');
+    if (count($words) > 1) {
+        $initials .= mb_substr($words[count($words) - 1], 0, 1, 'UTF-8');
+    }
+} else {
+    $initials = mb_substr($_SESSION['username'] ?? 'TV', 0, 2, 'UTF-8');
+}
+$initials = mb_strtoupper($initials, 'UTF-8');
+?>
             <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div class="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
                     <div class="w-16 h-16 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-md shadow-blue-100 shrink-0">
-                        QA
+                        <?php echo htmlspecialchars($initials); ?>
                     </div>
                     <div>
                         <div class="flex items-center gap-2 justify-center sm:justify-start">
-                            <h2 class="text-xl font-bold text-slate-900">Cửa Hàng Quốc Anh</h2>
+                            <h2 class="text-xl font-bold text-slate-900"><?php echo htmlspecialchars($storeName); ?></h2>
                             <span class="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Seller Pro</span>
                         </div>
                         <p class="text-xs text-slate-400 mt-1 flex items-center justify-center sm:justify-start gap-1">
@@ -38,7 +55,7 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-500/30 transition-all">
                     <div class="space-y-1">
                         <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block">Doanh Thu Tạm Tính</span>
-                        <h4 class="text-2xl font-bold text-slate-900 tracking-tight">24.500.000đ</h4>
+                        <h4 id="seller-revenue" class="text-2xl font-bold text-slate-900 tracking-tight">0đ</h4>
                     </div>
                     <div class="p-3 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                         <span class="material-symbols-outlined text-2xl">payments</span>
@@ -48,7 +65,7 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-500/30 transition-all">
                     <div class="space-y-1">
                         <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block">Đơn Hàng Đã Giao</span>
-                        <h4 class="text-2xl font-bold text-slate-900 tracking-tight">156 đơn</h4>
+                        <h4 id="seller-delivered-orders" class="text-2xl font-bold text-slate-900 tracking-tight">0 đơn</h4>
                     </div>
                     <div class="p-3 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center">
                         <span class="material-symbols-outlined text-2xl">local_shipping</span>
@@ -59,13 +76,13 @@
             <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                 <div class="flex border-b border-slate-100 bg-slate-50/50 px-4">
                     <button onclick="switchSellerTab('available')" id="tab-btn-available" class="seller-tab-btn py-4 px-5 font-bold text-sm border-b-2 border-blue-600 text-blue-600 transition-all">
-                        Đang bán (12)
+                        Đang bán (<span id="count-available">0</span>)
                     </button>
                     <button onclick="switchSellerTab('pending')" id="tab-btn-pending" class="seller-tab-btn py-4 px-5 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-800 transition-all">
-                        Chờ duyệt (2)
+                        Chờ duyệt (<span id="count-pending">0</span>)
                     </button>
                     <button onclick="switchSellerTab('sold')" id="tab-btn-sold" class="seller-tab-btn py-4 px-5 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-800 transition-all">
-                        Đã bán (45)
+                        Đã bán (<span id="count-sold">0</span>)
                     </button>
                 </div>
 

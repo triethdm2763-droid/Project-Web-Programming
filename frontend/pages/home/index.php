@@ -127,6 +127,21 @@ if (session_status() === PHP_SESSION_NONE) {
             initBannerSlider();
         });
 
+        function getCategoryIcon(catName) {
+            const name = catName.toLowerCase();
+            if (name.includes('điện tử') || name.includes('công nghệ')) return 'devices';
+            if (name.includes('điện thoại') || name.includes('máy tính bảng')) return 'smartphone';
+            if (name.includes('nam')) return 'male';
+            if (name.includes('nữ')) return 'female';
+            if (name.includes('sách') || name.includes('tài liệu')) return 'menu_book';
+            if (name.includes('gia dụng') || name.includes('nội thất')) return 'home';
+            if (name.includes('xe cộ') || name.includes('phụ tùng')) return 'directions_car';
+            if (name.includes('thể thao') || name.includes('dã ngoại')) return 'sports_soccer';
+            if (name.includes('mẹ') || name.includes('bé')) return 'child_care';
+            if (name.includes('nhạc cụ') || name.includes('âm thanh')) return 'music_note';
+            return 'category';
+        }
+
         async function loadCategories() {
             let container = document.getElementById("categories-container");
             container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Đang tải danh mục...</div>`;
@@ -140,7 +155,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     let limitCats = categories.slice(0, 6);
                     container.innerHTML = limitCats.map(cat => `
                     <a href="/Project-Web-Programming/frontend/pages/products/category.php?category=${cat.ID}" data-id="${cat.ID}" data-navigate="1" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
-                        <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">category</span>
+                        <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">${getCategoryIcon(cat.Name)}</span>
                         <span class="text-label-sm font-semibold text-on-surface">${escapeHtml(cat.Name)}</span>
                     </a>
                 `).join('');

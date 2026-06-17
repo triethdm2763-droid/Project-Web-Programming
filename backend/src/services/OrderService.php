@@ -67,6 +67,15 @@ class OrderService {
             ];
         }
 
+        // Validate availability and stock count
+        if (!in_array(strtolower($product['Status'] ?? ''), ['active', 'available']) || intval($product['Stock_quantity'] ?? 0) < 1) {
+            return [
+                'status'  => 'error',
+                'code'    => 400,
+                'message' => 'Sản phẩm này đã được bán hoặc không còn khả dụng để đặt mua.'
+            ];
+        }
+
         // Prevent buying own product
         if (intval($product['Seller_ID']) === $buyerId) {
             return [
@@ -278,6 +287,84 @@ class OrderService {
             'status' => 'success',
             'code'   => 200,
             'data'   => $orders
+        ];
+    }
+
+    /**
+     * Update order status by seller
+     * 
+     * @param array $data
+     * @return array
+     */
+    public function updateStatus(array $data): array {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (empty($_SESSION['user_id'])) {
+            return [
+                'status'  => 'error',
+                'code'    => 401,
+                'message' => 'Bạn phải đăng nhập để cập nhật đơn hàng.'
+            ];
+        }
+
+        if (empty($data['order_id']) || empty($data['status'])) {
+            return [
+                'status'  => 'error',
+                'code'    => 400,
+                'message' => 'Mã đơn hàng và trạng thái là bắt buộc.'
+            ];
+        }
+
+        $orderId = intval($data['order_id']);
+        $newStatus = trim($data['status']);
+        $sellerId = intval($_SESSION['user_id']);
+
+        $order = $this->orderRepository->findById($orderId);
+        if ($order === null) {
+            return [
+                'status'  => 'error',
+                'code'    => 404,
+                'message' => 'Không tìm thấy đơn hàng.'
+            ];
+        }
+
+        // Verify logged in user is the seller
+        if (intval($order['Seller_ID']) !== $sellerId) {
+            return [
+                'status'  => 'error',
+                'code'    => 403,
+                'message' => 'Bạn không có quyền cập nhật đơn hàng của người khác.'
+            ];
+        }
+
+        // Update status in repository
+        $success = $this->orderRepository->updateStatus($orderId, $newStatus);
+
+        if ($success) {
+            // Send notification to buyer about the status change
+            $statusLabel = $newStatus;
+            if (strtolower($newStatus) === 'confirmed') $statusLabel = 'Đã xác nhận';
+            elseif (strtolower($newStatus) === 'completed') $statusLabel = 'Hoàn thành';
+            elseif (strtolower($newStatus) === 'cancelled') $statusLabel = 'Đã hủy';
+
+            $this->notificationService->send(
+                intval($order['Buyer_ID']),
+                "Đơn hàng của bạn " . $statusLabel,
+                "Đơn hàng #" . $orderId . " cho sản phẩm '" . $order['ProductName'] . "' đã được cập nhật trạng thái: " . $statusLabel
+            );
+
+            return [
+                'status'  => 'success',
+                'code'    => 200,
+                'message' => 'Cập nhật trạng thái đơn hàng thành công.'
+            ];
+        }
+
+        return [
+            'status'  => 'error',
+            'code'    => 500,
+            'message' => 'Không thể cập nhật trạng thái đơn hàng.'
         ];
     }
 }

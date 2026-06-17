@@ -114,4 +114,76 @@ class ProductRepository extends BaseRepository {
             'id'     => $id
         ]);
     }
+
+    /**
+     * Update product details
+     * 
+     * @param int $id
+     * @param array $data
+     * @return bool
+     */
+    public function update(int $id, array $data): bool {
+        $sql = "UPDATE `products` 
+                SET `Name` = :name, 
+                    `Description` = :description, 
+                    `Image` = :image, 
+                    `Category_ID` = :category_id, 
+                    `Price` = :price,
+                    `updated_at` = CURRENT_TIMESTAMP
+                WHERE `ID` = :id";
+        
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'name'        => $data['name'],
+            'description' => $data['description'] ?? null,
+            'image'       => $data['image'] ?? null,
+            'category_id' => (int)$data['category_id'],
+            'price'       => $data['price'],
+            'id'          => $id
+        ]);
+    }
+
+    /**
+     * Delete product (soft delete by setting status to 'deleted')
+     * 
+     * @param int $id
+     * @return bool
+     */
+    public function delete(int $id): bool {
+        return $this->updateStatus($id, 'deleted');
+    }
+
+    /**
+     * Find products belonging to a seller with optional status filter
+     * 
+     * @param int $sellerId
+     * @param string|null $status
+     * @return array
+     */
+    public function findBySeller(int $sellerId, string $status = null): array {
+        $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName,
+            (SELECT o.Shipping_address FROM orders o WHERE o.Product_ID = p.ID ORDER BY o.created_at DESC LIMIT 1) AS Location
+            FROM `products` p
+            JOIN `categories` c ON p.Category_ID = c.ID
+            JOIN `users` u ON p.Seller_ID = u.ID
+            WHERE p.Seller_ID = :seller_id AND p.Status != 'deleted'";
+        
+        $params = ['seller_id' => $sellerId];
+        
+        if ($status !== null) {
+            if ($status === 'available') {
+                $sql .= " AND p.Status IN ('active', 'available')";
+            } else {
+                $sql .= " AND p.Status = :status";
+                $params['status'] = $status;
+            }
+        }
+        
+        $sql .= " ORDER BY p.created_at DESC";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
 }
+
