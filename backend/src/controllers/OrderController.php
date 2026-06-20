@@ -74,4 +74,23 @@ class OrderController extends BaseController {
         }
         return $this->json(['error' => $result['message']], $result['code']);
     }
+
+    /**
+     * POST /api/orders/status
+     * Update status of an order (requires authenticated seller session & ownership)
+     */
+    public function updateOrderStatus() {
+        $data = $this->getRequestBody();
+        $result = $this->orderService->updateStatus($data);
+
+        if ($result['status'] === 'success') {
+            return $this->json([
+                'message' => $result['message']
+            ], 200);
+        }
+
+        return $this->json([
+            'error' => $result['message'] ?? 'Cập nhật trạng thái đơn hàng thất bại.'
+        ], $result['code']);
+    }
 }

@@ -16,6 +16,16 @@ class ProductController extends BaseController {
      * Return list of active products with optional category / search filtering
      */
     public function list() {
+        // If status filter is passed, it is the seller dashboard listing
+        if (isset($_GET['status'])) {
+            $status = $_GET['status'];
+            $result = $this->productService->getSellerProducts($status);
+            if ($result['status'] === 'success') {
+                return $this->json($result['data'], 200);
+            }
+            return $this->json(['error' => $result['message']], $result['code']);
+        }
+
         $filters = [];
         if (isset($_GET['category_id'])) {
             $filters['category_id'] = $_GET['category_id'];
@@ -120,4 +130,66 @@ class ProductController extends BaseController {
             return $this->json(['error' => 'Không thể lưu file ảnh lên máy chủ.'], 500);
         }
     }
+
+    /**
+     * POST /api/products/update
+     * Update an existing product (requires authenticated seller session & ownership)
+     */
+    public function update() {
+        $data = $this->getRequestBody();
+        if (empty($data['id'])) {
+            return $this->json(['error' => 'Thiếu tham số ID sản phẩm.'], 400);
+        }
+
+        $id = intval($data['id']);
+        $result = $this->productService->updateProduct($id, $data);
+
+        if ($result['status'] === 'success') {
+            return $this->json([
+                'message' => $result['message']
+            ], 200);
+        }
+
+        return $this->json([
+            'error' => $result['message'] ?? 'Cập nhật thất bại.',
+            'errors' => $result['errors'] ?? null
+        ], $result['code']);
+    }
+
+    /**
+     * POST /api/products/delete
+     * Delete an existing product (requires authenticated seller session & ownership)
+     */
+    public function delete() {
+        $data = $this->getRequestBody();
+        if (empty($data['id'])) {
+            return $this->json(['error' => 'Thiếu tham số ID sản phẩm.'], 400);
+        }
+
+        $id = intval($data['id']);
+        $result = $this->productService->deleteProduct($id);
+
+        if ($result['status'] === 'success') {
+            return $this->json([
+                'message' => $result['message']
+            ], 200);
+        }
+
+        return $this->json([
+            'error' => $result['message'] ?? 'Xóa thất bại.'
+        ], $result['code']);
+    }
+
+    /**
+     * GET /api/seller/stats
+     * Retrieve statistics for currently logged in seller
+     */
+    public function sellerStats() {
+        $result = $this->productService->getSellerStats();
+        if ($result['status'] === 'success') {
+            return $this->json($result['data'], 200);
+        }
+        return $this->json(['error' => $result['message']], $result['code']);
+    }
 }
+

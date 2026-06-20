@@ -52,6 +52,11 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (document.getElementById('seller-products-list')) {
         // KÍCH HOẠT CHO TRANG KÊNH NGƯỜI BÁN CỦA TRIẾT: Tự động chạy Tab đang bán đầu tiên
         switchSellerTab('available');
+        loadSellerStats();
+    } else {
+        // Nếu không -> Mặc định gọi danh sách sản phẩm ngoài Trang chủ
+        fetchProducts();
+    }
     } else if (document.getElementById('categoryProducts')) {
     fetchProducts();
 }   
@@ -324,6 +329,32 @@ function editProduct(id) {
     window.location.href = `/Project-Web-Programming/frontend/pages/seller/edit-product.php?id=${id}`;
 }
 
+async function deleteProduct(id) {
+    if (await showConfirm("Xóa tin", "Bạn có chắc chắn muốn xóa vĩnh viễn tin thanh lý này không?")) {
+        try {
+            let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/products/delete", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ id: id })
+            });
+            let data = await res.json();
+            if (res.ok && !data.error) {
+                showToast("🎉 Xóa sản phẩm thành công!", "success");
+                const activeTabBtn = document.querySelector('.seller-tab-btn.text-blue-600');
+                const activeTab = activeTabBtn ? activeTabBtn.id.replace('tab-btn-', '') : 'available';
+                switchSellerTab(activeTab);
+                if (typeof loadSellerStats === 'function') {
+                    loadSellerStats();
+                }
+            } else {
+                showAlert("Xóa thất bại", data.error || "Không thể xóa sản phẩm", "error");
+            }
+        } catch (err) {
+            console.error(err);
+            showAlert("Lỗi hệ thống", "Lỗi kết nối khi gửi yêu cầu xóa sản phẩm.", "error");
+        }
 // Đvector THAY alert bằng showToast dạng thành công (success)
 function deleteProduct(id) {
     if (confirm("Bạn có chắc chắn muốn xóa vĩnh viễn tin thanh lý này không?")) {
@@ -361,4 +392,31 @@ function formatTimeAgo(timestamp) {
     } catch (e) {
         return 'Vừa xong';
     }
+}
+
+function loadSellerStats() {
+    fetch('/Project-Web-Programming/backend/public/index.php/api/seller/stats')
+        .then(res => res.json())
+        .then(data => {
+            if (data && !data.error) {
+                const revEl = document.getElementById("seller-revenue");
+                if (revEl) {
+                    revEl.innerText = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data.total_revenue || 0);
+                }
+                const ordEl = document.getElementById("seller-delivered-orders");
+                if (ordEl) {
+                    ordEl.innerText = `${data.delivered_orders || 0} đơn`;
+                }
+                const availableEl = document.getElementById("count-available");
+                if (availableEl) availableEl.innerText = data.available_count || 0;
+
+                const pendingEl = document.getElementById("count-pending");
+                if (pendingEl) pendingEl.innerText = data.pending_count || 0;
+
+                const soldEl = document.getElementById("count-sold");
+                if (soldEl) soldEl.innerText = data.sold_count || 0;
+            }
+        })
+        .catch(err => console.error("Error loading seller stats:", err));
+}
 }

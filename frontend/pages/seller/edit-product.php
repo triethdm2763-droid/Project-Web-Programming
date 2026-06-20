@@ -2,7 +2,7 @@
 <html lang="vi">
 
 <head>
-    <title>Đăng tin mới | Chợ Cũ</title>
+    <title>Chỉnh sửa tin đăng | Chợ Cũ</title>
     <?php include '../../components/header.php'; ?>
 </head>
 
@@ -10,12 +10,19 @@
     <?php include '../../components/navbar.php'; ?>
 
     <main class="flex-grow max-w-3xl mx-auto px-gutter py-8 w-full">
-        <div class="mb-6">
-            <h1 class="text-headline-md font-bold text-on-surface">Đăng tin mới</h1>
-            <p class="text-body-sm text-outline-variant mt-1">Vui lòng cung cấp đầy đủ thông tin để sản phẩm của bạn dễ dàng tiếp cận người mua hơn.</p>
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-headline-md font-bold text-on-surface">Chỉnh sửa tin đăng</h1>
+                <p class="text-body-sm text-outline-variant mt-1">Cập nhật thông tin chi tiết sản phẩm của bạn.</p>
+            </div>
+            <button onclick="window.history.back()" class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-lg">arrow_back</span> Quay lại
+            </button>
         </div>
 
-        <form class="space-y-6" id="post-ad-form" onsubmit="submitProduct(event)">
+        <form class="space-y-6" id="edit-product-form" onsubmit="submitProduct(event)">
+            <!-- ID sản phẩm -->
+            <input type="hidden" id="product-id" value="">
 
             <!-- Hình ảnh sản phẩm -->
             <div class="glass-card p-6 rounded-xl border border-outline-variant/40 shadow-sm bg-white">
@@ -26,11 +33,11 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-outline mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
-                        <span class="text-[12px] font-medium text-on-surface">Thêm ảnh</span>
+                        <span class="text-[12px] font-medium text-on-surface">Thêm ảnh mới</span>
                         <input type="file" id="image-file-input" onchange="handleImageUpload(event)" accept="image/*" class="hidden">
                     </div>
                 </div>
-                <!-- Lưu tên file ảnh đã upload thành công -->
+                <!-- Lưu tên file ảnh -->
                 <input type="hidden" id="uploaded-image-name" value="">
             </div>
 
@@ -128,7 +135,7 @@
 
             <div class="flex justify-end gap-4">
                 <button type="button" onclick="window.history.back()" class="px-6 py-3 border border-outline-variant text-on-surface rounded-xl hover:bg-surface font-medium text-sm">Hủy bỏ</button>
-                <button type="submit" id="submitBtn" class="px-8 py-3 bg-[#F97316] text-white rounded-xl hover:opacity-90 transition-all font-medium text-sm shadow-sm uppercase tracking-wide">Đăng tin ngay</button>
+                <button type="submit" id="submitBtn" class="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-medium text-sm shadow-sm uppercase tracking-wide">Lưu thay đổi</button>
             </div>
         </form>
     </main>
@@ -141,17 +148,118 @@
         }
 
         async function initPage() {
-            // Tải danh mục từ API
+            // 1. Tải danh mục từ API trước
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/api/categories");
+                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/categories");
                 let data = await res.json();
                 let categories = data.data || data || [];
                 let select = document.getElementById("category_id");
-                select.innerHTML = '<option value="">Chọn danh mục</option>' + categories.map(cat => 
+                select.innerHTML = '<option value="">Chọn danh mục</option>' + categories.map(cat =>
                     `<option value="${cat.ID || cat.id}">${cat.Name || cat.name}</option>`
                 ).join('');
             } catch (err) {
                 console.error("Lỗi khi tải danh mục:", err);
+            }
+
+            // 2. Lấy thông tin sản phẩm để đổ dữ liệu vào Form
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            if (!productId) {
+                showAlert("Thiếu ID", "Không tìm thấy thông tin ID sản phẩm chỉnh sửa.", "error");
+                return;
+            }
+            document.getElementById('product-id').value = productId;
+
+            try {
+                let res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products/detail?id=${productId}`);
+                let json = await res.json();
+                let product = Array.isArray(json) ? (json[0] || null) : (json.data || json);
+
+                if (!product) {
+                    showAlert("Lỗi", "Không tìm thấy dữ liệu sản phẩm.", "error");
+                    return;
+                }
+
+                // Điền thông tin cơ bản
+                document.getElementById('title').value = product.name || product.Name || '';
+                document.getElementById('category_id').value = product.category_id || product.Category_ID || '';
+                document.getElementById('price').value = parseInt(product.price || product.Price || 0);
+
+                // Hiển thị ảnh cũ
+                const imgName = product.image || product.Image || '';
+                if (imgName) {
+                    document.getElementById('uploaded-image-name').value = imgName;
+
+                    const grid = document.getElementById('image-upload-grid');
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = "relative rounded-xl overflow-hidden aspect-square border border-outline-variant/40 group";
+                    previewDiv.innerHTML = `
+                        <img src="/Project-Web-Programming/backend/uploads/products/${imgName}" class="w-full h-full object-cover">
+                        <button type="button" onclick="removeUploadedImage(this)" class="absolute top-1.5 right-1.5 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition-colors flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    `;
+                    grid.insertBefore(previewDiv, document.getElementById('upload-trigger'));
+                    document.getElementById('upload-trigger').style.display = 'none';
+                }
+
+                // Parse description gộp
+                const desc = product.description || product.Description || '';
+
+                let condition = '';
+                let matchCond = desc.match(/Tình trạng:\s*(.*)/);
+                if (matchCond) condition = matchCond[1].trim();
+
+                let usage = '';
+                let matchUsage = desc.match(/Thời gian sử dụng:\s*(.*)/);
+                if (matchUsage) usage = matchUsage[1].trim();
+
+                let warranty = '';
+                let matchWar = desc.match(/Bảo hành:\s*(.*)/);
+                if (matchWar) warranty = matchWar[1].trim();
+
+                let accessories = '';
+                let matchAcc = desc.match(/Phụ kiện đi kèm:\s*(.*)/);
+                if (matchAcc) accessories = matchAcc[1].trim();
+
+                let phone = '';
+                let matchPhone = desc.match(/Liên hệ SĐT:\s*(.*)/);
+                if (matchPhone) phone = matchPhone[1].trim();
+
+                let location = '';
+                let matchLoc = desc.match(/Khu vực:\s*(.*)/);
+                if (matchLoc) location = matchLoc[1].trim();
+
+                let rawDescription = '';
+                let splitIdx = desc.indexOf("Mô tả chi tiết:\n");
+                if (splitIdx !== -1) {
+                    rawDescription = desc.substring(splitIdx + "Mô tả chi tiết:\n".length);
+                } else {
+                    rawDescription = desc;
+                }
+
+                // Điền thông tin chi tiết
+                document.getElementById('condition').value = condition;
+                document.getElementById('input-usage').value = usage;
+                document.getElementById('input-warranty').value = warranty;
+                document.getElementById('accessories').value = accessories;
+                document.getElementById('description').value = rawDescription.trim();
+                document.getElementById('location').value = location;
+                document.getElementById('phone').value = phone;
+
+                // Sync radio check nếu khớp giá trị mẫu
+                document.querySelectorAll('input[name="use_shortcut"]').forEach(r => {
+                    if (r.value === usage) r.checked = true;
+                });
+                document.querySelectorAll('input[name="war_shortcut"]').forEach(r => {
+                    if (r.value === warranty) r.checked = true;
+                });
+
+            } catch (err) {
+                console.error("Lỗi khi tải thông tin sản phẩm:", err);
+                showAlert("Lỗi", "Không thể kết nối Backend để lấy dữ liệu.", "error");
             }
         }
 
@@ -159,12 +267,10 @@
             document.getElementById('image-file-input').click();
         }
 
-        // Xử lý upload ảnh trực tiếp qua API uploadImage mới
         async function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Hiển thị trạng thái đang upload
             const trigger = document.getElementById('upload-trigger');
             const originalHTML = trigger.innerHTML;
             trigger.innerHTML = `<span class="text-xs text-slate-400">Đang tải lên...</span>`;
@@ -174,7 +280,7 @@
             formData.append('image', file);
 
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/api/products/upload", {
+                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/products/upload", {
                     method: "POST",
                     body: formData
                 });
@@ -184,10 +290,7 @@
                     const filename = data.filename;
                     document.getElementById('uploaded-image-name').value = filename;
 
-                    // Cập nhật Grid hiển thị ảnh preview
                     const grid = document.getElementById('image-upload-grid');
-                    
-                    // Tạo preview card
                     const previewDiv = document.createElement('div');
                     previewDiv.className = "relative rounded-xl overflow-hidden aspect-square border border-outline-variant/40 group";
                     previewDiv.innerHTML = `
@@ -198,11 +301,7 @@
                             </svg>
                         </button>
                     `;
-                    
-                    // Chèn trước nút bấm upload
                     grid.insertBefore(previewDiv, trigger);
-                    
-                    // Ẩn nút upload đi (vì hiện tại dự án hỗ trợ 1 hình ảnh chính trong database)
                     trigger.style.display = 'none';
                 } else {
                     showAlert("Lỗi upload ảnh", data.error || "Không rõ nguyên nhân", "error");
@@ -222,10 +321,10 @@
             document.getElementById('upload-trigger').style.display = 'flex';
         }
 
-        // Đăng sản phẩm mới
         async function submitProduct(event) {
             event.preventDefault();
 
+            const id = document.getElementById('product-id').value;
             const title = document.getElementById('title').value.trim();
             const categoryId = document.getElementById('category_id').value;
             const price = document.getElementById('price').value;
@@ -248,7 +347,6 @@
                 return;
             }
 
-            // Tạo chuỗi mô tả gộp tất cả thông tin phụ để hiển thị chi tiết mà không đổi cấu trúc Database
             let formattedDescription = `Tình trạng: ${condition}\n`;
             if (usage) formattedDescription += `Thời gian sử dụng: ${usage}\n`;
             if (warranty) formattedDescription += `Bảo hành: ${warranty}\n`;
@@ -258,6 +356,7 @@
             formattedDescription += `Mô tả chi tiết:\n${rawDescription}`;
 
             const payload = {
+                id: id,
                 name: title,
                 category_id: categoryId,
                 price: price,
@@ -270,10 +369,10 @@
 
             try {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = "ĐANG ĐĂNG TIN...";
+                submitBtn.innerHTML = "ĐANG LƯU...";
                 submitBtn.classList.add("opacity-70");
 
-                let res = await fetch("/Project-Web-Programming/backend/public/api/products", {
+                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/products/update", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -283,12 +382,12 @@
                 let data = await res.json();
 
                 if (res.ok && !data.error) {
-                    showToast("🎉 Đăng tin thanh lý thành công!", "success");
+                    showToast("🎉 Cập nhật sản phẩm thành công!", "success");
                     setTimeout(() => {
                         window.location.href = "/Project-Web-Programming/frontend/pages/seller/my-store.php";
                     }, 1200);
                 } else {
-                    showAlert("Đăng tin thất bại", data.error || "Không thể đăng tin", "error");
+                    showAlert("Lưu thất bại", data.error || "Không thể cập nhật sản phẩm", "error");
                 }
             } catch (err) {
                 console.error(err);

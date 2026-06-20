@@ -69,6 +69,7 @@ $pendingProducts = $conn->query("
     <title>Bảng Điều Khiển Admin - Chợ Cũ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <script src="/Project-Web-Programming/frontend/assets/js/ui-helpers.js"></script>
     <script src="/Project-Web-Programming/frontend/assets/js/ui-helpers.js?v=20260618-2"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans">

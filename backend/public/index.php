@@ -71,8 +71,12 @@ $routes = [
         '/api/auth/profile/update'  => ['App\Controllers\AuthController', 'updateProfile'],
         '/api/products'             => ['App\Controllers\ProductController', 'create'],
         '/api/products/upload'      => ['App\Controllers\ProductController', 'uploadImage'],
+        '/api/products/update'      => ['App\Controllers\ProductController', 'update'],
+        '/api/products/delete'      => ['App\Controllers\ProductController', 'delete'],
         '/api/orders'               => ['App\Controllers\OrderController', 'create'],
         '/api/orders/cancel'        => ['App\Controllers\OrderController', 'cancel'],
+        '/api/orders/status'        => ['App\Controllers\OrderController', 'updateOrderStatus'],
+        '/api/notifications/read'   => ['App\Controllers\NotificationController', 'markRead']
         '/api/notifications/read'   => ['App\Controllers\NotificationController', 'markRead'],
         '/api/admin/products/update-status' => ['App\Controllers\AdminController', 'updateProductStatus']
     ],
@@ -85,6 +89,8 @@ $routes = [
         '/api/categories/detail'  => ['App\Controllers\CategoryController', 'detail'],
         '/api/orders/buyer'       => ['App\Controllers\OrderController', 'buyerOrders'],
         '/api/orders/seller'      => ['App\Controllers\OrderController', 'sellerOrders'],
+        '/api/seller/stats'       => ['App\Controllers\ProductController', 'sellerStats'],
+        '/api/notifications'      => ['App\Controllers\NotificationController', 'list']
         '/api/notifications'      => ['App\Controllers\NotificationController', 'list'],
         // Admin dashboard endpoints
         '/api/admin/users'        => ['App\Controllers\AdminController', 'users'],

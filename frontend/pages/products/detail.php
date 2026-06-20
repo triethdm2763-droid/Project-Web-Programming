@@ -128,6 +128,7 @@
 
                         <button
                             id="btn-add-to-cart"
+                            onclick="addToCart()"
                             data-logged-in="<?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>"
                             class="flex-1 border border-primary text-primary py-4 rounded-xl font-headline-sm hover:bg-primary hover:text-white transition-all uppercase tracking-wide"
                         >
@@ -241,19 +242,48 @@
             document.querySelectorAll('#product-seller').forEach(el => el.innerText = seller || 'Ẩn danh');
 
             // Status
-            let statusText = "Còn hàng";
+            const stockQty = parseInt(currentProduct.Stock_quantity || currentProduct.stock_quantity || 0);
+            let statusText = `Còn hàng (Số lượng: ${stockQty})`;
             let statusColor = "bg-green-500";
             if (status === "sold") {
-                statusText = "Đã bán";
+                statusText = "Đã bán (Số lượng: 0)";
                 statusColor = "bg-red-500";
             } else if (status === "pending") {
-                statusText = "Chờ duyệt";
+                statusText = `Chờ duyệt (Số lượng: ${stockQty})`;
                 statusColor = "bg-yellow-500";
             }
             const statusTextEl = document.getElementById("product-status");
             if (statusTextEl) statusTextEl.innerText = statusText;
             const statusDotEl = document.getElementById("status-dot");
             if (statusDotEl) statusDotEl.className = `w-2.5 h-2.5 rounded-full ${statusColor}`;
+
+            // Handle Buy/Add to Cart buttons state based on status
+            const btnBuyNow = document.getElementById("btn-buy-now");
+            const btnAddToCart = document.getElementById("btn-add-to-cart");
+
+            if (status === "sold" || status === "pending") {
+                if (btnBuyNow) {
+                    btnBuyNow.disabled = true;
+                    btnBuyNow.innerText = status === "sold" ? "ĐÃ BÁN" : "CHỜ DUYỆT";
+                    btnBuyNow.className = "flex-1 bg-gray-400 text-white py-4 rounded-xl font-headline-sm cursor-not-allowed uppercase tracking-wide opacity-70";
+                }
+                if (btnAddToCart) {
+                    btnAddToCart.disabled = true;
+                    btnAddToCart.innerText = status === "sold" ? "ĐÃ BÁN" : "CHỜ DUYỆT";
+                    btnAddToCart.className = "flex-1 border border-gray-400 text-gray-400 py-4 rounded-xl font-headline-sm cursor-not-allowed uppercase tracking-wide opacity-70";
+                }
+            } else {
+                if (btnBuyNow) {
+                    btnBuyNow.disabled = false;
+                    btnBuyNow.innerText = "MUA NGAY";
+                    btnBuyNow.className = "flex-1 bg-[#F97316] text-white py-4 rounded-xl font-headline-sm shadow-lg shadow-secondary/20 hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-wide";
+                }
+                if (btnAddToCart) {
+                    btnAddToCart.disabled = false;
+                    btnAddToCart.innerText = "THÊM VÀO GIỎ";
+                    btnAddToCart.className = "flex-1 border border-primary text-primary py-4 rounded-xl font-headline-sm hover:bg-primary hover:text-white transition-all uppercase tracking-wide";
+                }
+            }
 
         } catch (error) {
 
@@ -289,6 +319,9 @@
         localStorage.setItem("cart", JSON.stringify(cart));
         if (typeof updateNavbarCartBadge === 'function') updateNavbarCartBadge();
         showToast("Đã thêm sản phẩm vào giỏ hàng thành công!", "success");
+        if (typeof updateNavCartBadge === 'function') {
+            updateNavCartBadge();
+        }
 
     }
 
