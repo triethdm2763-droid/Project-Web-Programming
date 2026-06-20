@@ -18,11 +18,60 @@ class AuthService {
      * @return array Status array indicating success or failure with error messages
      */
     public function register(array $data): array {
+
+        $turnstileToken =
+        $data['turnstileToken'] ?? '';
+
+        if (empty($turnstileToken)) {
+            return [
+                'status' => 'error',
+                'code' => 400,
+                'errors' => [
+                    'captcha' => [
+                        'Vui lòng xác thực CAPTCHA.'
+                    ]
+                ]
+            ];
+        }
+
+        $secretKey = "0x4AAAAAADlFZ_VeIH0EhyLYgyBDfmakMKE";
+
+        $ch = curl_init();
+
+        curl_setopt_array($ch, [
+            CURLOPT_URL =>
+                "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            CURLOPT_POST => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POSTFIELDS => [
+                'secret' => $secretKey,
+                'response' => $turnstileToken
+            ]
+        ]);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $resultCaptcha =
+        json_decode($response, true);
+
+        if (empty($resultCaptcha['success'])) {
+            return [
+                'status' => 'error',
+                'code' => 400,
+                'errors' => [
+                    'captcha' => [
+                        'CAPTCHA không hợp lệ.'
+                    ]
+                ]
+            ];
+        }
+
         // 1. Validate Input Data
         $rules = [
             'username' => 'required|min:3|max:50',
             'email'    => 'required|email',
-            'password' => 'required|min:6',
+            'password' => 'required|min:8',
             'phone'    => 'phone'
         ];
 
@@ -39,6 +88,23 @@ class AuthService {
         $email = trim($data['email']);
         $password = $data['password'];
         $phone = isset($data['phone']) ? trim($data['phone']) : null;
+
+        if (
+            !preg_match(
+                '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/',
+                $password
+            )
+        ) {
+            return [
+                'status' => 'error',
+                'code' => 400,
+                'errors' => [
+                    'password' => [
+                        'Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.'
+                    ]
+                ]
+            ];
+        }
 
         // 2. Check if Username Already Exists
         if ($this->userRepository->findByUsername($username) !== null) {
@@ -291,44 +357,6 @@ class AuthService {
             'status'  => 'success',
             'code'    => 200,
             'message' => 'Đổi mật khẩu mới thành công!'
-        ];
-    }
-
-    /**
-     * Update current authenticated user profile.
-     * 
-     * @param int $userId
-     * @param array $data
-     * @return array
-     */
-    public function updateProfile(int $userId, array $data): array {
-        $rules = [
-            'fullname' => 'required|min:3|max:100',
-            'phone'    => 'phone'
-        ];
-
-        $errors = Validator::validate($data, $rules);
-        if (!empty($errors)) {
-            return [
-                'status' => 'error',
-                'code'   => 400,
-                'errors' => $errors
-            ];
-        }
-
-        $success = $this->userRepository->updateProfile($userId, $data);
-        if ($success) {
-            return [
-                'status'  => 'success',
-                'code'    => 200,
-                'message' => 'Cập nhật thông tin cá nhân thành công!'
-            ];
-        }
-
-        return [
-            'status'  => 'error',
-            'code'    => 500,
-            'message' => 'Lỗi máy chủ khi cập nhật thông tin cá nhân.'
         ];
     }
 }
