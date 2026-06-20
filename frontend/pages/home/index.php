@@ -57,13 +57,22 @@ if (session_status() === PHP_SESSION_NONE) {
         <!-- ==========================================================================
             2. BROWSE BY CATEGORIES (Bộ lọc danh mục trực quan)
             ========================================================================== -->
-        <section class="space-y-4">
+        <section class="space-y-5">
+    
             <h2 class="font-headline-md text-xl md:text-2xl font-bold text-on-background flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary">grid_view</span> Danh Mục Nổi Bật
+                <span class="material-symbols-outlined text-primary">
+                    grid_view
+                </span>
+                Danh Mục Nổi Bật
             </h2>
-            <div class="grid grid-cols-3 md:grid-cols-6 gap-4" id="categories-container">
-                <!-- Sẽ được tải động qua API -->
+
+            <div
+                id="categories-container"
+                class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5"
+            >
+                <!-- JS sẽ render danh mục vào đây -->
             </div>
+
         </section>
 
         <!-- ==========================================================================
@@ -118,7 +127,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <!-- Nhúng chân trang Footer -->
     <?php include '../../components/footer.php'; ?>
     <!-- Nhúng file JavaScript để xử lý tương tác sản phẩm -->
-    <script src="/Project-Web-Programming/frontend/assets/js/products.js"></script>
+    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260618-2"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -139,11 +148,21 @@ if (session_status() === PHP_SESSION_NONE) {
                     // Hiển thị tối đa 6 danh mục
                     let limitCats = categories.slice(0, 6);
                     container.innerHTML = limitCats.map(cat => `
-                    <a href="/Project-Web-Programming/frontend/pages/products/category.php?category=${cat.ID}" data-id="${cat.ID}" data-navigate="1" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
-                        <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">category</span>
-                        <span class="text-label-sm font-semibold text-on-surface">${escapeHtml(cat.Name)}</span>
-                    </a>
-                `).join('');
+                        <a href="/Project-Web-Programming/frontend/pages/products/category.php?category=${cat.ID}"
+                        data-id="${cat.ID}"
+                        data-navigate="1"
+                        class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center hover:border-primary hover:shadow-md transition-all">
+
+                            <span class="material-symbols-outlined text-4xl text-primary mb-2">
+                                ${cat.Icon || 'category'}
+                            </span>
+
+                            <span class="text-label-sm font-semibold text-on-surface text-center">
+                                ${escapeHtml(cat.Name)}
+                            </span>
+
+                        </a>
+                    `).join('');
                 } else {
                     container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Không có danh mục nào.</div>`;
                 }

@@ -180,4 +180,31 @@ class OrderRepository extends BaseRepository {
             'id'     => $id
         ]);
     }
+
+    /**
+     * Lấy toàn bộ đơn hàng trong hệ thống kèm tên sản phẩm và tên người mua,
+     * dùng cho trang quản lý đơn hàng của Admin.
+     *
+     * @return array
+     */
+    public function findAll()
+    {
+        $sql = "
+            SELECT
+                o.*,
+                p.Name AS ProductName,
+                u.Username AS BuyerName
+            FROM orders o
+            JOIN products p
+                ON o.Product_ID = p.ID
+            JOIN users u
+                ON o.Buyer_ID = u.ID
+            ORDER BY o.created_at DESC
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
 }

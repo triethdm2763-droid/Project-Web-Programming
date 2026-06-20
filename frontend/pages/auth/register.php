@@ -28,6 +28,12 @@
                     <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Mật khẩu</label>
                     <input type="password" id="password" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)...">
                 </div>
+                <!-- Bắt đầu phần thêm Xác nhận mật khẩu -->
+                <div>
+                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Xác nhận mật khẩu</label>
+                    <input type="password" id="confirm_password" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Nhập lại mật khẩu của bạn...">
+                </div>
+                <!-- Kết thúc phần thêm Xác nhận mật khẩu -->
                 <button onclick="register()" id="registerBtn" class="w-full bg-primary text-on-primary py-3.5 rounded-full font-label-md hover:opacity-90 active:scale-95 transition-all shadow-sm mt-2 uppercase tracking-wide">Đăng ký</button>
             </div>
             <p class="text-center text-body-sm text-outline mt-6">Đã có tài khoản? <a href="login.php" class="text-secondary font-medium hover:underline">Đăng nhập ngay</a></p>
@@ -41,15 +47,21 @@
         let email = document.getElementById("email").value.trim();
         let phone = document.getElementById("phone").value.trim();
         let password = document.getElementById("password").value.trim();
+        let confirmPassword = document.getElementById("confirm_password").value.trim(); // Lấy giá trị xác nhận mật khẩu
         let btn = document.getElementById("registerBtn");
         
-        if (!username || !email || !phone || !password) { 
-            showAlert("Thiếu thông tin", "Vui lòng điền đầy đủ tất cả các trường.", "warning"); 
-            return; 
+            if (!username || !email || !phone || !password || !confirmPassword) {
+            showAlert("Thiếu thông tin", "Vui lòng điền đầy đủ tất cả các trường.", "warning");
+            return;
         }
 
         if (password.length < 6) {
             showAlert("Mật khẩu yếu", "Mật khẩu phải chứa ít nhất 6 ký tự.", "warning");
+            return;
+        }
+        // Kiểm tra mật khẩu và mật khẩu xác nhận có khớp nhau không
+        if (password !== confirmPassword) {
+            showToast("Mật khẩu xác nhận không khớp.", "error");
             return;
         }
 

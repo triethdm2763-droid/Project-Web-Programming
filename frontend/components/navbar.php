@@ -33,8 +33,9 @@ function nav_class($pathFragment, $currentPath) {
     </div>
 
     <div class="flex items-center gap-4">
-  <a href="/Project-Web-Programming/frontend/pages/cart/index.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative block">
+  <a href="/Project-Web-Programming/frontend/pages/cart/index.php" id="navbar-cart-link" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative block">
     shopping_cart
+    <span id="navbar-cart-badge" class="hidden absolute top-0 right-0 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-[18px] text-center font-body-md">0</span>
   </a>
   
   <?php
@@ -57,11 +58,19 @@ function nav_class($pathFragment, $currentPath) {
     </a>
   <?php endif; ?>
   
-  <a id="btn-create-post" data-logged-in="<?php echo $isLoggedIn ? 'true' : 'false'; ?>" 
-   href="/Project-Web-Programming/frontend/pages/user/post_ad.php" 
-   class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm text-[15px] cursor-pointer inline-block text-center">
-    Đăng tin
-  </a>
+  <?php if ($isLoggedIn): ?>
+        <a href="/Project-Web-Programming/frontend/pages/seller/my-store.php" 
+           class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm text-[15px] cursor-pointer inline-block text-center">
+            Đăng tin
+        </a>
+      <?php else: ?>
+        <button id="btn-create-post" data-logged-in="false" type="button"
+        
+                class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm text-[15px] cursor-pointer">
+            Đăng tin
+        </button>
+        
+      <?php endif; ?>
 </div>
     
   </div>
@@ -80,8 +89,28 @@ function executeGlobalSearch() {
     }
 }
 
+// Cập nhật số lượng sản phẩm hiển thị trên icon giỏ hàng (badge đỏ)
+function updateNavbarCartBadge() {
+    const badge = document.getElementById('navbar-cart-badge');
+    if (!badge) return;
+    try {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const count = Array.isArray(cart) ? cart.length : 0;
+        if (count > 0) {
+            badge.innerText = count > 99 ? '99+' : count;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    } catch (e) {
+        badge.classList.add('hidden');
+    }
+}
+
 // Chờ giao diện tải xong để bắt các sự kiện click / gõ phím
 document.addEventListener("DOMContentLoaded", function() {
+    updateNavbarCartBadge();
+
     const searchInput = document.getElementById('search-input');
     const searchBtn = document.getElementById('search-btn');
 
@@ -97,26 +126,8 @@ document.addEventListener("DOMContentLoaded", function() {
         executeGlobalSearch();
     });
 });
-    
-async function logout() {
-    if (await showConfirm("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", "warning")) {
-        try {
-            // Đã fix lại đường dẫn gọi API đăng xuất chuẩn qua index.php
-            let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/logout", {
-                method: "POST"
-            });
-            if (res.ok) {
-                showToast("Đăng xuất thành công!", "success");
-                setTimeout(() => {
-                    window.location.href = "/Project-Web-Programming/frontend/pages/home/index.php";
-                }, 1200);
-            } else {
-                showAlert("Thất bại", "Đăng xuất thất bại.", "error");
-            }
-        } catch (error) {
-            console.error("Logout error:", error);
-            showAlert("Lỗi hệ thống", "Lỗi kết nối đến máy chủ.", "error");
-        }
-    }
-}
+
+// Lưu ý: hàm logout() dùng chung cho toàn bộ trang web đã được định nghĩa
+// sẵn trong frontend/assets/js/ui-helpers.js (được header.php include ở mọi trang),
+// nên không định nghĩa lại ở đây để tránh xung đột.
 </script>

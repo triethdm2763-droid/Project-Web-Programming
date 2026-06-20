@@ -80,11 +80,21 @@ $selectedCategoryId = isset($_GET['category']) ? intval($_GET['category']) : nul
                     }
                     itemsHtml += `
                         <li>
-                            <a href="?category=${cat.ID}" class="block ${isSelected ? 'text-primary font-medium' : 'text-on-surface-variant hover:text-primary'} transition-colors">
-                                ${escapeHtml(cat.Name)}
+                            <a href="?category=${cat.ID}"
+                            class="flex items-center gap-2 px-3 py-2 rounded-lg
+                            ${isSelected
+                                    ? 'bg-primary/10 text-primary font-medium'
+                                    : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'}">
+
+                                <span class="material-symbols-outlined text-[20px]">
+                                    ${cat.Icon || 'category'}
+                                </span>
+
+                                <span>${escapeHtml(cat.Name)}</span>
+
                             </a>
                         </li>
-                    `;
+                        `;
                 });
             }
             list.innerHTML = itemsHtml;
@@ -97,7 +107,7 @@ $selectedCategoryId = isset($_GET['category']) ? intval($_GET['category']) : nul
     </script>
 
     <!-- Products JS (re-uses fetchProducts to populate the grid) -->
-    <script src="/Project-Web-Programming/frontend/assets/js/products.js"></script>
+    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260618-2"></script>
     <script>
     // When DOM is ready, load categories sidebar and then fetch products for the selected category
     document.addEventListener('DOMContentLoaded', function() {

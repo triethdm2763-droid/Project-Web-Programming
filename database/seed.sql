@@ -24,17 +24,18 @@ INSERT INTO `users` (`ID`, `Username`, `Password`, `Email`, `Phone`, `Fullname`,
 (10, 'buyer_nam', '$2y$10$tZ2cK.2L7F/D.r9u8y7GVuM8B3jYn1l3iY2rZq4O7Xz.m1N8b.eG2', 'nambuyer@gmail.com', '0901000010', 'Trịnh Hữu Nam', '55 Đường Cách Mạng Tháng 8, Quận 3, TP.HCM', 'https://placehold.co/150x150', 'user', 'banned');
 
 -- 2. SEED DỮ LIỆU BẢNG DANH MỤC (CATEGORIES)
-INSERT INTO `categories` (`ID`, `Name`) VALUES
-(1, 'Điện tử & Công nghệ'),
-(2, 'Điện thoại & Máy tính bảng'),
-(3, 'Thời trang Nam'),
-(4, 'Thời trang Nữ'),
-(5, 'Sách & Tài liệu'),
-(6, 'Đồ gia dụng & Nội thất'),
-(7, 'Xe cộ & Phụ tùng'),
-(8, 'Thể thao & Dã ngoại'),
-(9, 'Mẹ & Bé'),
-(10, 'Nhạc cụ & Âm thanh');
+INSERT INTO categories (ID, Name, Icon) VALUES
+(1, 'Điện tử & Công nghệ', 'laptop_mac'),
+(2, 'Điện thoại & Máy tính bảng', 'smartphone'),
+(3, 'Thời trang Nam', 'checkroom'),
+(4, 'Thời trang Nữ', 'apparel'),
+(5, 'Sách & Tài liệu', 'menu_book'),
+(6, 'Đồ gia dụng & Nội thất', 'chair'),
+(7, 'Xe cộ & Phụ tùng', 'directions_car'),
+(8, 'Thể thao & Dã ngoại', 'sports_soccer'),
+(9, 'Mẹ & Bé', 'stroller'),
+(10, 'Nhạc cụ & Âm thanh', 'music_note');
+
 
 -- 3. SEED DỮ LIỆU BẢNG SẢN PHẨM THANH LÝ (PRODUCTS)
 -- Seed 4 sản phẩm máy ảnh cốt lõi đầu tiên (IDs 1 -> 4)

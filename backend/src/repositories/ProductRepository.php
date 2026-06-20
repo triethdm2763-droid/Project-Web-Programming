@@ -41,6 +41,23 @@ class ProductRepository extends BaseRepository {
     }
 
     /**
+     * Find ALL products regardless of status, for Admin product management page.
+     *
+     * @return array
+     */
+    public function findAllForAdmin(): array {
+        $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName
+        FROM `products` p
+        JOIN `categories` c ON p.Category_ID = c.ID
+        JOIN `users` u ON p.Seller_ID = u.ID
+        ORDER BY p.created_at DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    /**
      * Find a product by ID
      * 
      * @param int $id
