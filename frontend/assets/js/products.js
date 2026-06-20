@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- KHU VỰC 1: XỬ LÝ NÚT ĐĂNG TIN TRÊN NAVBAR ---
     const btnCreatePost = document.getElementById('btn-create-post');
     if (btnCreatePost) {
-        btnCreatePost.addEventListener('click', async function(e) {
+        btnCreatePost.addEventListener('click', function(e) {
             e.preventDefault();
             // Đọc trạng thái đăng nhập từ nút HTML do PHP truyền sang
             const isLoggedIn = this.getAttribute('data-logged-in') === 'true';
@@ -15,9 +15,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Đã đăng nhập -> Vào trang Đăng tin của Seller
                 window.location.href = '/Project-Web-Programming/frontend/pages/seller/my-store.php';
             } else {
-                // Chưa đăng nhập -> Bật thông báo rồi ép qua trang đăng nhập
-                await showAlert('Yêu cầu đăng nhập', 'Bạn cần phải đăng nhập tài khoản trước khi thực hiện chức năng đăng tin thanh lý đồ cũ!', 'warning');
-                window.location.href = '/Project-Web-Programming/frontend/pages/auth/login.php';
+                // ĐÃ SỬA: Thay alert bằng showToast dạng cảnh báo (warning)
+                showToast('Bạn cần phải đăng nhập tài khoản trước khi thực hiện chức năng đăng tin thanh lý đồ cũ!', 'warning');
+                setTimeout(() => {
+                    window.location.href = '/Project-Web-Programming/frontend/pages/auth/login.php';
+                }, 1500); // Trì hoãn 1.5 giây để user kịp nhìn thấy thông báo đẹp
             }
         });
     }
@@ -55,6 +57,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Nếu không -> Mặc định gọi danh sách sản phẩm ngoài Trang chủ
         fetchProducts();
     }
+    } else if (document.getElementById('categoryProducts')) {
+    fetchProducts();
+}   
 
     // --- KHU VỰC 3: BẮT SỰ KIỆN TÌM KIẾM SẢN PHẨM ĐỘNG ---
     const searchInput = document.querySelector('input[placeholder="Tìm kiếm sản phẩm đồ cũ..."]');
@@ -129,46 +134,17 @@ function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false) 
         .then(result => {
             let products = Array.isArray(result) ? result : (result.data || []);
 
-            // ===================================================================================
-            // ĐOẠN CODE LỌC TÌM KIẾM: CÓ DẤU, KHÔNG DẤU, VIẾT HOA, VIẾT THƯỜNG
-            // ===================================================================================
+            // ================= ĐOẠN CODE: LỌC TÌM KIẾM SẢN PHẨM =================
             const urlParams = new URLSearchParams(window.location.search);
             const searchKeyword = (searchQuery || urlParams.get('search') || '').trim().toLowerCase();
 
             if (searchKeyword) {
-                // 1. Định nghĩa hàm loại bỏ dấu tiếng Việt siêu chuẩn (Xử lý cả chữ đ/Đ)
-                const clearAccents = (str) => {
-                    return str
-                        .normalize("NFD")                  
-                        .replace(/[\u0300-\u036f]/g, "")   
-                        .replace(/đ/g, "d")                
-                        .replace(/Đ/g, "d");              
-                };
-
-                // 2. Chuyển từ khóa tìm kiếm của người dùng thành KHÔNG DẤU (Vì đã .toLowerCase() ở trên)
-                const cleanKeyword = clearAccents(searchKeyword);
-                console.log("[Search Debug] Từ khóa gốc:", searchKeyword, "-> Đã chuyển đổi:", cleanKeyword);
-
-                // 3. Tiến hành lọc mảng sản phẩm
                 products = products.filter(product => {
-                    // Lấy Tên sản phẩm, đưa về chữ thường và xóa sạch dấu tiếng Việt
-                    const rawName = (product.Name || product.name || '').toLowerCase();
-                    const cleanProductName = clearAccents(rawName);
-                    
-                    // Lấy Mô tả sản phẩm, đưa về chữ thường và xóa sạch dấu tiếng Việt (để tìm kiếm thông minh hơn)
-                    const rawDesc = (product.Description || product.description || '').toLowerCase();
-                    const cleanProductDesc = clearAccents(rawDesc);
-
-                    // Kiểm tra xem từ khóa không dấu có nằm trong tên hoặc mô tả không dấu hay không
-                    return cleanProductName.includes(cleanKeyword) || cleanProductDesc.includes(cleanKeyword);
+                    const productName = (product.Name || product.name || '').toLowerCase();
+                    return productName.includes(searchKeyword);
                 });
             }
 
-            if (products.length === 0) {
-                productGrid.innerHTML = `<div class="col-span-full text-center py-8 text-outline">Không tìm thấy sản phẩm nào phù hợp.</div>`;
-                return;
-            }
-            
             if (products.length === 0) {
                 productGrid.innerHTML = `<div class="col-span-full text-center py-8 text-outline">Không tìm thấy sản phẩm nào phù hợp.</div>`;
                 return;
@@ -226,7 +202,8 @@ function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false) 
         })
         .catch(err => {
             console.error(err);
-            productGrid.innerHTML = `<div class="col-span-full text-center py-8 text-error">Không thể kết nối Server Backend.</div>`;
+            // Đvector THAY alert bằng showToast lỗi
+            showToast('Không thể kết nối đến Server Backend.', 'error');
         });
 }
 
@@ -266,7 +243,6 @@ function loadProductDetail() {
 // HÀM NEW 3: THÊM VÀO ĐỂ ĐIỀU HƯỚNG TABS VÀ FETCH DATA THẬT CHO KÊNH NGƯỜI BÁN
 // ==========================================================================
 function switchSellerTab(status) {
-    // 1. Cập nhật màu sắc Active/Inactive cho các nút Tab trên Frontend
     document.querySelectorAll('.seller-tab-btn').forEach(btn => {
         btn.classList.remove('border-blue-600', 'text-blue-600');
         btn.classList.add('border-transparent', 'text-slate-400');
@@ -280,10 +256,8 @@ function switchSellerTab(status) {
     const container = document.getElementById('seller-products-list');
     if (!container) return;
 
-    // Hiển thị dòng trạng thái loading trong lúc đợi API phản hồi
     container.innerHTML = `<div class="text-center text-slate-400 py-12 text-sm">Đang tải danh sách sản phẩm...</div>`;
 
-    // 2. Gọi API thật từ Backend để bốc sản phẩm theo trạng thái Tab
     fetch(`/Project-Web-Programming/backend/public/index.php/api/products?status=${status}`)
         .then(response => response.json())
         .then(result => {
@@ -294,11 +268,9 @@ function switchSellerTab(status) {
                 return;
             }
 
-            // 3. Đổ dữ liệu thật ra giao diện căn giữa, không dùng data ảo
             container.innerHTML = products.map(p => {
                 const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.price || 0);
                 
-                // Tránh lỗi vỡ hình: Nếu không có ảnh thật trong DB, nạp ngay Icon Material
                 const imgVal = p.image || p.Image || '';
                 const imgSrc = imgVal ? (imgVal.startsWith('http://') || imgVal.startsWith('https://') ? imgVal : `/Project-Web-Programming/backend/uploads/products/${imgVal}`) : '';
                 const imageHTML = imgSrc 
@@ -348,7 +320,8 @@ function switchSellerTab(status) {
         })
         .catch(err => {
             console.error("Lỗi đồng bộ Kênh người bán:", err);
-            container.innerHTML = `<div class="text-center text-red-500 py-12 text-sm">Không thể kết nối Server Backend.</div>`;
+            // Đvector THAY alert bằng showToast lỗi
+            showToast('Không thể kết nối đến Server Backend.', 'error');
         });
 }
 
@@ -382,9 +355,17 @@ async function deleteProduct(id) {
             console.error(err);
             showAlert("Lỗi hệ thống", "Lỗi kết nối khi gửi yêu cầu xóa sản phẩm.", "error");
         }
+// Đvector THAY alert bằng showToast dạng thành công (success)
+function deleteProduct(id) {
+    if (confirm("Bạn có chắc chắn muốn xóa vĩnh viễn tin thanh lý này không?")) {
+        showToast('Đã gửi yêu cầu xóa sản phẩm mang mã ID: ' + id, 'success');
     }
 }
 
+
+// Lưu ý: hàm showToast() dùng chung cho toàn bộ trang web đã được định nghĩa
+// sẵn trong frontend/assets/js/ui-helpers.js (được header.php include ở mọi trang),
+// nên không định nghĩa lại ở đây để tránh xung đột giao diện thông báo giữa các trang.
 
 // --- CÁC HÀM BỔ TRỢ HỆ THỐNG ---
 function escapeHtml(text) {
@@ -437,4 +418,5 @@ function loadSellerStats() {
             }
         })
         .catch(err => console.error("Error loading seller stats:", err));
+}
 }

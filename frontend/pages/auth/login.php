@@ -50,6 +50,7 @@
             });
             
             let data = await res.json(); 
+            console.log("LOGIN DATA =", data);
             if (res.ok) {
                 showToast("Đăng nhập thành công!", "success");
                 setTimeout(() => {
@@ -68,5 +69,6 @@
         }
     }
     </script>
+    
 </body>
 </html>

@@ -253,3 +253,28 @@ window.showConfirm = function(title, message, type = 'warning') {
         modal.querySelector('#confirm-ok-btn').addEventListener('click', handleOk);
     });
 };
+
+// ==========================================================================
+// HÀM ĐĂNG XUẤT DÙNG CHUNG TOÀN TRANG WEB
+// (dùng được cả ở navbar người dùng lẫn các trang Admin không include navbar.php)
+// ==========================================================================
+async function logout() {
+    if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+        try {
+            let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/logout", {
+                method: "POST"
+            });
+            if (res.ok) {
+                showToast("Đăng xuất thành công!", "success");
+                setTimeout(() => {
+                    window.location.href = "/Project-Web-Programming/frontend/pages/home/index.php";
+                }, 1000);
+            } else {
+                showToast("Đăng xuất thất bại.", "error");
+            }
+        } catch (error) {
+            console.error("Logout error:", error);
+            showToast("Lỗi kết nối đến máy chủ.", "error");
+        }
+    }
+}

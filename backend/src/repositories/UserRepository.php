@@ -115,4 +115,51 @@ class UserRepository extends BaseRepository {
             'id'       => $userId
         ]);
     }
+
+    public function findAll()
+    {
+        $sql = "
+            SELECT
+                ID,
+                Username,
+                Email,
+                Phone,
+                Role,
+                Created_at
+            FROM users
+            ORDER BY Created_at DESC
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Lấy danh sách user kèm thông tin ví (số dư).
+     * Lưu ý: bảng `users` hiện chưa có cột số dư riêng, nên Balance được trả về mặc định = 0
+     * cho mỗi user. Khi backend bổ sung cột Balance (hoặc bảng wallets riêng), hàm này cần
+     * được cập nhật lại để lấy số dư thật.
+     *
+     * @return array
+     */
+    public function getWallets()
+    {
+        $sql = "
+            SELECT
+                ID,
+                Username,
+                Email,
+                Role,
+                0 AS Balance
+            FROM users
+            ORDER BY Created_at DESC
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
 }
