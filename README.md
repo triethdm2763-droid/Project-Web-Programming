@@ -35,8 +35,8 @@ Cấu trúc khởi tạo cho đồ án web đấu giá realtime sử dụng PHP 
    - Truy cập [http://localhost/phpmyadmin/](http://localhost/phpmyadmin/).
    - Tạo mới CSDL có tên là `c2c_used_marketplace`.
    - Chọn CSDL vừa tạo, nhấp vào tab **Import** (Nhập).
-   - Chọn tệp [database/schema.sql](file:///d:/xampp/htdocs/Project-Web-Programming/database/schema.sql) rồi nhấn **Go** (Thực hiện) để tạo cấu trúc bảng.
-   - Nhấp lại vào tab **Import** (Nhập), chọn tệp [database/seed.sql](file:///d:/xampp/htdocs/Project-Web-Programming/database/seed.sql) rồi nhấn **Go** (Thực hiện) để nạp dữ liệu mẫu.
+   - Chọn tệp [database/001_schema.sql](file:///d:/xampp/htdocs/Project-Web-Programming/database/001_schema.sql) rồi nhấn **Go** (Thực hiện) để tạo cấu trúc bảng.
+   - Nhấp lại vào tab **Import** (Nhập), chọn tệp [database/002_seed.sql](file:///d:/xampp/htdocs/Project-Web-Programming/database/002_seed.sql) rồi nhấn **Go** (Thực hiện) để nạp dữ liệu mẫu.
 
 ### 2. Truy cập ứng dụng qua XAMPP
 
@@ -52,15 +52,15 @@ Hệ thống sẽ tự động khởi chạy và chuyển hướng bạn đến 
 
 ### 4. Tài khoản kiểm thử có sẵn (Seed Accounts)
 
-Sử dụng các tài khoản sau (nạp từ `seed.sql` mới) để đăng nhập và kiểm tra chức năng. Mật khẩu mặc định của tất cả tài khoản mẫu là **`280606`**:
+Sử dụng các tài khoản sau (nạp từ `seed.sql` mới) để đăng nhập và kiểm tra chức năng. Mật khẩu mặc định của tất cả tài khoản mẫu là **`123456`**:
 
 - **Quản trị viên (Admin):**
   - Tên đăng nhập: `admin`
 - **Người bán (Sellers):**
-  - Tên đăng nhập: `nguyen_ban`, `tran_shop`, `le_secondhand`, `pham_cu`
+  - Tên đăng nhập: `seller_a`, `seller_b`, `seller_c`, `seller_d`
 - **Người mua (Buyers):**
-  - Tên đăng nhập: `buyer_minh`, `buyer_lan`, `buyer_hung`, `buyer_thu`
-  - _(Tài khoản `buyer_nam` ở trạng thái bị khóa để thử nghiệm)_
+  - Tên đăng nhập: `buyer_a`, `buyer_b`, `buyer_c`, `buyer_d`
+  - _(Tài khoản `buyer_e` ở trạng thái bị khóa để thử nghiệm)_
 
 ---
 

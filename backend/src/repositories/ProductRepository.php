@@ -97,4 +97,36 @@ class ProductRepository extends BaseRepository
         $stmt->execute(['id' => $id]);
         return $stmt->fetch() ?: null;
     }
+
+    public function findSellerProducts(int $sellerId, ?string $status = null): array {
+        $sql = "SELECT p.*, c.Name as CategoryName FROM `products` p
+                JOIN `categories` c ON p.Category_ID = c.ID
+                WHERE p.Seller_ID = :seller_id AND p.Status != 'deleted'";
+        $params = ['seller_id' => $sellerId];
+        if ($status !== null) {
+            $sql .= " AND p.Status = :status";
+            $params['status'] = $status;
+        }
+        $sql .= " ORDER BY p.created_at DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    public function softDelete(int $id): bool {
+        $stmt = $this->db->prepare("UPDATE `products` SET `Status` = 'deleted' WHERE `ID` = :id");
+        return $stmt->execute(['id' => $id]);
+    }
+
+    public function getSellerStats(int $sellerId): array {
+        $stmt = $this->db->prepare("SELECT SUM(Total_price) as revenue, COUNT(*) as delivered_count 
+                                    FROM `orders` 
+                                    WHERE Seller_ID = :seller_id AND Status = 'completed'");
+        $stmt->execute(['seller_id' => $sellerId]);
+        $row = $stmt->fetch();
+        return [
+            'revenue' => (float)($row['revenue'] ?? 0.0),
+            'delivered_orders' => (int)($row['delivered_count'] ?? 0)
+        ];
+    }
 }

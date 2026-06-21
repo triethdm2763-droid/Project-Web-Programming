@@ -68,49 +68,84 @@ $maxPrice            = isset($_GET['max_price']) ? trim($_GET['max_price']) : ''
         const initialMinPrice = <?= json_encode($minPrice) ?>;
         const initialMaxPrice = <?= json_encode($maxPrice) ?>;
 
+        let activeCategoryId = selectedCategoryId;
+
         function syncUrlState(params) {
             const url = new URL(window.location.href);
             Object.keys(params).forEach(key => {
-                if (params[key]) url.searchParams.set(key, params[key]);
+                if (params[key] !== undefined && params[key] !== null && params[key] !== '') url.searchParams.set(key, params[key]);
                 else url.searchParams.delete(key);
             });
             window.history.replaceState({}, '', url);
         }
 
-        async function loadCategories() {
+        async function loadCategories(onCategoryClick) {
             let list = document.getElementById("categoriesList");
             let titleEl = document.getElementById("categoryTitle");
             try {
                 let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/categories");
                 let categories = await res.json();
-                let isAll = !selectedCategoryId;
-                if (isAll) titleEl.textContent = initialSearchKeyword ? `Kết quả cho "${initialSearchKeyword}"` : "Tất cả sản phẩm";
                 
-                let itemsHtml = `<li><a href="?category=" class="block ${isAll ? 'text-primary font-medium' : 'text-on-surface-variant hover:text-primary'} transition-colors">Tất cả danh mục</a></li>`;
-                categories.forEach(cat => {
-                    let isSelected = selectedCategoryId == cat.ID;
-                    if (isSelected) titleEl.textContent = initialSearchKeyword ? `${cat.Name} - "${initialSearchKeyword}"` : cat.Name;
-                    itemsHtml += `<li><a href="?category=${cat.ID}" class="flex items-center gap-2 px-3 py-2 rounded-lg ${isSelected ? 'bg-primary/10 text-primary font-medium' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'}"><span class="material-symbols-outlined text-[20px]">${cat.Icon || 'category'}</span><span>${cat.Name}</span></a></li>`;
-                });
-                list.innerHTML = itemsHtml;
+                function renderList() {
+                    let isAll = !activeCategoryId;
+                    if (isAll) titleEl.textContent = document.getElementById('categorySearchInput')?.value.trim() ? `Kết quả cho "${document.getElementById('categorySearchInput').value.trim()}"` : "Tất cả sản phẩm";
+                    
+                    let itemsHtml = `<li><a href="#" data-id="" class="category-link block ${isAll ? 'text-primary font-medium' : 'text-on-surface-variant hover:text-primary'} transition-colors">Tất cả danh mục</a></li>`;
+                    categories.forEach(cat => {
+                        let isSelected = activeCategoryId == cat.ID;
+                        if (isSelected) titleEl.textContent = document.getElementById('categorySearchInput')?.value.trim() ? `${cat.Name} - "${document.getElementById('categorySearchInput').value.trim()}"` : cat.Name;
+                        itemsHtml += `<li><a href="#" data-id="${cat.ID}" class="category-link flex items-center gap-2 px-3 py-2 rounded-lg ${isSelected ? 'bg-primary/10 text-primary font-medium' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'}"><span class="material-symbols-outlined text-[20px]">${cat.Icon || 'category'}</span><span>${cat.Name}</span></a></li>`;
+                    });
+                    list.innerHTML = itemsHtml;
+
+                    // Gắn sự kiện click
+                    list.querySelectorAll('.category-link').forEach(link => {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const id = this.getAttribute('data-id');
+                            activeCategoryId = id ? parseInt(id) : null;
+                            renderList();
+                            if (onCategoryClick) onCategoryClick(activeCategoryId);
+                        });
+                    });
+                }
+                
+                renderList();
             } catch (e) { list.innerHTML = `<li><span class="text-red-500">Lỗi tải danh mục</span></li>`; }
         }
     </script>
     <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260621-1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            loadCategories();
             const searchInput = document.getElementById('categorySearchInput'), sortSelect = document.getElementById('sortSelect'), minP = document.getElementById('minPriceInput'), maxP = document.getElementById('maxPriceInput');
+            
             function runSearch() {
                 const search = searchInput.value.trim(), sort = sortSelect.value, minPrice = minP.value.trim(), maxPrice = maxP.value.trim();
-                syncUrlState({ category: selectedCategoryId || '', search, sort, min_price: minPrice, max_price: maxPrice });
-                if (typeof fetchProducts === 'function') fetchProducts(search, selectedCategoryId, true, { sort, minPrice, maxPrice });
+                syncUrlState({ category: activeCategoryId || '', search, sort, min_price: minPrice, max_price: maxPrice });
+                if (typeof fetchProducts === 'function') fetchProducts(search, activeCategoryId || '', true, { sort, minPrice, maxPrice });
             }
-            if (typeof fetchProducts === 'function') fetchProducts(initialSearchKeyword, selectedCategoryId, false, { sort: initialSort, minPrice: initialMinPrice, maxPrice: initialMaxPrice });
-            let t; searchInput.addEventListener('input', () => { clearTimeout(t); t = setTimeout(runSearch, 500); });
+
+            loadCategories((newCategoryId) => {
+                runSearch();
+            });
+
+            if (typeof fetchProducts === 'function') fetchProducts(initialSearchKeyword, activeCategoryId, false, { sort: initialSort, minPrice: initialMinPrice, maxPrice: initialMaxPrice });
+            
+            let t; 
+            searchInput.addEventListener('input', () => { clearTimeout(t); t = setTimeout(runSearch, 500); });
             sortSelect.addEventListener('change', runSearch);
             document.getElementById('applyPriceFilterBtn').addEventListener('click', runSearch);
-            document.getElementById('clearFiltersBtn').addEventListener('click', () => { searchInput.value = ''; sortSelect.value = 'newest'; minP.value = ''; maxP.value = ''; runSearch(); });
+            document.getElementById('clearFiltersBtn').addEventListener('click', () => { 
+                searchInput.value = ''; 
+                sortSelect.value = 'newest'; 
+                minP.value = ''; 
+                maxP.value = ''; 
+                activeCategoryId = null;
+                // Gọi loadCategories để render lại trạng thái active của danh mục
+                loadCategories((newCategoryId) => {
+                    runSearch();
+                });
+            });
         });
     </script>
 </body>

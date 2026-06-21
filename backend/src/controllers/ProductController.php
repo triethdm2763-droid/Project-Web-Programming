@@ -67,46 +67,6 @@ class ProductController extends BaseController
         return $this->json(['error' => $result['message']], $result['code']);
     }
 
-    /**
-     * POST /api/products/update
-     * Update an existing product listing (owner or admin only)
-     */
-    public function update() {
-        $data = $this->getRequestBody();
-        if (empty($data['id'])) {
-            return $this->json(['error' => 'Thiếu tham số ID sản phẩm.'], 400);
-        }
-
-        $result = $this->productService->updateProduct((int)$data['id'], $data);
-
-        if ($result['status'] === 'success') {
-            return $this->json(['message' => 'Cập nhật tin đăng thành công!'], 200);
-        }
-
-        return $this->json([
-            'error'  => $result['message'] ?? 'Cập nhật thất bại.',
-            'errors' => $result['errors'] ?? null
-        ], $result['code']);
-    }
-
-    /**
-     * POST /api/products/delete
-     * Soft-delete a product listing (owner or admin only)
-     */
-    public function remove() {
-        $data = $this->getRequestBody();
-        if (empty($data['id'])) {
-            return $this->json(['error' => 'Thiếu tham số ID sản phẩm.'], 400);
-        }
-
-        $result = $this->productService->deleteProduct((int)$data['id']);
-
-        if ($result['status'] === 'success') {
-            return $this->json(['message' => 'Đã xóa tin đăng.'], 200);
-        }
-
-        return $this->json(['error' => $result['message']], $result['code']);
-    }
 
     /**
      * GET /api/products/detail

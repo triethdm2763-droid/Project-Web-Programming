@@ -9,8 +9,6 @@ USE c2c_used_marketplace;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
-TRUNCATE TABLE order_details;
-
 TRUNCATE TABLE orders;
 
 TRUNCATE TABLE payments;
@@ -32,8 +30,6 @@ SOURCE ./database/seeders/seed_products.sql;
 
 SOURCE ./database/seeders/seed_orders.sql;
 
-SOURCE ./database/seeders/seed_order_details.sql;
-
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- Quick summary counts
@@ -42,5 +38,3 @@ SELECT 'users' AS tbl, COUNT(*) AS cnt FROM users;
 SELECT 'products' AS tbl, COUNT(*) AS cnt FROM products;
 
 SELECT 'orders' AS tbl, COUNT(*) AS cnt FROM orders;
-
-SELECT 'order_details' AS tbl, COUNT(*) AS cnt FROM order_details;

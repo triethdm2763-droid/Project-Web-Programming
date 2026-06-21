@@ -49,8 +49,19 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Hàm lấy danh sách sản phẩm
-function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false) {
+function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false, filters = {}) {
     let url = `/Project-Web-Programming/backend/public/index.php/api/products?search=${encodeURIComponent(searchQuery)}&category_id=${categoryId}`;
+    
+    if (filters.sort) {
+        url += `&sort=${encodeURIComponent(filters.sort)}`;
+    }
+    if (filters.minPrice) {
+        url += `&min_price=${encodeURIComponent(filters.minPrice)}`;
+    }
+    if (filters.maxPrice) {
+        url += `&max_price=${encodeURIComponent(filters.maxPrice)}`;
+    }
+
     const productGrid = document.querySelector('.product-grid') || document.querySelector('#categoryProducts');
     if (!productGrid) return;
 
@@ -59,6 +70,12 @@ function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false) 
         .then(result => {
             let products = Array.isArray(result) ? result : (result.data || []);
             productGrid.innerHTML = products.length ? '' : '<div class="col-span-full text-center py-8 text-outline">Không tìm thấy sản phẩm.</div>';
+            
+            // Cập nhật nhãn số lượng kết quả nếu phần tử tồn tại
+            const resultCountLabel = document.getElementById('resultCountLabel');
+            if (resultCountLabel) {
+                resultCountLabel.textContent = `Tìm thấy ${products.length} sản phẩm`;
+            }
             
             products.forEach(p => {
                 const img = p.Image ? (p.Image.startsWith('http') ? p.Image : `/Project-Web-Programming/backend/uploads/products/${p.Image}`) : '';

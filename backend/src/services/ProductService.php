@@ -84,7 +84,7 @@ class ProductService
         if (!empty($data['image'])) $updateData['image'] = $data['image'];
 
         $this->productRepository->update($id, $updateData);
-        return ['status' => 'success', 'code' => 200];
+        return ['status' => 'success', 'code' => 200, 'message' => 'Cập nhật tin đăng thành công!'];
     }
 
     public function deleteProduct(int $id): array
@@ -101,6 +101,40 @@ class ProductService
         if (($product['Status'] ?? '') === 'sold') return ['status' => 'error', 'code' => 400, 'message' => 'Sản phẩm đã bán, không thể xóa.'];
 
         $this->productRepository->softDelete($id);
-        return ['status' => 'success', 'code' => 200];
+        return ['status' => 'success', 'code' => 200, 'message' => 'Xóa tin đăng thành công!'];
+    }
+
+    public function getSellerProducts(?string $status = null): array
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (empty($_SESSION['user_id'])) return ['status' => 'error', 'code' => 401, 'message' => 'Bạn phải đăng nhập.'];
+        $sellerId = (int)$_SESSION['user_id'];
+        $products = $this->productRepository->findSellerProducts($sellerId, $status);
+        return ['status' => 'success', 'code' => 200, 'data' => $products];
+    }
+
+    public function getMyProducts(?string $status = null): array
+    {
+        return $this->getSellerProducts($status);
+    }
+
+    public function getSellerStats(): array
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (empty($_SESSION['user_id'])) return ['status' => 'error', 'code' => 401, 'message' => 'Bạn phải đăng nhập.'];
+        
+        $sellerId = (int)$_SESSION['user_id'];
+        $products = $this->productRepository->findSellerProducts($sellerId);
+        $totalProducts = count($products);
+        
+        $soldProducts = count(array_filter($products, function($p) {
+            return ($p['Status'] ?? $p['status'] ?? '') === 'sold';
+        }));
+        
+        $stats = $this->productRepository->getSellerStats($sellerId);
+        $stats['total_products'] = $totalProducts;
+        $stats['sold_products'] = $soldProducts;
+        
+        return ['status' => 'success', 'code' => 200, 'data' => $stats];
     }
 }
