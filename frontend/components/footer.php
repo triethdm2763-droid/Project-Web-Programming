@@ -79,4 +79,33 @@
             </div>
         </div>
     </div>
+
+    <!-- Nút Quay lại đầu trang (Back to Top) -->
+    <button id="backToTopBtn" class="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-white/85 text-primary border border-outline-border shadow-lg hover:shadow-xl active:scale-95 opacity-0 translate-y-10 pointer-events-none transition-all duration-500 hover:bg-primary hover:text-white group flex items-center justify-center" aria-label="Quay lại đầu trang">
+        <span class="material-symbols-outlined font-bold text-[24px] transition-transform duration-300 group-hover:-translate-y-0.5">arrow_upward</span>
+    </button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const backToTopBtn = document.getElementById('backToTopBtn');
+            if (backToTopBtn) {
+                window.addEventListener('scroll', function() {
+                    if (window.scrollY > 300) {
+                        backToTopBtn.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+                        backToTopBtn.classList.add('opacity-100', 'translate-y-0');
+                    } else {
+                        backToTopBtn.classList.remove('opacity-100', 'translate-y-0');
+                        backToTopBtn.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+                    }
+                });
+
+                backToTopBtn.addEventListener('click', function() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                });
+            }
+        });
+    </script>
 </footer>

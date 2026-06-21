@@ -46,8 +46,20 @@ class ProductController extends BaseController
         if (isset($_GET['sort'])) {
             $filters['sort'] = $_GET['sort'];
         }
+        if (isset($_GET['limit'])) {
+            $filters['limit'] = intval($_GET['limit']);
+            $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+            if ($page < 1) $page = 1;
+            $filters['offset'] = ($page - 1) * $filters['limit'];
+        }
 
         $result = $this->productService->getActiveProducts($filters);
+        if (isset($filters['limit'])) {
+            return $this->json([
+                'total' => $result['total'] ?? count($result['data']),
+                'data' => $result['data']
+            ], $result['code']);
+        }
         return $this->json($result['data'], $result['code']);
     }
 

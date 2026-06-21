@@ -87,6 +87,12 @@ if (session_status() === PHP_SESSION_NONE) {
             <div class="grid grid-cols-2 md:grid-cols-4 gap-gutter" id="products-container">
                 <!-- Sẽ được tải động qua API -->
             </div>
+            <div class="flex justify-center mt-8">
+                <button id="loadMoreBtn" class="hidden bg-white text-primary border border-primary px-8 py-3 rounded-xl font-medium hover:bg-primary hover:text-white transition-all shadow-sm flex items-center gap-2">
+                    <span>Xem thêm sản phẩm</span>
+                    <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                </button>
+            </div>
         </section>
 
         <!-- ==========================================================================
@@ -131,8 +137,16 @@ if (session_status() === PHP_SESSION_NONE) {
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             loadCategories();
-            loadProducts();
+            loadProducts(1);
             initBannerSlider();
+
+            const loadMoreBtn = document.getElementById("loadMoreBtn");
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener("click", function() {
+                    homeCurrentPage++;
+                    loadProducts(homeCurrentPage);
+                });
+            }
         });
 
         function getCategoryIcon(catName) {
@@ -155,7 +169,7 @@ if (session_status() === PHP_SESSION_NONE) {
             container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Đang tải danh mục...</div>`;
 
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/api/categories");
+                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/categories");
                 let categories = await res.json();
 
                 if (categories && categories.length > 0) {
@@ -176,18 +190,30 @@ if (session_status() === PHP_SESSION_NONE) {
             }
         }
 
-        async function loadProducts() {
+        let homeCurrentPage = 1;
+        const homeLimit = 8;
+        let homeTotalProducts = 0;
+
+        async function loadProducts(page = 1) {
             let container = document.getElementById("products-container");
-            container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Đang tải sản phẩm...</div>`;
+            const loadMoreBtn = document.getElementById("loadMoreBtn");
+            
+            if (page === 1) {
+                container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Đang tải sản phẩm...</div>`;
+            }
 
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/api/products");
-                let products = await res.json();
+                let res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products?limit=${homeLimit}&page=${page}`);
+                let result = await res.json();
+                let products = result.data || [];
+                homeTotalProducts = result.total !== undefined ? result.total : products.length;
+
+                if (page === 1) {
+                    container.innerHTML = '';
+                }
 
                 if (products && products.length > 0) {
-                    // Hiển thị tối đa 4 sản phẩm mới nhất
-                    let latestProducts = products.slice(0, 4);
-                    container.innerHTML = latestProducts.map(row => `
+                    const productsHtml = products.map(row => `
                     <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-outline-variant/10 flex flex-col">
                         <div class="h-48 bg-surface-container flex items-center justify-center relative text-outline/50 overflow-hidden">
                             <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm">Độc Bản (SL=1)</span>
@@ -208,13 +234,27 @@ if (session_status() === PHP_SESSION_NONE) {
                             </div>
                         </div>
                     </div>
-                `).join('');
-                } else {
+                    `).join('');
+                    
+                    container.insertAdjacentHTML('beforeend', productsHtml);
+                } else if (page === 1) {
                     container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Chưa có sản phẩm nào trong hệ thống.</div>`;
+                }
+
+                // Cập nhật ẩn hiện nút Xem thêm
+                if (loadMoreBtn) {
+                    const loadedCount = container.children.length;
+                    if (loadedCount < homeTotalProducts && products.length > 0) {
+                        loadMoreBtn.classList.remove('hidden');
+                    } else {
+                        loadMoreBtn.classList.add('hidden');
+                    }
                 }
             } catch (error) {
                 console.error("Error loading products:", error);
-                container.innerHTML = `<div class="col-span-full text-center text-red-500 py-4">Lỗi tải sản phẩm.</div>`;
+                if (page === 1) {
+                    container.innerHTML = `<div class="col-span-full text-center text-red-500 py-4">Lỗi tải sản phẩm.</div>`;
+                }
             }
         }
 

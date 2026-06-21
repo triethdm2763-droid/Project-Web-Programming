@@ -55,6 +55,12 @@ $maxPrice            = isset($_GET['max_price']) ? trim($_GET['max_price']) : ''
                 </div>
                 <p class="text-sm text-on-surface-variant mb-6" id="resultCountLabel"></p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="categoryProducts"></div>
+                <div class="flex justify-center mt-8">
+                    <button id="loadMoreBtn" class="hidden bg-white text-primary border border-primary px-8 py-3 rounded-xl font-medium hover:bg-primary hover:text-white transition-all shadow-sm flex items-center gap-2">
+                        <span>Xem thêm sản phẩm</span>
+                        <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                    </button>
+                </div>
             </section>
         </div>
     </main>
@@ -146,6 +152,15 @@ $maxPrice            = isset($_GET['max_price']) ? trim($_GET['max_price']) : ''
                     runSearch();
                 });
             });
+
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', function() {
+                    if (typeof loadNextProductPage === 'function') {
+                        loadNextProductPage();
+                    }
+                });
+            }
         });
     </script>
 </body>
