@@ -126,20 +126,19 @@ $initials = mb_strtoupper($initials, 'UTF-8');
 
     <?php include '../../components/footer.php'; ?>
 
-    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260618-3"></script>
+    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260621-1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Lấy dữ liệu sản phẩm để tính thống kê
+            // Lấy TOÀN BỘ tin đăng của CHÍNH người bán đang đăng nhập (mọi trạng thái) để tính thống kê.
             // (switchSellerTab('available') đã được products.js tự gọi sẵn khi phát hiện #seller-products-list)
-            fetch(`/Project-Web-Programming/backend/public/index.php/api/products`)
+            fetch(`/Project-Web-Programming/backend/public/index.php/api/products/mine`, { credentials: 'same-origin' })
                 .then(res => res.json())
                 .then(data => {
                     const prods = Array.isArray(data) ? data : (data.data || []);
-                    // Lọc theo user ID (Giả sử API trả về seller_id hoặc user_id)
-                    // Nếu API backend chỉ trả về sản phẩm chung, logic này sẽ cần tinh chỉnh ở Backend
                     document.getElementById('count-total').innerText = prods.length;
-                    document.getElementById('count-sold').innerText = prods.filter(p => p.Status === 'sold').length;
-                });
+                    document.getElementById('count-sold').innerText = prods.filter(p => (p.Status || p.status) === 'sold').length;
+                })
+                .catch(() => {});
         });
     </script>
 </body>

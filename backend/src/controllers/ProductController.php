@@ -16,7 +16,7 @@ class ProductController extends BaseController
 
     /**
      * GET /api/products
-     * Return list of active products with optional category / search filtering
+     * Return list of active products with optional category / search / price / sort filtering
      */
     public function list()
     {
@@ -37,9 +37,75 @@ class ProductController extends BaseController
         if (isset($_GET['search'])) {
             $filters['search'] = $_GET['search'];
         }
+        if (isset($_GET['min_price'])) {
+            $filters['min_price'] = $_GET['min_price'];
+        }
+        if (isset($_GET['max_price'])) {
+            $filters['max_price'] = $_GET['max_price'];
+        }
+        if (isset($_GET['sort'])) {
+            $filters['sort'] = $_GET['sort'];
+        }
 
         $result = $this->productService->getActiveProducts($filters);
         return $this->json($result['data'], $result['code']);
+    }
+
+    /**
+     * GET /api/products/mine
+     * Return every listing belonging to the logged-in seller, regardless of
+     * status, optionally narrowed to a single status (used by the "Kênh
+     * người bán" page tabs: Đang bán / Chờ duyệt / Đã bán).
+     */
+    public function mine() {
+        $status = $_GET['status'] ?? null;
+        $result = $this->productService->getMyProducts($status);
+
+        if ($result['status'] === 'success') {
+            return $this->json($result['data'], $result['code']);
+        }
+        return $this->json(['error' => $result['message']], $result['code']);
+    }
+
+    /**
+     * POST /api/products/update
+     * Update an existing product listing (owner or admin only)
+     */
+    public function update() {
+        $data = $this->getRequestBody();
+        if (empty($data['id'])) {
+            return $this->json(['error' => 'Thiếu tham số ID sản phẩm.'], 400);
+        }
+
+        $result = $this->productService->updateProduct((int)$data['id'], $data);
+
+        if ($result['status'] === 'success') {
+            return $this->json(['message' => 'Cập nhật tin đăng thành công!'], 200);
+        }
+
+        return $this->json([
+            'error'  => $result['message'] ?? 'Cập nhật thất bại.',
+            'errors' => $result['errors'] ?? null
+        ], $result['code']);
+    }
+
+    /**
+     * POST /api/products/delete
+     * Soft-delete a product listing (owner or admin only)
+     */
+    public function remove() {
+        $data = $this->getRequestBody();
+        if (empty($data['id'])) {
+            return $this->json(['error' => 'Thiếu tham số ID sản phẩm.'], 400);
+        }
+
+        $result = $this->productService->deleteProduct((int)$data['id']);
+
+        if ($result['status'] === 'success') {
+            return $this->json(['message' => 'Đã xóa tin đăng.'], 200);
+        }
+
+        return $this->json(['error' => $result['message']], $result['code']);
     }
 
     /**

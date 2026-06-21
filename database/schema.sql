@@ -5,20 +5,15 @@ USE `c2c_used_marketplace`;
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `notifications`;
-
 DROP TABLE IF EXISTS `payments`;
-
 DROP TABLE IF EXISTS `orders`;
-
 DROP TABLE IF EXISTS `products`;
-
 DROP TABLE IF EXISTS `categories`;
-
 DROP TABLE IF EXISTS `users`;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- 1. BẢNG DANH MỤC SẢN PHẨM (CATEGORIES)
+-- 1. BẢNG DANH MỤC SẢN PHẨM
 CREATE TABLE `categories` (
     `ID` int(11) NOT NULL AUTO_INCREMENT,
     `Name` varchar(100) NOT NULL,
@@ -26,7 +21,7 @@ CREATE TABLE `categories` (
     PRIMARY KEY (`ID`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
--- 2. BẢNG TÀI KHOẢN NGƯỜI DÙNG (USERS)
+-- 2. BẢNG TÀI KHOẢN NGƯỜI DÙNG
 CREATE TABLE `users` (
     `ID` int(11) NOT NULL AUTO_INCREMENT,
     `Username` varchar(50) NOT NULL,
@@ -44,27 +39,31 @@ CREATE TABLE `users` (
     UNIQUE KEY `email` (`Email`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
--- 3. BẢNG SẢN PHẨM THANH LÝ (PRODUCTS)
+-- 3. BẢNG SẢN PHẨM (Đã tích hợp đầy đủ thuộc tính)
 CREATE TABLE `products` (
-    `ID` int(11) NOT NULL AUTO_INCREMENT,
-    `Name` varchar(255) NOT NULL,
-    `Description` text DEFAULT NULL,
-    `Image` text DEFAULT NULL,
-    `Category_ID` int(11) NOT NULL,
-    `Seller_ID` int(11) NOT NULL,
-    `Price` decimal(15, 2) NOT NULL,
-    `Stock_quantity` int(11) NOT NULL DEFAULT 1,
-    `Status` varchar(20) NOT NULL DEFAULT 'pending',
-    `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-    `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-    PRIMARY KEY (`ID`),
-    KEY `fk_product_category` (`Category_ID`),
-    KEY `fk_product_seller` (`Seller_ID`),
-    CONSTRAINT `fk_product_category` FOREIGN KEY (`Category_ID`) REFERENCES `categories` (`ID`),
-    CONSTRAINT `fk_product_seller` FOREIGN KEY (`Seller_ID`) REFERENCES `users` (`ID`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(255) NOT NULL,
+  `Description` text DEFAULT NULL,
+  `Image` text DEFAULT NULL,
+  `Category_ID` int(11) NOT NULL,
+  `Seller_ID` int(11) NOT NULL,
+  `Price` decimal(15,2) NOT NULL,
+  `Stock_quantity` int(11) NOT NULL DEFAULT 1,
+  `Status` varchar(20) NOT NULL DEFAULT 'pending',
+  `Condition_status` varchar(50) NOT NULL DEFAULT '' COMMENT 'Tình trạng sản phẩm',
+  `Accessories` varchar(255) NOT NULL DEFAULT '' COMMENT 'Phụ kiện kèm theo',
+  `Warranty` varchar(50) NOT NULL DEFAULT 'Không bảo hành' COMMENT 'Bảo hành',
+  `Used_duration` varchar(50) NOT NULL DEFAULT '' COMMENT 'Thời gian đã sử dụng',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`ID`),
+  KEY `fk_product_category` (`Category_ID`),
+  KEY `fk_product_seller` (`Seller_ID`),
+  CONSTRAINT `fk_product_category` FOREIGN KEY (`Category_ID`) REFERENCES `categories` (`ID`),
+  CONSTRAINT `fk_product_seller` FOREIGN KEY (`Seller_ID`) REFERENCES `users` (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 4. BẢNG ĐƠN HÀNG (ORDERS)
+-- 4. BẢNG ĐƠN HÀNG
 CREATE TABLE `orders` (
     `ID` int(11) NOT NULL AUTO_INCREMENT,
     `Buyer_ID` int(11) NOT NULL,
@@ -84,7 +83,7 @@ CREATE TABLE `orders` (
     CONSTRAINT `fk_order_product` FOREIGN KEY (`Product_ID`) REFERENCES `products` (`ID`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
--- 5. BẢNG THANH TOÁN (PAYMENTS)
+-- 5. BẢNG THANH TOÁN
 CREATE TABLE `payments` (
     `ID` int(11) NOT NULL AUTO_INCREMENT,
     `Order_ID` int(11) NOT NULL,
@@ -98,7 +97,7 @@ CREATE TABLE `payments` (
     CONSTRAINT `fk_payment_order` FOREIGN KEY (`Order_ID`) REFERENCES `orders` (`ID`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
--- 6. BẢNG THÔNG BÁO (NOTIFICATIONS)
+-- 6. BẢNG THÔNG BÁO
 CREATE TABLE `notifications` (
     `ID` int(11) NOT NULL AUTO_INCREMENT,
     `User_ID` int(11) NOT NULL,

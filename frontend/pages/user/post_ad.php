@@ -2,7 +2,7 @@
 <html lang="vi">
 
 <head>
-    <title>Đăng tin mới | Chợ Cũ</title>
+    <title id="page-title">Đăng tin mới | Chợ Cũ</title>
     <?php include '../../components/header.php'; ?>
 </head>
 
@@ -11,7 +11,7 @@
 
     <main class="flex-grow max-w-3xl mx-auto px-gutter py-8 w-full">
         <div class="mb-6">
-            <h1 class="text-headline-md font-bold text-on-surface">Đăng tin mới</h1>
+            <h1 id="page-heading" class="text-headline-md font-bold text-on-surface">Đăng tin mới</h1>
             <p class="text-body-sm text-outline-variant mt-1">Vui lòng cung cấp đầy đủ thông tin để sản phẩm của bạn dễ dàng tiếp cận người mua hơn.</p>
         </div>
 
@@ -136,22 +136,104 @@
     <?php include '../../components/footer.php'; ?>
 
     <script>
+        let editingProductId = null;
+
         function syncValue(fieldId, val) {
             document.getElementById('input-' + fieldId).value = val;
         }
 
+        // Với mô tả được tạo bởi bản submitProduct() mới (không còn gộp Tình trạng/Sử dụng/
+        // Bảo hành/Phụ kiện vào trong Description), ta có thể tách lại SĐT/Khu vực/Mô tả gốc
+        // theo định dạng cố định bên dưới để phục vụ việc chỉnh sửa tin đăng.
+        function parseDescriptionForEdit(text) {
+            const result = { phone: '', location: '', rawDescription: text || '' };
+            if (!text) return result;
+
+            const phoneMatch = text.match(/Liên hệ SĐT:\s*([^\n]+)/i);
+            if (phoneMatch) result.phone = phoneMatch[1].trim();
+
+            const locationMatch = text.match(/Khu vực:\s*([^\n]+)/i);
+            if (locationMatch) result.location = locationMatch[1].trim();
+
+            const descMatch = text.match(/Mô tả chi tiết:\s*\n([\s\S]*)$/i);
+            if (descMatch) result.rawDescription = descMatch[1].trim();
+
+            return result;
+        }
+
         async function initPage() {
             // Tải danh mục từ API
+            let categories = [];
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/api/categories");
+                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/categories");
                 let data = await res.json();
-                let categories = data.data || data || [];
+                categories = data.data || data || [];
                 let select = document.getElementById("category_id");
-                select.innerHTML = '<option value="">Chọn danh mục</option>' + categories.map(cat => 
+                select.innerHTML = '<option value="">Chọn danh mục</option>' + categories.map(cat =>
                     `<option value="${cat.ID || cat.id}">${cat.Name || cat.name}</option>`
                 ).join('');
             } catch (err) {
                 console.error("Lỗi khi tải danh mục:", err);
+            }
+
+            // Chế độ chỉnh sửa: nếu URL có ?id=, tải dữ liệu sản phẩm hiện có lên form
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (!id) return;
+
+            editingProductId = id;
+            document.getElementById('page-title').innerText = 'Chỉnh sửa tin đăng | Chợ Cũ';
+            document.getElementById('page-heading').innerText = 'Chỉnh sửa tin đăng';
+            document.getElementById('submitBtn').innerText = 'LƯU THAY ĐỔI';
+
+            try {
+                const res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products/detail?id=${encodeURIComponent(id)}`);
+                const data = await res.json();
+                const product = data.data || data;
+                if (!res.ok || !product || (!product.ID && !product.id)) {
+                    showAlert("Không tìm thấy tin đăng", "Tin đăng này không tồn tại hoặc đã bị xóa.", "error");
+                    return;
+                }
+
+                document.getElementById('title').value = product.Name || '';
+                document.getElementById('category_id').value = product.Category_ID || product.CategoryID || '';
+                document.getElementById('price').value = product.Price || '';
+                document.getElementById('condition').value = product.Condition_status || '';
+                document.getElementById('input-usage').value = product.Used_duration || '';
+                document.getElementById('input-warranty').value = product.Warranty || '';
+                document.getElementById('accessories').value = product.Accessories || '';
+
+                const parsed = parseDescriptionForEdit(product.Description || '');
+                document.getElementById('description').value = parsed.rawDescription;
+                document.getElementById('phone').value = parsed.phone;
+                if (parsed.location) {
+                    document.getElementById('location').value = parsed.location;
+                }
+
+                // Hiển thị ảnh hiện có làm preview, đồng thời coi như "đã có ảnh" để không bắt buộc upload lại
+                if (product.Image) {
+                    document.getElementById('uploaded-image-name').value = product.Image;
+                    const grid = document.getElementById('image-upload-grid');
+                    const trigger = document.getElementById('upload-trigger');
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = "relative rounded-xl overflow-hidden aspect-square border border-outline-variant/40 group";
+                    const imgSrc = (product.Image.startsWith('http://') || product.Image.startsWith('https://'))
+                        ? product.Image
+                        : `/Project-Web-Programming/backend/uploads/products/${product.Image}`;
+                    previewDiv.innerHTML = `
+                        <img src="${imgSrc}" class="w-full h-full object-cover">
+                        <button type="button" onclick="removeUploadedImage(this)" class="absolute top-1.5 right-1.5 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition-colors flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    `;
+                    grid.insertBefore(previewDiv, trigger);
+                    trigger.style.display = 'none';
+                }
+            } catch (err) {
+                console.error("Lỗi khi tải dữ liệu tin đăng:", err);
+                showAlert("Lỗi hệ thống", "Không thể tải dữ liệu tin đăng để chỉnh sửa.", "error");
             }
         }
 
@@ -174,7 +256,7 @@
             formData.append('image', file);
 
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/api/products/upload", {
+                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/products/upload", {
                     method: "POST",
                     body: formData
                 });
@@ -222,7 +304,7 @@
             document.getElementById('upload-trigger').style.display = 'flex';
         }
 
-        // Đăng sản phẩm mới
+        // Đăng sản phẩm mới HOẶC lưu chỉnh sửa tin đăng hiện có (editingProductId)
         async function submitProduct(event) {
             event.preventDefault();
 
@@ -248,12 +330,11 @@
                 return;
             }
 
-            // Tạo chuỗi mô tả gộp tất cả thông tin phụ để hiển thị chi tiết mà không đổi cấu trúc Database
-            let formattedDescription = `Tình trạng: ${condition}\n`;
-            if (usage) formattedDescription += `Thời gian sử dụng: ${usage}\n`;
-            if (warranty) formattedDescription += `Bảo hành: ${warranty}\n`;
-            if (accessories) formattedDescription += `Phụ kiện đi kèm: ${accessories}\n`;
-            formattedDescription += `Liên hệ SĐT: ${phone}\n`;
+            // Tình trạng / Thời gian sử dụng / Bảo hành / Phụ kiện được lưu vào các CỘT RIÊNG
+            // trong CSDL (Condition_status, Used_duration, Warranty, Accessories) thay vì gộp
+            // chung vào Description như trước đây - giúp trang chi tiết hiển thị đúng dữ liệu.
+            // Description chỉ còn giữ lại SĐT liên hệ + khu vực + mô tả gốc của người bán.
+            let formattedDescription = `Liên hệ SĐT: ${phone}\n`;
             formattedDescription += `Khu vực: ${location}\n\n`;
             formattedDescription += `Mô tả chi tiết:\n${rawDescription}`;
 
@@ -262,33 +343,47 @@
                 category_id: categoryId,
                 price: price,
                 description: formattedDescription,
-                image: imageName
+                image: imageName,
+                condition_status: condition,
+                used_duration: usage,
+                warranty: warranty,
+                accessories: accessories
             };
+
+            const isEditing = !!editingProductId;
+            if (isEditing) {
+                payload.id = editingProductId;
+            }
 
             const submitBtn = document.getElementById('submitBtn');
             const originalText = submitBtn.innerHTML;
 
             try {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = "ĐANG ĐĂNG TIN...";
+                submitBtn.innerHTML = isEditing ? "ĐANG LƯU..." : "ĐANG ĐĂNG TIN...";
                 submitBtn.classList.add("opacity-70");
 
-                let res = await fetch("/Project-Web-Programming/backend/public/api/products", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                });
+                let res = await fetch(
+                    isEditing
+                        ? "/Project-Web-Programming/backend/public/index.php/api/products/update"
+                        : "/Project-Web-Programming/backend/public/index.php/api/products",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    }
+                );
                 let data = await res.json();
 
                 if (res.ok && !data.error) {
-                    showToast("🎉 Đăng tin thanh lý thành công!", "success");
+                    showToast(isEditing ? "✅ Đã lưu thay đổi tin đăng!" : "🎉 Đăng tin thanh lý thành công!", "success");
                     setTimeout(() => {
                         window.location.href = "/Project-Web-Programming/frontend/pages/seller/my-store.php";
                     }, 1200);
                 } else {
-                    showAlert("Đăng tin thất bại", data.error || "Không thể đăng tin", "error");
+                    showAlert(isEditing ? "Lưu thay đổi thất bại" : "Đăng tin thất bại", data.error || "Không thể xử lý yêu cầu", "error");
                 }
             } catch (err) {
                 console.error(err);

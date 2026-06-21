@@ -1395,29 +1395,20 @@ VALUES (1, 8500000, 'COD', 'success'),
         'success'
     );
 
--- 6. SEED DỮ LIỆU BẢNG THÔNG BÁO (NOTIFICATIONS)
-INSERT INTO
-    `notifications` (
-        `User_ID`,
-        `Title`,
-        `Content`,
-        `Is_read`
-    )
-VALUES (
-        5,
-        'Bạn có đơn hàng mới!',
-        'Người dùng buyer_minh đã đặt mua sản phẩm Laptop của bạn.',
-        0
-    ),
-    (
-        5,
-        'Bạn có đơn hàng mới!',
-        'Người dùng buyer_lan đã đặt mua sản phẩm PC mini của bạn.',
-        1
-    ),
-    (
-        6,
-        'Đặt hàng thành công',
-        'Đơn hàng mua Laptop của bạn đã được tiếp nhận và xử lý.',
-        1
-    );
+-- -- SEED DỮ LIỆU BẢNG DANH MỤC
+INSERT INTO `categories` (`ID`, `Name`, `Icon`) VALUES
+(1, 'Đồ điện tử', 'laptop_mac'),
+(2, 'Thời trang', 'checkroom'),
+(3, 'Đồ gia dụng', 'kitchen'),
+(4, 'Sách & Văn phòng phẩm', 'book');
+
+-- SEED DỮ LIỆU TÀI KHOẢN NGƯỜI DÙNG
+INSERT INTO `users` (`ID`, `Username`, `Password`, `Email`, `Role`) VALUES
+(5, 'seller_minh', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'seller@gmail.com', 'user'),
+(6, 'buyer_minh', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'buyer@gmail.com', 'user');
+
+-- SEED DỮ LIỆU BẢNG THÔNG BÁO (Chuẩn hóa)
+INSERT INTO `notifications` (`User_ID`, `Title`, `Content`, `Is_read`) VALUES
+(5, 'Bạn có đơn hàng mới!', 'Người dùng buyer_minh đã đặt mua sản phẩm Laptop của bạn.', 0),
+(5, 'Bạn có đơn hàng mới!', 'Người dùng buyer_lan đã đặt mua sản phẩm PC mini của bạn.', 1),
+(6, 'Đặt hàng thành công', 'Đơn hàng mua Laptop của bạn đã được tiếp nhận và xử lý.', 1);

@@ -133,6 +133,7 @@ class UserRepository extends BaseRepository
                 Email,
                 Phone,
                 Role,
+                Status,
                 Created_at
             FROM users
             ORDER BY Created_at DESC
@@ -142,6 +143,22 @@ class UserRepository extends BaseRepository
         $stmt->execute();
 
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Lock / unlock a user account (admin action).
+     *
+     * @param int $id
+     * @param string $status 'active' | 'banned'
+     * @return bool
+     */
+    public function updateStatus(int $id, string $status): bool {
+        $sql = "UPDATE `users` SET `Status` = :status WHERE `ID` = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'status' => $status,
+            'id'     => $id
+        ]);
     }
 
     /**

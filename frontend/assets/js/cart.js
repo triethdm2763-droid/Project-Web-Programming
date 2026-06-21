@@ -429,7 +429,9 @@ function removeFromCart(index) {
 
 
 // --- 6. CHUYỂN HƯỚNG SANG TRANG PAYMENT ---
-// Thay vì đặt hàng ngay tại giỏ, ta chuyển sang trang Payment
+// Thay vì đặt hàng ngay tại giỏ, ta chuyển sang trang Payment, mang theo TOÀN BỘ
+// các sản phẩm đang được tick chọn (trang Payment sẽ tuần tự gọi API /api/orders
+// cho từng sản phẩm một - vì mỗi sản phẩm C2C là một đơn hàng độc lập).
 function goToCheckout() {
     let cart = loadCartFromStorage();
     if (cart.length === 0) {
@@ -444,14 +446,8 @@ function goToCheckout() {
         return;
     }
 
-    // Backend hiện tại (API /api/orders) chỉ xử lý 1 sản phẩm/đơn hàng,
-    // nên nếu chọn nhiều sản phẩm, hệ thống sẽ thanh toán sản phẩm đầu tiên trong danh sách đã chọn.
-    if (selectedItems.length > 1) {
-        showToast("Hệ thống hiện chỉ hỗ trợ thanh toán 1 sản phẩm/lần. Sản phẩm đầu tiên trong danh sách đã chọn sẽ được thanh toán trước.", "info");
-    }
+    const productIds = selectedItems.map(item => item.ID ?? item.id).filter(Boolean);
 
-    const productId = selectedItems[0].ID ?? selectedItems[0].id;
-
-    // Chuyển sang trang thanh toán kèm ID sản phẩm để trang đó tự gọi API lấy thông tin
-    window.location.href = `../payment/index.php?id=${encodeURIComponent(productId)}`;
+    // Chuyển sang trang thanh toán kèm danh sách ID sản phẩm để trang đó tự gọi API lấy thông tin
+    window.location.href = `../payment/index.php?ids=${encodeURIComponent(productIds.join(','))}`;
 }

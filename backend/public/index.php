@@ -77,12 +77,14 @@ $routes = [
         '/api/orders/cancel'        => ['App\Controllers\OrderController', 'cancel'],
         '/api/orders/status'        => ['App\Controllers\OrderController', 'updateOrderStatus'],
         '/api/notifications/read'   => ['App\Controllers\NotificationController', 'markRead'],
-        '/api/admin/products/update-status' => ['App\Controllers\AdminController', 'updateProductStatus']
+        '/api/admin/products/update-status' => ['App\Controllers\AdminController', 'updateProductStatus'],
+        '/api/admin/users/update-status'    => ['App\Controllers\AdminController', 'updateUserStatus']
     ],
     'GET' => [
         '/api/auth/me'            => ['App\Controllers\AuthController', 'me'],
         '/api/products'           => ['App\Controllers\ProductController', 'list'],
         '/api/products/detail'    => ['App\Controllers\ProductController', 'detail'],
+        '/api/products/mine'      => ['App\Controllers\ProductController', 'mine'],
         // Categories endpoints
         '/api/categories'         => ['App\Controllers\CategoryController', 'list'],
         '/api/categories/detail'  => ['App\Controllers\CategoryController', 'detail'],

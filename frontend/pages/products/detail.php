@@ -51,10 +51,6 @@
                     </div>
 
                     <div class="flex items-center gap-3">
-                        <span class="text-outline line-through text-body-md" id="old-price">
-                            ₫0
-                        </span>
-
                         <span
                             id="product-price"
                             class="text-secondary text-[32px] font-bold"
@@ -81,6 +77,10 @@
                         <div class="flex items-center gap-1.5">
                             <span class="text-outline">Người bán:</span>
                             <span id="product-seller" class="font-medium text-on-surface">Đang tải...</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-outline">Liên hệ:</span>
+                            <span id="product-seller-contact" class="font-medium text-on-surface">Đang tải...</span>
                         </div>
                     </div>
 
@@ -214,28 +214,43 @@
             const descEl = document.getElementById("product-description");
             if (descEl) descEl.innerText = desc || 'Chưa có mô tả cho sản phẩm này.';
 
-            // Trích xuất thông tin Tình trạng / Sử dụng / Phụ kiện / Bảo hành từ mô tả sản phẩm.
-            // Backend hiện chưa có cột riêng cho các thông tin này nên ta đọc tạm từ Description
-            // theo định dạng "Nhãn: nội dung." (ví dụ: "Tình trạng: ngoại hình 90%.").
-            // Nếu không tìm thấy nhãn tương ứng trong mô tả thì hiển thị "N/A".
+            // Tình trạng / Sử dụng / Phụ kiện / Bảo hành: ưu tiên đọc trực tiếp từ các cột
+            // riêng trong CSDL (Condition_status, Used_duration, Accessories, Warranty).
+            // Với các tin đăng cũ (trước khi các cột này tồn tại) thì các cột sẽ rỗng, lúc đó
+            // mới thử trích xuất từ nội dung mô tả theo định dạng "Nhãn: nội dung." như fallback.
             function extractDetailFromDescription(text, label) {
-                if (!text) return "N/A";
+                if (!text) return "";
                 const regex = new RegExp(label + "\\s*:\\s*([^.]+)\\.", "i");
                 const match = text.match(regex);
-                return match ? match[1].trim() : "N/A";
+                return match ? match[1].trim() : "";
+            }
+
+            function resolveDetailField(directValue, fallbackLabel) {
+                const direct = (directValue || '').toString().trim();
+                if (direct) return direct;
+                const fallback = extractDetailFromDescription(desc, fallbackLabel);
+                return fallback || "Chưa cập nhật";
             }
 
             const conditionEl = document.getElementById("product-condition");
-            if (conditionEl) conditionEl.innerText = extractDetailFromDescription(desc, "Tình trạng");
+            if (conditionEl) conditionEl.innerText = resolveDetailField(currentProduct.Condition_status, "Tình trạng");
 
             const usageEl = document.getElementById("product-usage");
-            if (usageEl) usageEl.innerText = extractDetailFromDescription(desc, "Sử dụng");
+            if (usageEl) usageEl.innerText = resolveDetailField(currentProduct.Used_duration, "Sử dụng");
 
             const accessoriesEl = document.getElementById("product-accessories");
-            if (accessoriesEl) accessoriesEl.innerText = extractDetailFromDescription(desc, "Phụ kiện");
+            if (accessoriesEl) accessoriesEl.innerText = resolveDetailField(currentProduct.Accessories, "Phụ kiện");
 
             const warrantyEl = document.getElementById("product-warranty");
-            if (warrantyEl) warrantyEl.innerText = extractDetailFromDescription(desc, "Bảo hành");
+            if (warrantyEl) warrantyEl.innerText = resolveDetailField(currentProduct.Warranty, "Bảo hành");
+
+            // Thông tin liên hệ người bán (backend đã trả về SellerPhone/SellerEmail nhưng trước đây chưa hiển thị)
+            const contactEl = document.getElementById("product-seller-contact");
+            if (contactEl) {
+                const phone = currentProduct.SellerPhone || '';
+                const email = currentProduct.SellerEmail || '';
+                contactEl.innerText = phone || email || 'Liên hệ qua tin nhắn';
+            }
 
             // Update all elements that may have duplicate IDs in template
             document.querySelectorAll('#product-category').forEach(el => el.innerText = category || 'Chưa phân loại');
@@ -251,6 +266,9 @@
             } else if (status === "pending") {
                 statusText = `Chờ duyệt (Số lượng: ${stockQty})`;
                 statusColor = "bg-yellow-500";
+            } else if (status === "rejected" || status === "deleted") {
+                statusText = "Ngừng kinh doanh";
+                statusColor = "bg-slate-400";
             }
             const statusTextEl = document.getElementById("product-status");
             if (statusTextEl) statusTextEl.innerText = statusText;
