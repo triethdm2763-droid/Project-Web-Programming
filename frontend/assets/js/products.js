@@ -66,7 +66,7 @@ function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false, 
     lastCategoryId = categoryId;
     lastFilters = { ...filters };
 
-    let url = `/Project-Web-Programming/backend/public/index.php/api/products?search=${encodeURIComponent(searchQuery)}&category_id=${categoryId}`;
+    let url = `/Project-Web-Programming/backend/public/index.php/api/products?search=${encodeURIComponent(searchQuery)}&category_id=${categoryId !== null && categoryId !== undefined ? categoryId : ''}`;
     
     if (filters.sort) {
         url += `&sort=${encodeURIComponent(filters.sort)}`;
@@ -168,6 +168,6 @@ function deleteProduct(id) {
     });
 }
 
-function editProduct(id) { window.location.href = `/Project-Web-Programming/frontend/pages/user/post_ad.php?id=${id}`; }
+function editProduct(id) { window.location.href = `/Project-Web-Programming/frontend/pages/seller/post-ad.php?id=${id}`; }
 
 function escapeHtml(text) { return text ? String(text).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[m])) : ''; }
