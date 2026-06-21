@@ -30,36 +30,36 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             Sản phẩm
         </a>
 
-        <a href="/Project-Web-Programming/frontend/pages/admin/order.php"
+        <a href="/Project-Web-Programming/frontend/pages/admin/orders.php"
             class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all
-           <?= $currentPage == 'order.php'
+           <?= $currentPage == 'orders.php'
                 ? 'bg-blue-600 text-white shadow-md'
                 : 'text-slate-600 hover:bg-slate-100'; ?>">
             <span class="material-symbols-outlined">shopping_cart</span>
             Đơn hàng
         </a>
 
-        <a href="/Project-Web-Programming/frontend/pages/admin/user.php"
+        <a href="/Project-Web-Programming/frontend/pages/admin/users.php"
             class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all
-           <?= $currentPage == 'user.php'
+           <?= $currentPage == 'users.php'
                 ? 'bg-blue-600 text-white shadow-md'
                 : 'text-slate-600 hover:bg-slate-100'; ?>">
             <span class="material-symbols-outlined">group</span>
             Người dùng
         </a>
 
-        <a href="/Project-Web-Programming/frontend/pages/admin/wallet.php"
+        <a href="/Project-Web-Programming/frontend/pages/admin/wallets.php"
             class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all
-           <?= $currentPage == 'wallet.php'
+           <?= $currentPage == 'wallets.php'
                 ? 'bg-blue-600 text-white shadow-md'
                 : 'text-slate-600 hover:bg-slate-100'; ?>">
             <span class="material-symbols-outlined">account_balance_wallet</span>
             Ví tiền
         </a>
 
-        <a href="/Project-Web-Programming/frontend/pages/admin/report.php"
+        <a href="/Project-Web-Programming/frontend/pages/admin/reports.php"
             class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all
-           <?= $currentPage == 'report.php'
+           <?= $currentPage == 'reports.php'
                 ? 'bg-blue-600 text-white shadow-md'
                 : 'text-slate-600 hover:bg-slate-100'; ?>">
             <span class="material-symbols-outlined">analytics</span>
@@ -67,5 +67,31 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         </a>
 
     </nav>
+
+    <div class="pt-4 border-t border-slate-100">
+        <button onclick="adminLogout()" class="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-red-500 rounded-xl transition-all font-medium">
+            <span class="material-symbols-outlined">logout</span>
+            Đăng xuất
+        </button>
+    </div>
+
+    <script>
+        async function adminLogout() {
+            if (!confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) return;
+            try {
+                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/logout", {
+                    method: "POST"
+                });
+                if (res.ok) {
+                    window.location.href = "/Project-Web-Programming/frontend/pages/auth/login.php";
+                } else {
+                    alert("Đăng xuất thất bại.");
+                }
+            } catch (error) {
+                console.error("Logout error:", error);
+                alert("Lỗi kết nối.");
+            }
+        }
+    </script>
 
 </aside>

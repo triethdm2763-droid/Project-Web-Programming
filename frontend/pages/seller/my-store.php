@@ -66,7 +66,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
                         </span>
                     </div>
                 </div>
-                <button onclick="window.location.href='/Project-Web-Programming/frontend/pages/user/post_ad.php'" 
+                <button onclick="window.location.href='/Project-Web-Programming/frontend/pages/seller/post-ad.php'" 
                         class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition-all flex items-center gap-2">
                     <span class="material-symbols-outlined">add</span> Đăng tin mới
                 </button>

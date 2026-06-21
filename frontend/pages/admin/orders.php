@@ -17,7 +17,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 <body class="bg-slate-50">
 
-    <div class="flex">s
+    <div class="flex">
 
         <?php include '../../components/sidebar.php'; ?>
 

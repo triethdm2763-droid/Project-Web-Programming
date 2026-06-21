@@ -54,7 +54,11 @@
             if (res.ok) {
                 showToast("Đăng nhập thành công!", "success");
                 setTimeout(() => {
-                    window.location.href = "../home/index.php";
+                    if (data.user && (data.user.Role === 'admin' || data.user.role === 'admin')) {
+                        window.location.href = "../admin/dashboard.php";
+                    } else {
+                        window.location.href = "../home/index.php";
+                    }
                 }, 1200);
             } else {
                 showAlert("Thất bại", data.error || data.message || "Tên đăng nhập hoặc mật khẩu không chính xác.", "error");

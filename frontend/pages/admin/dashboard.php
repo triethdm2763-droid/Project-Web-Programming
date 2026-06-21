@@ -36,14 +36,7 @@ $pendingProductsList = $conn->query("
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans">
     <div class="flex min-h-screen">
-        <aside class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 p-4">
-            <h1 class="text-xl font-bold text-blue-600 mb-8 px-2">Kênh Quản Trị</h1>
-            <nav class="space-y-1 flex-1">
-                <a href="dashboard.php" class="flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium"><span class="material-symbols-outlined">dashboard</span> Tổng quan</a>
-                <a href="products.php" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl"><span class="material-symbols-outlined">inventory_2</span> Sản phẩm</a>
-                </nav>
-            <button onclick="logout()" class="text-slate-400 hover:text-red-500 flex items-center gap-2"><span class="material-symbols-outlined">logout</span> Đăng xuất</button>
-        </aside>
+        <?php include '../../components/sidebar.php'; ?>
 
         <main class="flex-1 p-8">
             <section class="grid grid-cols-4 gap-4 mb-8">
