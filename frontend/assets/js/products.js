@@ -48,8 +48,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// State quản lý phân trang sản phẩm
+let currentProductPage = 1;
+const productsLimit = 8;
+let lastSearchQuery = '';
+let lastCategoryId = '';
+let lastFilters = {};
+
 // Hàm lấy danh sách sản phẩm
 function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false, filters = {}) {
+    // Nếu đổi bộ lọc hoặc từ khóa hoặc danh mục, reset về trang 1
+    if (forceRefresh || searchQuery !== lastSearchQuery || categoryId !== lastCategoryId || JSON.stringify(filters) !== JSON.stringify(lastFilters)) {
+        currentProductPage = 1;
+    }
+    
+    lastSearchQuery = searchQuery;
+    lastCategoryId = categoryId;
+    lastFilters = { ...filters };
+
     let url = `/Project-Web-Programming/backend/public/index.php/api/products?search=${encodeURIComponent(searchQuery)}&category_id=${categoryId}`;
     
     if (filters.sort) {
@@ -65,16 +81,25 @@ function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false, 
     const productGrid = document.querySelector('.product-grid') || document.querySelector('#categoryProducts');
     if (!productGrid) return;
 
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    if (loadMoreBtn) {
+        url += `&limit=${productsLimit}&page=${currentProductPage}`;
+    }
+
     fetch(url, { headers: { 'Accept': 'application/json' } })
         .then(res => res.json())
         .then(result => {
             let products = Array.isArray(result) ? result : (result.data || []);
-            productGrid.innerHTML = products.length ? '' : '<div class="col-span-full text-center py-8 text-outline">Không tìm thấy sản phẩm.</div>';
+            let total = (result.total !== undefined) ? result.total : products.length;
+
+            if (currentProductPage === 1) {
+                productGrid.innerHTML = products.length ? '' : '<div class="col-span-full text-center py-8 text-outline">Không tìm thấy sản phẩm.</div>';
+            }
             
             // Cập nhật nhãn số lượng kết quả nếu phần tử tồn tại
             const resultCountLabel = document.getElementById('resultCountLabel');
             if (resultCountLabel) {
-                resultCountLabel.textContent = `Tìm thấy ${products.length} sản phẩm`;
+                resultCountLabel.textContent = `Tìm thấy ${total} sản phẩm`;
             }
             
             products.forEach(p => {
@@ -82,7 +107,7 @@ function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false, 
                 productGrid.insertAdjacentHTML('beforeend', `
                     <div class="bg-white p-3 rounded-2xl shadow-sm border border-outline-variant/20 hover:shadow-md transition-all">
                         <div class="aspect-square bg-slate-100 rounded-xl overflow-hidden mb-3">
-                            <img src="${img}" class="w-full h-full object-contain">
+                            <img src="${img}" class="w-full h-full object-contain" alt="${escapeHtml(p.Name || p.name)}">
                         </div>
                         <h3 class="font-medium text-[14px] line-clamp-2">${escapeHtml(p.Name || p.name)}</h3>
                         <div class="text-primary font-bold text-[15px] mt-1">${new Intl.NumberFormat('vi-VN', {style:'currency', currency:'VND'}).format(p.Price || p.price)}</div>
@@ -90,7 +115,22 @@ function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false, 
                     </div>
                 `);
             });
+
+            // Quản lý hiển thị nút Xem thêm
+            if (loadMoreBtn) {
+                const loadedCount = productGrid.querySelectorAll('.bg-white').length;
+                if (loadedCount < total && products.length > 0) {
+                    loadMoreBtn.classList.remove('hidden');
+                } else {
+                    loadMoreBtn.classList.add('hidden');
+                }
+            }
         });
+}
+
+function loadNextProductPage() {
+    currentProductPage++;
+    fetchProducts(lastSearchQuery, lastCategoryId, false, lastFilters);
 }
 
 // Hàm quản lý Kênh người bán

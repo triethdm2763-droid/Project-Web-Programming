@@ -7,6 +7,35 @@ use PDO;
 
 class ProductRepository extends BaseRepository
 {
+    public function countAllActive(array $filters = []): int {
+        $sql = "SELECT COUNT(*) FROM `products` p
+                JOIN `categories` c ON p.Category_ID = c.ID
+                JOIN `users` u ON p.Seller_ID = u.ID
+                WHERE p.Status IN ('active', 'available')";
+
+        $params = [];
+        if (!empty($filters['category_id'])) {
+            $sql .= " AND p.Category_ID = :category_id";
+            $params['category_id'] = (int)$filters['category_id'];
+        }
+        if (!empty($filters['search'])) {
+            $sql .= " AND (p.Name LIKE :search OR p.Description LIKE :search)";
+            $params['search'] = '%' . $filters['search'] . '%';
+        }
+        if (isset($filters['min_price']) && is_numeric($filters['min_price'])) {
+            $sql .= " AND p.Price >= :min_price";
+            $params['min_price'] = (float)$filters['min_price'];
+        }
+        if (isset($filters['max_price']) && is_numeric($filters['max_price'])) {
+            $sql .= " AND p.Price <= :max_price";
+            $params['max_price'] = (float)$filters['max_price'];
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return (int)$stmt->fetchColumn();
+    }
+
     public function findAllActive(array $filters = []): array {
         $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName,
                 (SELECT o.Shipping_address FROM orders o WHERE o.Product_ID = p.ID ORDER BY o.created_at DESC LIMIT 1) AS Location
@@ -36,6 +65,12 @@ class ProductRepository extends BaseRepository
         $sort = $filters['sort'] ?? 'newest';
         $sql .= ($sort === 'price_asc') ? " ORDER BY p.Price ASC" : 
                 (($sort === 'price_desc') ? " ORDER BY p.Price DESC" : " ORDER BY p.created_at DESC");
+
+        if (isset($filters['limit']) && is_numeric($filters['limit'])) {
+            $limit = (int)$filters['limit'];
+            $offset = isset($filters['offset']) && is_numeric($filters['offset']) ? (int)$filters['offset'] : 0;
+            $sql .= " LIMIT {$limit} OFFSET {$offset}";
+        }
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);

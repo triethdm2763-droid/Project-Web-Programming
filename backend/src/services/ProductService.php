@@ -16,7 +16,12 @@ class ProductService
 
     public function getActiveProducts(array $filters = []): array
     {
-        return ['status' => 'success', 'code' => 200, 'data' => $this->productRepository->findAllActive($filters)];
+        $data = $this->productRepository->findAllActive($filters);
+        $result = ['status' => 'success', 'code' => 200, 'data' => $data];
+        if (isset($filters['limit'])) {
+            $result['total'] = $this->productRepository->countAllActive($filters);
+        }
+        return $result;
     }
 
     public function getProductDetail(int $id): array
