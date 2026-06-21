@@ -12,4 +12,3 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 // Chuyển hướng ngay sang trang dashboard.php
 header("Location: dashboard.php");
 exit;
-?>

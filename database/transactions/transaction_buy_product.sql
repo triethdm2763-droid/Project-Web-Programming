@@ -16,31 +16,42 @@ START TRANSACTION;
 -- Không cho người khác đọc/sửa dòng này cho đến khi COMMIT
 SELECT id, name, stock_quantity, status
 FROM products
-WHERE id = 1
-FOR UPDATE;
+WHERE
+    id = 1 FOR
+UPDATE;
 
 -- Bước 2: Kiểm tra còn hàng và đang available không
 -- Nếu stock_quantity < 1 hoặc status != 'available' thì ROLLBACK
 -- (Trong PHP sẽ kiểm tra kết quả trả về, ở đây mô phỏng bằng SQL)
 
 -- Bước 3: Tạo đơn hàng mới
-INSERT INTO orders (Buyer_ID, Seller_ID, Product_ID, Total_price, Shipping_address, Status)
-SELECT
-    6,                          -- Buyer_ID (buyer_minh)
-    seller_id,                  -- Seller_ID lấy từ bảng products
-    id,                         -- Product_ID
-    price,                      -- Total_price
+INSERT INTO
+    orders (
+        Buyer_ID,
+        Seller_ID,
+        Product_ID,
+        Total_price,
+        Shipping_address,
+        Status
+    )
+SELECT 6, -- Buyer_ID (buyer_minh)
+    seller_id, -- Seller_ID lấy từ bảng products
+    id, -- Product_ID
+    price, -- Total_price
     '123 Nguyễn Huệ, Q1, TP.HCM', -- Shipping_address
-    'pending'                   -- Status
+    'pending' -- Status
 FROM products
-WHERE id = 1;
+WHERE
+    id = 1;
 
 -- Bước 4: Trừ stock_quantity xuống 1
 UPDATE products
-SET stock_quantity = stock_quantity - 1
-WHERE id = 1
-  AND stock_quantity > 0
-  AND status IN ('active', 'available');
+SET
+    stock_quantity = stock_quantity - 1
+WHERE
+    id = 1
+    AND stock_quantity > 0
+    AND status IN ('active', 'available');
 
 -- Bước 5: Kiểm tra UPDATE có ảnh hưởng đúng 1 dòng không
 -- Nếu ROW_COUNT() = 0 tức là hàng đã hết → ROLLBACK
@@ -48,9 +59,11 @@ WHERE id = 1
 
 -- Bước 6: Nếu stock_quantity về 0 thì đổi status thành 'sold'
 UPDATE products
-SET status = 'sold'
-WHERE id = 1
-  AND stock_quantity = 0;
+SET
+    status = 'sold'
+WHERE
+    id = 1
+    AND stock_quantity = 0;
 
 -- Bước 7: Xác nhận toàn bộ thay đổi
 COMMIT;
@@ -63,8 +76,9 @@ START TRANSACTION;
 
 SELECT id, name, stock_quantity, status
 FROM products
-WHERE id = 1
-FOR UPDATE;
+WHERE
+    id = 1 FOR
+UPDATE;
 
 -- Phát hiện stock_quantity = 0 → hủy toàn bộ
 ROLLBACK;
@@ -74,14 +88,13 @@ ROLLBACK;
 -- ============================================================
 
 -- Xem trạng thái sản phẩm sau khi mua
-SELECT id, name, stock_quantity, status
-FROM products
-WHERE id = 1;
+SELECT id, name, stock_quantity, status FROM products WHERE id = 1;
 
 -- Xem đơn hàng vừa tạo
 SELECT o.ID, o.Buyer_ID, u.username, o.Product_ID, p.name, o.Total_price, o.Status
-FROM orders o
-JOIN users u ON o.Buyer_ID = u.id
-JOIN products p ON o.Product_ID = p.id
+FROM
+    orders o
+    JOIN users u ON o.Buyer_ID = u.id
+    JOIN products p ON o.Product_ID = p.id
 ORDER BY o.ID DESC
 LIMIT 1;

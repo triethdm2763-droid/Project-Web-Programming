@@ -4,16 +4,18 @@ $selectedCategoryId = isset($_GET['category']) ? intval($_GET['category']) : nul
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <title>Danh mục sản phẩm | Chợ Cũ</title>
     <?php include '../../components/header.php'; ?>
 </head>
+
 <body class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col">
     <?php include '../../components/navbar.php'; ?>
-    
+
     <main class="flex-grow px-gutter py-8 w-full max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row gap-8">
-            
+
             <aside class="w-full md:w-64 flex-shrink-0">
                 <div class="glass-card p-6 rounded-xl border border-outline-variant/40 shadow-sm">
                     <h2 class="font-headline-sm text-primary mb-5">Danh mục</h2>
@@ -26,10 +28,10 @@ $selectedCategoryId = isset($_GET['category']) ? intval($_GET['category']) : nul
             <section class="flex-grow">
                 <div class="flex justify-between items-center mb-6">
                     <h1 class="text-headline-md font-bold text-on-surface" id="categoryTitle">Đang tải...</h1>
-                    <select class="px-4 py-2 bg-white border border-outline-variant/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20">
-                        <option>Mới nhất</option>
-                        <option>Giá cao đến thấp</option>
-                        <option>Giá thấp đến cao</option>
+                    <select id="product-sort-select" class="px-4 py-2 bg-white border border-outline-variant/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20">
+                        <option value="newest">Mới nhất</option>
+                        <option value="price-desc">Giá cao đến thấp</option>
+                        <option value="price-asc">Giá thấp đến cao</option>
                     </select>
                 </div>
 
@@ -43,42 +45,42 @@ $selectedCategoryId = isset($_GET['category']) ? intval($_GET['category']) : nul
     <?php include '../../components/footer.php'; ?>
 
     <script>
-    // Export selected category id from PHP to JS
-    const selectedCategoryId = <?= json_encode($selectedCategoryId) ?>;
+        // Export selected category id from PHP to JS
+        const selectedCategoryId = <?= json_encode($selectedCategoryId) ?>;
 
-    function escapeHtml(text) {
-        if (!text) return '';
-        return text
-            .toString()
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
 
-    async function loadCategories() {
-        let list = document.getElementById("categoriesList");
-        let titleEl = document.getElementById("categoryTitle");
-        
-        try {
-            let res = await fetch("/Project-Web-Programming/backend/public/api/categories");
-            let categories = await res.json();
-            
-            let isAll = !selectedCategoryId;
-            if (isAll) {
-                titleEl.textContent = "Tất cả sản phẩm";
-            }
-            
-            let itemsHtml = `<li><a href="?category=" class="block ${isAll ? 'text-primary font-medium' : 'text-on-surface-variant hover:text-primary'} transition-colors">Tất cả danh mục</a></li>`;
-            
-            if (categories && categories.length > 0) {
-                categories.forEach(cat => {
-                    let isSelected = selectedCategoryId == cat.ID;
-                    if (isSelected) {
-                        titleEl.textContent = cat.Name;
-                    }
-                    itemsHtml += `
+        async function loadCategories() {
+            let list = document.getElementById("categoriesList");
+            let titleEl = document.getElementById("categoryTitle");
+
+            try {
+                let res = await fetch("/Project-Web-Programming/backend/public/api/categories");
+                let categories = await res.json();
+
+                let isAll = !selectedCategoryId;
+                if (isAll) {
+                    titleEl.textContent = "Tất cả sản phẩm";
+                }
+
+                let itemsHtml = `<li><a href="?category=" class="block ${isAll ? 'text-primary font-medium' : 'text-on-surface-variant hover:text-primary'} transition-colors">Tất cả danh mục</a></li>`;
+
+                if (categories && categories.length > 0) {
+                    categories.forEach(cat => {
+                        let isSelected = selectedCategoryId == cat.ID;
+                        if (isSelected) {
+                            titleEl.textContent = cat.Name;
+                        }
+                        itemsHtml += `
                         <li>
                             <a href="?category=${cat.ID}"
                             class="flex items-center gap-2 px-3 py-2 rounded-lg
@@ -95,29 +97,39 @@ $selectedCategoryId = isset($_GET['category']) ? intval($_GET['category']) : nul
                             </a>
                         </li>
                         `;
-                });
+                    });
+                }
+                list.innerHTML = itemsHtml;
+            } catch (error) {
+                console.error("Error loading categories:", error);
+                list.innerHTML = `<li><a href="#" class="block text-red-500">Lỗi tải danh mục</a></li>`;
+                titleEl.textContent = "Danh mục sản phẩm";
             }
-            list.innerHTML = itemsHtml;
-        } catch (error) {
-            console.error("Error loading categories:", error);
-            list.innerHTML = `<li><a href="#" class="block text-red-500">Lỗi tải danh mục</a></li>`;
-            titleEl.textContent = "Danh mục sản phẩm";
         }
-    }
     </script>
 
     <!-- Products JS (re-uses fetchProducts to populate the grid) -->
     <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260618-2"></script>
     <script>
-    // When DOM is ready, load categories sidebar and then fetch products for the selected category
-    document.addEventListener('DOMContentLoaded', function() {
-        loadCategories();
+        // When DOM is ready, load categories sidebar and then fetch products for the selected category
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
 
-        // Fetch products filtered by selected category
-        if (typeof fetchProducts === 'function') {
-            fetchProducts('', selectedCategoryId);
-        }
-    });
+            // Fetch products filtered by selected category
+            if (typeof fetchProducts === 'function') {
+                fetchProducts('', selectedCategoryId);
+            }
+
+            // Add event listener for sorting dropdown
+            document.getElementById('product-sort-select')?.addEventListener('change', function() {
+                if (typeof fetchProducts === 'function') {
+                    const searchInput = document.querySelector('input[placeholder="Tìm kiếm sản phẩm đồ cũ..."]');
+                    const query = searchInput ? searchInput.value.trim() : '';
+                    fetchProducts(query, selectedCategoryId, true);
+                }
+            });
+        });
     </script>
 </body>
+
 </html>

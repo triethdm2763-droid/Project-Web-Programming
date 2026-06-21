@@ -29,6 +29,7 @@ $activeProducts = $conn->query("
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <title>Quản lý sản phẩm</title>
     <?php include '../../components/header.php'; ?>
@@ -36,86 +37,86 @@ $activeProducts = $conn->query("
 
 <body class="bg-slate-50">
 
-<div class="flex">
+    <div class="flex">
 
-    <?php include '../../components/sidebar.php'; ?>
+        <?php include '../../components/sidebar.php'; ?>
 
-    <main class="flex-1 p-8">
+        <main class="flex-1 p-8">
 
-        <h1 class="text-3xl font-bold mb-8">
-            Quản lý sản phẩm
-        </h1>
+            <h1 class="text-3xl font-bold mb-8">
+                Quản lý sản phẩm
+            </h1>
 
-        <!-- Card thống kê -->
-        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <!-- Card thống kê -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
 
-            <div class="bg-white p-6 rounded-2xl shadow-sm">
-                <p class="text-slate-500">Tổng sản phẩm</p>
-                <h2 class="text-3xl font-bold text-blue-600">
-                    <?= (int) $totalProducts ?>
-                </h2>
+                <div class="bg-white p-6 rounded-2xl shadow-sm">
+                    <p class="text-slate-500">Tổng sản phẩm</p>
+                    <h2 class="text-3xl font-bold text-blue-600">
+                        <?= (int) $totalProducts ?>
+                    </h2>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm">
+                    <p class="text-slate-500">Đang bán</p>
+                    <h2 class="text-3xl font-bold text-green-600">
+                        <?= (int) $activeProducts ?>
+                    </h2>
+                </div>
+
             </div>
 
-            <div class="bg-white p-6 rounded-2xl shadow-sm">
-                <p class="text-slate-500">Đang bán</p>
-                <h2 class="text-3xl font-bold text-green-600">
-                    <?= (int) $activeProducts ?>
-                </h2>
+            <!-- Bảng -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+
+                <table class="w-full">
+
+                    <thead class="bg-slate-100">
+
+                        <tr>
+                            <th class="p-4 text-left">Hình ảnh</th>
+                            <th class="p-4 text-left">Tên sản phẩm</th>
+                            <th class="p-4 text-left">Danh mục</th>
+                            <th class="p-4 text-left">Người bán</th>
+                            <th class="p-4 text-left">Giá</th>
+                            <th class="p-4 text-center">Trạng thái</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="productTable">
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-400">
+                                Đang tải danh sách sản phẩm...
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+
             </div>
 
-        </div>
+        </main>
 
-        <!-- Bảng -->
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+    </div>
 
-            <table class="w-full">
+    <script>
+        let allProducts = [];
 
-                <thead class="bg-slate-100">
+        async function loadProducts() {
+            try {
 
-                    <tr>
-                        <th class="p-4 text-left">Hình ảnh</th>
-                        <th class="p-4 text-left">Tên sản phẩm</th>
-                        <th class="p-4 text-left">Danh mục</th>
-                        <th class="p-4 text-left">Người bán</th>
-                        <th class="p-4 text-left">Giá</th>
-                        <th class="p-4 text-center">Trạng thái</th>
-                    </tr>
-                </thead>
+                const res = await fetch(
+                    "/Project-Web-Programming/backend/public/index.php/api/admin/products"
+                );
 
-                <tbody id="productTable">
-                    <tr>
-                        <td colspan="6" class="p-8 text-center text-slate-400">
-                            Đang tải danh sách sản phẩm...
-                        </td>
-                    </tr>
-                </tbody>
+                allProducts = await res.json();
 
-            </table>
+                renderProducts(allProducts);
 
-        </div>
+            } catch (error) {
+                console.error(error);
 
-    </main>
-
-</div>
-
-<script>
-    let allProducts = [];
-
-    async function loadProducts() {
-        try {
-
-            const res = await fetch(
-                "/Project-Web-Programming/backend/public/index.php/api/admin/products"
-            );
-
-            allProducts = await res.json();
-
-            renderProducts(allProducts);
-
-        } catch (error) {
-            console.error(error);
-
-            document.getElementById("productTable").innerHTML = `
+                document.getElementById("productTable").innerHTML = `
                 <tr>
                     <td colspan="6"
                         class="p-8 text-center text-red-500">
@@ -123,61 +124,61 @@ $activeProducts = $conn->query("
                     </td>
                 </tr>
             `;
+            }
         }
-    }
 
-    function escapeHtml(text) {
-        return text ? String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
-    }
+        function escapeHtml(text) {
+            return text ? String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
+        }
 
-    function renderProducts(products) {
+        function renderProducts(products) {
 
-        if (!products || products.length === 0) {
-            document.getElementById("productTable").innerHTML = `
+            if (!products || products.length === 0) {
+                document.getElementById("productTable").innerHTML = `
                 <tr>
                     <td colspan="6" class="p-8 text-center text-slate-400">
                         Chưa có sản phẩm nào trong hệ thống
                     </td>
                 </tr>
             `;
-            return;
-        }
+                return;
+            }
 
-        let html = "";
+            let html = "";
 
-        products.forEach(product => {
+            products.forEach(product => {
 
-            const image =
-                product.Image
-                    ? `/Project-Web-Programming/backend/uploads/products/${product.Image}`
-                    : "https://placehold.co/100x100?text=No+Image";
+                const image =
+                    product.Image ?
+                    `/Project-Web-Programming/backend/uploads/products/${product.Image}` :
+                    "https://placehold.co/100x100?text=No+Image";
 
-            const status =
-                (product.Status === "active" || product.Status === "available")
-                    ? `
+                const status =
+                    (product.Status === "active" || product.Status === "available") ?
+                    `
                         <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
                             Đang bán
                         </span>
+                    ` :
+                    product.Status === "sold" ?
                     `
-                    : product.Status === "sold"
-                    ? `
                         <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
                             Đã bán
                         </span>
+                    ` :
+                    product.Status === "pending" ?
                     `
-                    : product.Status === "pending"
-                    ? `
                         <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm">
                             Chờ duyệt
                         </span>
+                    ` :
                     `
-                    : `
                         <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">
                             Ngừng bán
                         </span>
                     `;
 
-            html += `
+                html += `
                 <tr class="hover:bg-slate-50">
 
                     <td class="p-4">
@@ -211,13 +212,14 @@ $activeProducts = $conn->query("
 
                 </tr>
             `;
-        });
+            });
 
-        document.getElementById("productTable").innerHTML = html;
-    }
+            document.getElementById("productTable").innerHTML = html;
+        }
 
-    loadProducts();
-</script>
+        loadProducts();
+    </script>
 
 </body>
+
 </html>

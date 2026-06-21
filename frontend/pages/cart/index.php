@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <title>Giỏ hàng | Chợ Cũ</title>
     <?php include '../../components/header.php'; ?>
 </head>
 
 <body class="bg-[#f5f5f5] font-body-md text-on-surface min-h-screen flex flex-col"
-      onload="if(typeof renderCart==='function') renderCart();">
+    onload="if(typeof renderCart==='function') renderCart();">
 
     <?php include '../../components/navbar.php'; ?>
 
@@ -16,7 +17,7 @@
                 Giỏ hàng
             </h1>
             <p id="cart-item-count"
-            class="text-sm text-slate-500 mt-2">
+                class="text-sm text-slate-500 mt-2">
                 Đang tải...
             </p>
         </div>
@@ -47,7 +48,7 @@
                 </div>
                 <div class="col-span-1 text-right">
                     <button onclick="clearCart()"
-                            class="text-red-500 text-sm hover:text-red-700 font-medium">
+                        class="text-red-500 text-sm hover:text-red-700 font-medium">
                         Xóa hết
                     </button>
                 </div>
@@ -66,7 +67,7 @@
                     Chọn tất cả
                 </label>
                 <button onclick="clearCart()"
-                        class="text-red-500 text-sm font-medium hover:text-red-700">
+                    class="text-red-500 text-sm font-medium hover:text-red-700">
                     Xóa hết
                 </button>
             </div>
@@ -84,7 +85,7 @@
                     Hãy thêm sản phẩm để tiếp tục mua sắm
                 </div>
                 <a href="/Project-Web-Programming/frontend/pages/products/category.php"
-                class="mt-6 bg-[#0066cc] hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition">
+                    class="mt-6 bg-[#0066cc] hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition">
                     Tiếp tục mua sắm
                 </a>
             </div>
@@ -136,7 +137,7 @@
                                 <span class="text-xs text-slate-400">(Sắp ra mắt)</span>
                             </span>
                             <button type="button" disabled
-                                    class="text-xs text-slate-400 border border-slate-200 rounded-full px-3 py-1 cursor-not-allowed shrink-0">
+                                class="text-xs text-slate-400 border border-slate-200 rounded-full px-3 py-1 cursor-not-allowed shrink-0">
                                 Chọn voucher
                             </button>
                         </div>
@@ -153,8 +154,8 @@
                             </div>
                         </div>
                         <button onclick="goToCheckout()"
-                                id="btn-checkout"
-                                class="bg-[#0066cc] hover:bg-blue-700 text-white rounded-xl px-8 py-3.5 font-semibold transition whitespace-nowrap shrink-0">
+                            id="btn-checkout"
+                            class="bg-[#0066cc] hover:bg-blue-700 text-white rounded-xl px-8 py-3.5 font-semibold transition whitespace-nowrap shrink-0">
                             Mua hàng
                         </button>
                     </div>
@@ -184,4 +185,5 @@
     <script src="../../assets/js/cart.js?v=20260618-2"></script>
 
 </body>
+
 </html>

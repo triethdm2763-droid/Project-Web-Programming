@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Core\BaseRepository;
 use PDO;
 
-class UserRepository extends BaseRepository {
+class UserRepository extends BaseRepository
+{
 
     /**
      * Find a user by their Username.
@@ -12,7 +14,8 @@ class UserRepository extends BaseRepository {
      * @param string $username
      * @return array|null The user data array, or null if not found
      */
-    public function findByUsername(string $username) {
+    public function findByUsername(string $username)
+    {
         $stmt = $this->db->prepare("SELECT * FROM `users` WHERE `Username` = :username LIMIT 1");
         $stmt->execute(['username' => $username]);
         $user = $stmt->fetch();
@@ -25,7 +28,8 @@ class UserRepository extends BaseRepository {
      * @param string $email
      * @return array|null The user data array, or null if not found
      */
-    public function findByEmail(string $email) {
+    public function findByEmail(string $email)
+    {
         $stmt = $this->db->prepare("SELECT * FROM `users` WHERE `Email` = :email LIMIT 1");
         $stmt->execute(['email' => $email]);
         $user = $stmt->fetch();
@@ -38,7 +42,8 @@ class UserRepository extends BaseRepository {
      * @param int $id
      * @return array|null The user data array, or null if not found
      */
-    public function findById(int $id) {
+    public function findById(int $id)
+    {
         $stmt = $this->db->prepare("SELECT `ID`, `Username`, `Email`, `Phone`, `Fullname`, `Address`, `Avatar`, `Role`, `Status`, `created_at` FROM `users` WHERE `ID` = :id LIMIT 1");
         $stmt->execute(['id' => $id]);
         $user = $stmt->fetch();
@@ -52,14 +57,15 @@ class UserRepository extends BaseRepository {
      * @param array $data Data containing phone, fullname, address, and optionally avatar
      * @return bool
      */
-    public function updateProfile(int $id, array $data): bool {
+    public function updateProfile(int $id, array $data): bool
+    {
         $sql = "UPDATE `users` SET 
                 `Phone` = :phone, 
                 `Fullname` = :fullname, 
-                `Address` = :address" . 
-                (isset($data['avatar']) ? ", `Avatar` = :avatar" : "") . 
-                " WHERE `ID` = :id";
-        
+                `Address` = :address" .
+            (isset($data['avatar']) ? ", `Avatar` = :avatar" : "") .
+            " WHERE `ID` = :id";
+
         $params = [
             'phone' => $data['phone'] ?? null,
             'fullname' => $data['fullname'] ?? null,
@@ -69,7 +75,7 @@ class UserRepository extends BaseRepository {
         if (isset($data['avatar'])) {
             $params['avatar'] = $data['avatar'];
         }
-        
+
         $stmt = $this->db->prepare($sql);
         return $stmt->execute($params);
     }
@@ -84,10 +90,11 @@ class UserRepository extends BaseRepository {
      * @param string $role Default 'user'
      * @return int The auto-incremented primary key ID of the created user
      */
-    public function create(string $username, string $email, string $passwordHash, ?string $phone, string $role = 'user'): int {
+    public function create(string $username, string $email, string $passwordHash, ?string $phone, string $role = 'user'): int
+    {
         $sql = "INSERT INTO `users` (`Username`, `Password`, `Email`, `Phone`, `Role`, `Status`) 
                 VALUES (:username, :password, :email, :phone, :role, 'active')";
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             'username' => $username,
@@ -107,7 +114,8 @@ class UserRepository extends BaseRepository {
      * @param string $passwordHash
      * @return bool
      */
-    public function updatePassword(int $userId, string $passwordHash): bool {
+    public function updatePassword(int $userId, string $passwordHash): bool
+    {
         $sql = "UPDATE `users` SET `Password` = :password WHERE `ID` = :id";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([

@@ -1,11 +1,13 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Core\BaseRepository;
 use PDO;
 use Exception;
 
-class OrderRepository extends BaseRepository {
+class OrderRepository extends BaseRepository
+{
 
     /**
      * Create order and payment transactions with row lock for race condition prevention
@@ -15,7 +17,8 @@ class OrderRepository extends BaseRepository {
      * @return int Created Order ID
      * @throws Exception
      */
-    public function createWithTransaction(array $orderData, array $paymentData): int {
+    public function createWithTransaction(array $orderData, array $paymentData): int
+    {
         $this->db->beginTransaction();
 
         try {
@@ -32,7 +35,7 @@ class OrderRepository extends BaseRepository {
             // 2. Insert Order
             $orderSql = "INSERT INTO `orders` (`Buyer_ID`, `Seller_ID`, `Product_ID`, `Total_price`, `Shipping_address`, `Status`) 
                          VALUES (:buyer_id, :seller_id, :product_id, :total_price, :shipping_address, :status)";
-            
+
             $orderStmt = $this->db->prepare($orderSql);
             $orderStmt->execute([
                 'buyer_id'         => $orderData['buyer_id'],
@@ -48,7 +51,7 @@ class OrderRepository extends BaseRepository {
             // 3. Insert Payment using the same transaction database instance
             $paymentSql = "INSERT INTO `payments` (`Order_ID`, `Amount`, `Payment_method`, `Status`) 
                            VALUES (:order_id, :amount, :payment_method, :status)";
-            
+
             $payStmt = $this->db->prepare($paymentSql);
             $payStmt->execute([
                 'order_id'       => $orderId,
@@ -64,7 +67,6 @@ class OrderRepository extends BaseRepository {
 
             $this->db->commit();
             return $orderId;
-
         } catch (Exception $e) {
             $this->db->rollBack();
             throw $e;
@@ -78,7 +80,8 @@ class OrderRepository extends BaseRepository {
      * @param int $productId
      * @throws Exception
      */
-    public function cancelWithTransaction(int $orderId, int $productId) {
+    public function cancelWithTransaction(int $orderId, int $productId)
+    {
         $this->db->beginTransaction();
 
         try {
@@ -110,7 +113,8 @@ class OrderRepository extends BaseRepository {
      * @param int $id
      * @return array|null
      */
-    public function findById(int $id) {
+    public function findById(int $id)
+    {
         $sql = "SELECT o.*, p.Name as ProductName, p.Image as ProductImage, 
                        b.Username as BuyerName, s.Username as SellerName,
                        pm.Payment_method, pm.Status as PaymentStatus
@@ -133,7 +137,8 @@ class OrderRepository extends BaseRepository {
      * @param int $buyerId
      * @return array
      */
-    public function findByBuyer(int $buyerId): array {
+    public function findByBuyer(int $buyerId): array
+    {
         $sql = "SELECT o.*, p.Name as ProductName, p.Image as ProductImage, s.Username as SellerName
                 FROM `orders` o
                 JOIN `products` p ON o.Product_ID = p.ID
@@ -152,7 +157,8 @@ class OrderRepository extends BaseRepository {
      * @param int $sellerId
      * @return array
      */
-    public function findBySeller(int $sellerId): array {
+    public function findBySeller(int $sellerId): array
+    {
         $sql = "SELECT o.*, p.Name as ProductName, p.Image as ProductImage, b.Username as BuyerName
                 FROM `orders` o
                 JOIN `products` p ON o.Product_ID = p.ID
@@ -172,7 +178,8 @@ class OrderRepository extends BaseRepository {
      * @param string $status
      * @return bool
      */
-    public function updateStatus(int $id, string $status): bool {
+    public function updateStatus(int $id, string $status): bool
+    {
         $sql = "UPDATE `orders` SET `Status` = :status WHERE `ID` = :id";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([

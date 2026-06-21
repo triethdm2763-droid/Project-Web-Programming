@@ -73,6 +73,7 @@ async function clearCart() {
         if (typeof updateNavCartBadge === 'function') updateNavCartBadge();
         renderCart();
         showToast("Đã xóa toàn bộ giỏ hàng!", "success");
+    }
 }
 
 // --- 3. RENDER GIỎ HÀNG ---
@@ -359,23 +360,6 @@ async function renderRecommendations(cart) {
             products = resultsByCategory.flat();
         }
 
-        if (successCount > 0) {
-            // Lọc bỏ những sản phẩm đã đặt mua thành công khỏi giỏ hàng
-            let cartAfterCheckout = cart.filter(item => !successfulIds.includes(item.ID || item.id));
-            localStorage.setItem("cart", JSON.stringify(cartAfterCheckout));
-            if (typeof updateNavCartBadge === 'function') updateNavCartBadge();
-            
-            if (successCount === cart.length) {
-                showToast("🎉 Đơn hàng của bạn đã được đặt mua thành công!", "success");
-                setTimeout(() => {
-                    window.location.href = "/Project-Web-Programming/frontend/pages/home/index.php";
-                }, 1200);
-            } else {
-                await showAlert("Đặt hàng hoàn thành một phần", `Đã đặt mua thành công ${successCount}/${cart.length} sản phẩm.\n\nMột số sản phẩm gặp lỗi:\n` + errors.join('\n'), "warning");
-                renderCart();
-            }
-        } else {
-            await showAlert("Đặt hàng thất bại", "Có lỗi xảy ra khi tạo đơn hàng:\n\n" + errors.join('\n'), "error");
         // 3) Nếu vẫn không có gợi ý nào (ví dụ chưa có danh mục), thử lấy toàn bộ sản phẩm làm phương án dự phòng
         if (products.length === 0) {
             const fallbackRes = await fetch(PRODUCTS_API_URL, { headers: { Accept: 'application/json' } });
@@ -442,14 +426,7 @@ function removeFromCart(index) {
     showToast("Đã xóa sản phẩm khỏi giỏ hàng!", "info");
 }
 
-function clearCart() {
-    if (!confirm('Bạn có chắc muốn xóa toàn bộ sản phẩm trong giỏ hàng?')) return;
-    localStorage.removeItem("cart");
-    selectedCartIndexes = new Set();
-    cartSelectionInitialized = false;
-    renderCart();
-    showToast("Đã xóa toàn bộ giỏ hàng!", "success");
-}
+
 
 // --- 6. CHUYỂN HƯỚNG SANG TRANG PAYMENT ---
 // Thay vì đặt hàng ngay tại giỏ, ta chuyển sang trang Payment

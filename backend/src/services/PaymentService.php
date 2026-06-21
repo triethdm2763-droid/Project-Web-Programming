@@ -1,12 +1,15 @@
 <?php
+
 namespace App\Services;
 
 use App\Repositories\PaymentRepository;
 
-class PaymentService {
+class PaymentService
+{
     private $paymentRepository;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->paymentRepository = new PaymentRepository();
     }
 
@@ -17,7 +20,8 @@ class PaymentService {
      * @param string $status
      * @return bool
      */
-    public function updatePaymentStatus(int $orderId, string $status): bool {
+    public function updatePaymentStatus(int $orderId, string $status): bool
+    {
         return $this->paymentRepository->updateStatus($orderId, $status);
     }
 }

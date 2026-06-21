@@ -1,16 +1,20 @@
 <?php
+
 namespace App\Services;
 
 use App\Repositories\CategoryRepository;
 
-class CategoryService {
+class CategoryService
+{
     private $categoryRepository;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->categoryRepository = new CategoryRepository();
     }
 
-    public function listCategories(): array {
+    public function listCategories(): array
+    {
         $rows = $this->categoryRepository->findAll();
         return [
             'status' => 'success',
@@ -19,7 +23,8 @@ class CategoryService {
         ];
     }
 
-    public function getCategory(int $id): array {
+    public function getCategory(int $id): array
+    {
         $cat = $this->categoryRepository->findById($id);
         if ($cat === null) {
             return [

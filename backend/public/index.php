@@ -76,7 +76,6 @@ $routes = [
         '/api/orders'               => ['App\Controllers\OrderController', 'create'],
         '/api/orders/cancel'        => ['App\Controllers\OrderController', 'cancel'],
         '/api/orders/status'        => ['App\Controllers\OrderController', 'updateOrderStatus'],
-        '/api/notifications/read'   => ['App\Controllers\NotificationController', 'markRead']
         '/api/notifications/read'   => ['App\Controllers\NotificationController', 'markRead'],
         '/api/admin/products/update-status' => ['App\Controllers\AdminController', 'updateProductStatus']
     ],
@@ -90,7 +89,6 @@ $routes = [
         '/api/orders/buyer'       => ['App\Controllers\OrderController', 'buyerOrders'],
         '/api/orders/seller'      => ['App\Controllers\OrderController', 'sellerOrders'],
         '/api/seller/stats'       => ['App\Controllers\ProductController', 'sellerStats'],
-        '/api/notifications'      => ['App\Controllers\NotificationController', 'list']
         '/api/notifications'      => ['App\Controllers\NotificationController', 'list'],
         // Admin dashboard endpoints
         '/api/admin/users'        => ['App\Controllers\AdminController', 'users'],

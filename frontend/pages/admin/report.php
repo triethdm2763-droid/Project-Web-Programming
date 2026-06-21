@@ -66,6 +66,7 @@ for ($i = 6; $i >= 0; $i--) {
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <title>Báo cáo doanh thu</title>
     <?php include '../../components/header.php'; ?>
@@ -74,109 +75,109 @@ for ($i = 6; $i >= 0; $i--) {
 
 <body class="bg-slate-50">
 
-<div class="flex">
+    <div class="flex">
 
-    <?php include '../../components/sidebar.php'; ?>
+        <?php include '../../components/sidebar.php'; ?>
 
-    <main class="flex-1 p-8">
+        <main class="flex-1 p-8">
 
-        <div class="mb-8">
-            <h1 class="text-3xl font-black text-slate-800">
-                Báo cáo doanh thu
-            </h1>
+            <div class="mb-8">
+                <h1 class="text-3xl font-black text-slate-800">
+                    Báo cáo doanh thu
+                </h1>
 
-            <p class="text-slate-500 mt-2">
-                Thống kê doanh thu và giao dịch hệ thống
-            </p>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-6 mb-8">
-
-            <div class="bg-blue-600 p-6 rounded-3xl text-white">
-                <p class="text-blue-100">
-                    Doanh thu hôm nay
+                <p class="text-slate-500 mt-2">
+                    Thống kê doanh thu và giao dịch hệ thống
                 </p>
-
-                <h2
-                    id="todayRevenue"
-                    class="text-4xl font-black mt-3"
-                >
-                    <?= number_format((float) $todayRevenue) ?>đ
-                </h2>
             </div>
 
-            <div class="bg-green-600 p-6 rounded-3xl text-white">
-                <p class="text-green-100">
-                    Tổng giao dịch
-                </p>
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
 
-                <h2
-                    id="totalOrders"
-                    class="text-4xl font-black mt-3"
-                >
-                    <?= (int) $totalOrders ?>
-                </h2>
+                <div class="bg-blue-600 p-6 rounded-3xl text-white">
+                    <p class="text-blue-100">
+                        Doanh thu hôm nay
+                    </p>
+
+                    <h2
+                        id="todayRevenue"
+                        class="text-4xl font-black mt-3">
+                        <?= number_format((float) $todayRevenue) ?>đ
+                    </h2>
+                </div>
+
+                <div class="bg-green-600 p-6 rounded-3xl text-white">
+                    <p class="text-green-100">
+                        Tổng giao dịch
+                    </p>
+
+                    <h2
+                        id="totalOrders"
+                        class="text-4xl font-black mt-3">
+                        <?= (int) $totalOrders ?>
+                    </h2>
+                </div>
+
+                <div class="bg-orange-600 p-6 rounded-3xl text-white">
+                    <p class="text-orange-100">
+                        Doanh thu tháng
+                    </p>
+
+                    <h2
+                        id="monthRevenue"
+                        class="text-4xl font-black mt-3">
+                        <?= number_format((float) $monthRevenue) ?>đ
+                    </h2>
+                </div>
+
             </div>
 
-            <div class="bg-orange-600 p-6 rounded-3xl text-white">
-                <p class="text-orange-100">
-                    Doanh thu tháng
-                </p>
-
-                <h2
-                    id="monthRevenue"
-                    class="text-4xl font-black mt-3"
-                >
-                    <?= number_format((float) $monthRevenue) ?>đ
-                </h2>
+            <div class="bg-white p-8 rounded-3xl shadow-sm border">
+                <h3 class="font-bold text-slate-900 text-lg mb-4">
+                    Doanh thu 7 ngày gần nhất
+                </h3>
+                <canvas id="revenueChart"></canvas>
             </div>
 
-        </div>
+        </main>
 
-        <div class="bg-white p-8 rounded-3xl shadow-sm border">
-            <h3 class="font-bold text-slate-900 text-lg mb-4">
-                Doanh thu 7 ngày gần nhất
-            </h3>
-            <canvas id="revenueChart"></canvas>
-        </div>
+    </div>
 
-    </main>
+    <script>
+        // Dữ liệu doanh thu 7 ngày gần nhất được PHP tính sẵn từ server
+        const chartLabels = <?= json_encode($chartLabels, JSON_UNESCAPED_UNICODE) ?>;
+        const chartValues = <?= json_encode($chartValues) ?>;
 
-</div>
-
-<script>
-    // Dữ liệu doanh thu 7 ngày gần nhất được PHP tính sẵn từ server
-    const chartLabels = <?= json_encode($chartLabels, JSON_UNESCAPED_UNICODE) ?>;
-    const chartValues = <?= json_encode($chartValues) ?>;
-
-    const ctx = document.getElementById('revenueChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: chartLabels,
-            datasets: [{
-                label: 'Doanh thu (đ)',
-                data: chartValues,
-                backgroundColor: '#2563eb',
-                borderRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false }
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Doanh thu (đ)',
+                    data: chartValues,
+                    backgroundColor: '#2563eb',
+                    borderRadius: 8
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: (value) => Number(value).toLocaleString('vi-VN') + 'đ'
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (value) => Number(value).toLocaleString('vi-VN') + 'đ'
+                        }
                     }
                 }
             }
-        }
-    });
-</script>
+        });
+    </script>
 
 </body>
+
 </html>

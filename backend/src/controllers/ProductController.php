@@ -1,13 +1,16 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Core\BaseController;
 use App\Services\ProductService;
 
-class ProductController extends BaseController {
+class ProductController extends BaseController
+{
     private $productService;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->productService = new ProductService();
     }
 
@@ -15,7 +18,8 @@ class ProductController extends BaseController {
      * GET /api/products
      * Return list of active products with optional category / search filtering
      */
-    public function list() {
+    public function list()
+    {
         // If status filter is passed, it is the seller dashboard listing
         if (isset($_GET['status'])) {
             $status = $_GET['status'];
@@ -42,7 +46,8 @@ class ProductController extends BaseController {
      * GET /api/products/detail
      * Return single product details by id parameter
      */
-    public function detail() {
+    public function detail()
+    {
         if (!isset($_GET['id'])) {
             return $this->json(['error' => 'Thiếu tham số ID sản phẩm.'], 400);
         }
@@ -61,7 +66,8 @@ class ProductController extends BaseController {
      * POST /api/products
      * Register a new product listing (requires authenticated seller session)
      */
-    public function create() {
+    public function create()
+    {
         $data = $this->getRequestBody();
         $result = $this->productService->createProduct($data);
 
@@ -82,7 +88,8 @@ class ProductController extends BaseController {
      * POST /api/products/upload
      * Upload an image for a product
      */
-    public function uploadImage() {
+    public function uploadImage()
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -135,7 +142,8 @@ class ProductController extends BaseController {
      * POST /api/products/update
      * Update an existing product (requires authenticated seller session & ownership)
      */
-    public function update() {
+    public function update()
+    {
         $data = $this->getRequestBody();
         if (empty($data['id'])) {
             return $this->json(['error' => 'Thiếu tham số ID sản phẩm.'], 400);
@@ -160,7 +168,8 @@ class ProductController extends BaseController {
      * POST /api/products/delete
      * Delete an existing product (requires authenticated seller session & ownership)
      */
-    public function delete() {
+    public function delete()
+    {
         $data = $this->getRequestBody();
         if (empty($data['id'])) {
             return $this->json(['error' => 'Thiếu tham số ID sản phẩm.'], 400);
@@ -184,7 +193,8 @@ class ProductController extends BaseController {
      * GET /api/seller/stats
      * Retrieve statistics for currently logged in seller
      */
-    public function sellerStats() {
+    public function sellerStats()
+    {
         $result = $this->productService->getSellerStats();
         if ($result['status'] === 'success') {
             return $this->json($result['data'], 200);
@@ -192,4 +202,3 @@ class ProductController extends BaseController {
         return $this->json(['error' => $result['message']], $result['code']);
     }
 }
-

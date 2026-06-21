@@ -86,48 +86,6 @@ function nav_class($pathFragment, $currentPath)
         </div>
 
     </div>
-    <div class="flex items-center gap-4">
-  <a href="/Project-Web-Programming/frontend/pages/cart/index.php" id="navbar-cart-link" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative block">
-    shopping_cart
-    <span id="navbar-cart-badge" class="hidden absolute top-0 right-0 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-[18px] text-center font-body-md">0</span>
-  </a>
-  
-  <?php
-    $isLoggedIn = isset($_SESSION['user_id']);
-  ?>
-
-  <?php if ($isLoggedIn): ?>
-    <div class="flex items-center gap-2">
-      <a href="<?php echo ($_SESSION['role'] === 'admin') ? '/Project-Web-Programming/frontend/pages/admin/dashboard.php' : '/Project-Web-Programming/frontend/pages/user/dashboard.php'; ?>" class="flex items-center gap-1.5 p-1.5 hover:bg-surface-container rounded-full transition-colors text-on-surface-variant hover:text-primary">
-        <span class="material-symbols-outlined">account_circle</span>
-        <span class="text-sm font-semibold max-w-[100px] truncate"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
-      </a>
-      <button onclick="logout()" class="material-symbols-outlined p-2 text-on-surface-variant hover:text-error hover:bg-surface-container rounded-full transition-colors" title="Đăng xuất">
-        logout
-      </button>
-    </div>
-  <?php else: ?>
-    <a href="/Project-Web-Programming/frontend/pages/auth/login.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors block" title="Đăng nhập">
-      account_circle
-    </a>
-  <?php endif; ?>
-  
-  <?php if ($isLoggedIn): ?>
-        <a href="/Project-Web-Programming/frontend/pages/seller/my-store.php" 
-           class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm text-[15px] cursor-pointer inline-block text-center">
-            Đăng tin
-        </a>
-      <?php else: ?>
-        <button id="btn-create-post" data-logged-in="false" type="button"
-        
-                class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm text-[15px] cursor-pointer">
-            Đăng tin
-        </button>
-        
-      <?php endif; ?>
-</div>
-    
-  </div>
 </header>
 
 <script>
@@ -195,30 +153,41 @@ function nav_class($pathFragment, $currentPath)
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
     }
-// Cập nhật số lượng sản phẩm hiển thị trên icon giỏ hàng (badge đỏ)
-function updateNavbarCartBadge() {
-    const badge = document.getElementById('navbar-cart-badge');
-    if (!badge) return;
-    try {
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        const count = Array.isArray(cart) ? cart.length : 0;
-        if (count > 0) {
-            badge.innerText = count > 99 ? '99+' : count;
-            badge.classList.remove('hidden');
-        } else {
-            badge.classList.add('hidden');
+
+    // Cập nhật số lượng sản phẩm hiển thị trên icon giỏ hàng (badge đỏ)
+    function updateNavbarCartBadge() {
+        const badge = document.getElementById('navbar-cart-badge');
+        const targetBadge = badge || document.getElementById('nav-cart-badge');
+        if (!targetBadge) return;
+        try {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const count = Array.isArray(cart) ? cart.length : 0;
+            if (count > 0) {
+                targetBadge.innerText = count > 99 ? '99+' : count;
+                targetBadge.classList.remove('hidden');
+            } else {
+                targetBadge.classList.add('hidden');
+            }
+        } catch (e) {
+            targetBadge.classList.add('hidden');
         }
-    } catch (e) {
-        badge.classList.add('hidden');
     }
-}
 
-// Chờ giao diện tải xong để bắt các sự kiện click / gõ phím
-document.addEventListener("DOMContentLoaded", function() {
-    updateNavbarCartBadge();
+    function updateNavCartBadge() {
+        updateNavbarCartBadge();
+    }
 
-    const searchInput = document.getElementById('search-input');
-    const searchBtn = document.getElementById('search-btn');
+    // Hàm thực hiện hành động tìm kiếm toàn cục
+    function executeGlobalSearch() {
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            const keyword = searchInput.value.trim();
+            if (keyword) {
+                // Chuyển hướng sang trang danh mục sản phẩm kèm tham số tìm kiếm (?search=...)
+                window.location.href = "/Project-Web-Programming/frontend/pages/products/category.php?search=" + encodeURIComponent(keyword);
+            }
+        }
+    }
 
     function toggleNavNotificationsDropdown(event) {
         event.stopPropagation();
@@ -283,75 +252,9 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Close dropdown on click outside
-    document.addEventListener("click", function(event) {
-        const dropdown = document.getElementById("nav-notifications-dropdown");
-        const trigger = document.getElementById("nav-btn-notifications");
-        if (dropdown && !dropdown.classList.contains("hidden") && !dropdown.contains(event.target) && event.target !== trigger) {
-            dropdown.classList.add("hidden");
-        }
-    });
-
-    // Auto-run if logged in
-    document.addEventListener("DOMContentLoaded", () => {
-        const isLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
-        if (isLoggedIn) {
-            loadNavNotifications();
-            setInterval(loadNavNotifications, 30000);
-        }
-        updateNavCartBadge();
-    });
-
-    function updateNavCartBadge() {
-        try {
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            let badge = document.getElementById("nav-cart-badge");
-            if (badge) {
-                if (cart.length > 0) {
-                    badge.innerText = cart.length;
-                    badge.classList.remove("hidden");
-                } else {
-                    badge.classList.add("hidden");
-                }
-            }
-        } catch (err) {
-            console.error("Lỗi khi cập nhật giỏ hàng navbar:", err);
-        }
-    }
-    // Hàm thực hiện hành động tìm kiếm toàn cục
-    function executeGlobalSearch() {
-        const searchInput = document.getElementById('search-input');
-        if (searchInput) {
-            const keyword = searchInput.value.trim();
-            if (keyword) {
-                // Chuyển hướng sang trang danh mục sản phẩm kèm tham số tìm kiếm (?search=...)
-                window.location.href = "/Project-Web-Programming/frontend/pages/products/category.php?search=" + encodeURIComponent(keyword);
-            }
-        }
-    }
-
-    // Chờ giao diện tải xong để bắt các sự kiện click / gõ phím
-    document.addEventListener("DOMContentLoaded", function() {
-        const searchInput = document.getElementById('search-input');
-        const searchBtn = document.getElementById('search-btn');
-
-        // 1. Xử lý khi người dùng nhấn phím Enter trong ô tìm kiếm
-        searchInput?.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                executeGlobalSearch();
-            }
-        });
-
-        // 2. Xử lý khi người dùng click chuột trực tiếp vào kính lúp
-        searchBtn?.addEventListener('click', function() {
-            executeGlobalSearch();
-        });
-    });
-
     async function logout() {
         if (await showConfirm("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", "warning")) {
             try {
-                // Đã fix lại đường dẫn gọi API đăng xuất chuẩn qua index.php
                 let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/logout", {
                     method: "POST"
                 });
@@ -369,14 +272,40 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     }
-</script>
-    // 2. Xử lý khi người dùng click chuột trực tiếp vào kính lúp
-    searchBtn?.addEventListener('click', function() {
-        executeGlobalSearch();
-    });
-});
 
-// Lưu ý: hàm logout() dùng chung cho toàn bộ trang web đã được định nghĩa
-// sẵn trong frontend/assets/js/ui-helpers.js (được header.php include ở mọi trang),
-// nên không định nghĩa lại ở đây để tránh xung đột.
+    // Chờ giao diện tải xong để bắt các sự kiện click / gõ phím và khởi tạo
+    document.addEventListener("DOMContentLoaded", function() {
+        updateNavbarCartBadge();
+
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+
+        // 1. Xử lý khi người dùng nhấn phím Enter trong ô tìm kiếm
+        searchInput?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                executeGlobalSearch();
+            }
+        });
+
+        // 2. Xử lý khi người dùng click chuột trực tiếp vào kính lúp
+        searchBtn?.addEventListener('click', function() {
+            executeGlobalSearch();
+        });
+
+        // Close dropdown on click outside
+        document.addEventListener("click", function(event) {
+            const dropdown = document.getElementById("nav-notifications-dropdown");
+            const trigger = document.getElementById("nav-btn-notifications");
+            if (dropdown && !dropdown.classList.contains("hidden") && !dropdown.contains(event.target) && event.target !== trigger) {
+                dropdown.classList.add("hidden");
+            }
+        });
+
+        // Auto-run notification checker if logged in
+        const isLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
+        if (isLoggedIn) {
+            loadNavNotifications();
+            setInterval(loadNavNotifications, 30000);
+        }
+    });
 </script>

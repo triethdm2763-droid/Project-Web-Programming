@@ -1,12 +1,15 @@
 <?php
+
 namespace App\Services;
 
 use App\Repositories\NotificationRepository;
 
-class NotificationService {
+class NotificationService
+{
     private $notificationRepository;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->notificationRepository = new NotificationRepository();
     }
 
@@ -15,7 +18,8 @@ class NotificationService {
      * 
      * @return array
      */
-    public function getMyNotifications(): array {
+    public function getMyNotifications(): array
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -44,7 +48,8 @@ class NotificationService {
      * @param mixed $dbTransaction Optional db instance inside transaction
      * @return bool
      */
-    public function send(int $userId, string $title, string $content, $dbTransaction = null): bool {
+    public function send(int $userId, string $title, string $content, $dbTransaction = null): bool
+    {
         return $this->notificationRepository->create($userId, $title, $content, $dbTransaction) > 0;
     }
 
@@ -54,7 +59,8 @@ class NotificationService {
      * @param int $notificationId
      * @return array
      */
-    public function markAsRead(int $notificationId): array {
+    public function markAsRead(int $notificationId): array
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }

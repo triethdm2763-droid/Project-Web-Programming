@@ -1,13 +1,16 @@
 <?php
+
 namespace App\Services;
 
 use App\Repositories\ProductRepository;
 use App\Validators\Validator;
 
-class ProductService {
+class ProductService
+{
     private $productRepository;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->productRepository = new ProductRepository();
     }
 
@@ -17,7 +20,8 @@ class ProductService {
      * @param array $filters
      * @return array
      */
-    public function getActiveProducts(array $filters = []): array {
+    public function getActiveProducts(array $filters = []): array
+    {
         $products = $this->productRepository->findAllActive($filters);
         return [
             'status' => 'success',
@@ -32,7 +36,8 @@ class ProductService {
      * @param int $id
      * @return array
      */
-    public function getProductDetail(int $id): array {
+    public function getProductDetail(int $id): array
+    {
         $product = $this->productRepository->findById($id);
         if ($product === null) {
             return [
@@ -54,7 +59,8 @@ class ProductService {
      * @param array $data
      * @return array
      */
-    public function createProduct(array $data): array {
+    public function createProduct(array $data): array
+    {
         // Enforce user session context
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -121,7 +127,8 @@ class ProductService {
      * @param array $data
      * @return array
      */
-    public function updateProduct(int $id, array $data): array {
+    public function updateProduct(int $id, array $data): array
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -207,7 +214,8 @@ class ProductService {
      * @param int $id
      * @return array
      */
-    public function deleteProduct(int $id): array {
+    public function deleteProduct(int $id): array
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -260,7 +268,8 @@ class ProductService {
      * @param string|null $status
      * @return array
      */
-    public function getSellerProducts(string $status = null): array {
+    public function getSellerProducts(string $status = null): array
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -287,7 +296,8 @@ class ProductService {
      * 
      * @return array
      */
-    public function getSellerStats(): array {
+    public function getSellerStats(): array
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -344,4 +354,3 @@ class ProductService {
         ];
     }
 }
-

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Repositories\OrderRepository;
@@ -8,13 +9,15 @@ use App\Services\NotificationService;
 use App\Validators\Validator;
 use Exception;
 
-class OrderService {
+class OrderService
+{
     private $orderRepository;
     private $productRepository;
     private $userRepository;
     private $notificationService;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->orderRepository = new OrderRepository();
         $this->productRepository = new ProductRepository();
         $this->userRepository = new UserRepository();
@@ -27,7 +30,8 @@ class OrderService {
      * @param array $data
      * @return array
      */
-    public function checkout(array $data): array {
+    public function checkout(array $data): array
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -141,7 +145,6 @@ class OrderService {
                 'code'     => 201,
                 'order_id' => $orderId
             ];
-
         } catch (Exception $e) {
             return [
                 'status'  => 'error',
@@ -157,7 +160,8 @@ class OrderService {
      * @param array $data
      * @return array
      */
-    public function cancelOrder(array $data): array {
+    public function cancelOrder(array $data): array
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -230,7 +234,6 @@ class OrderService {
                 'status' => 'success',
                 'code'   => 200
             ];
-
         } catch (Exception $e) {
             return [
                 'status'  => 'error',
@@ -245,7 +248,8 @@ class OrderService {
      * 
      * @return array
      */
-    public function getBuyerHistory(): array {
+    public function getBuyerHistory(): array
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -270,7 +274,8 @@ class OrderService {
      * 
      * @return array
      */
-    public function getSellerOrders(): array {
+    public function getSellerOrders(): array
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -296,7 +301,8 @@ class OrderService {
      * @param array $data
      * @return array
      */
-    public function updateStatus(array $data): array {
+    public function updateStatus(array $data): array
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }

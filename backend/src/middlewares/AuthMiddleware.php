@@ -1,14 +1,17 @@
 <?php
+
 namespace App\Middlewares;
 
-class AuthMiddleware {
-    
+class AuthMiddleware
+{
+
     /**
      * Handle the incoming request. If unauthorized, returns 401 JSON and halts execution.
      * 
      * @return array|null Returns array of user details if logged in, or halts request if unauthorized.
      */
-    public static function handle() {
+    public static function handle()
+    {
         // Double check session start status
         if (session_status() === PHP_SESSION_NONE) {
             session_start();

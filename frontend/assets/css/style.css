@@ -2,17 +2,16 @@
    ĐỊNH NGHĨA BIẾN MÀU TOÀN CỤC CHUẨN ĐỒNG BỘ DỰ ÁN (XANH DƯƠNG - CAM)
    ========================================================================== */
 :root {
-    --color-primary: #004ac6;         /* Màu xanh dương đậm thương hiệu */
-    --color-secondary: #9d4300;       /* Màu cam đất */
-    --color-secondary-container: #fd761a; /* Màu cam cháy nút Mua Ngay */
-    --bg-surface: #f8f9fb;            /* Nền xám trắng nhạt */
-    --bg-container: #edeef0;          /* Nền xám của thanh tìm kiếm */
-    --text-dark: #191c1e;             /* Màu chữ chính đen xám */
-    --text-muted: #434655;            /* Màu chữ xám đậm */
-    --text-white: white;              /* Màu chữ trắng cho nút và tiêu đề trên nền tối */
-    --color-tertiary: #006242;         /* Màu xanh lục của nhãn Độc bản */
-    --outline-border: #c3c6d7;         /* Màu đường viền nhạt */
-
+  --color-primary: #004ac6; /* Màu xanh dương đậm thương hiệu */
+  --color-secondary: #9d4300; /* Màu cam đất */
+  --color-secondary-container: #fd761a; /* Màu cam cháy nút Mua Ngay */
+  --bg-surface: #f8f9fb; /* Nền xám trắng nhạt */
+  --bg-container: #edeef0; /* Nền xám của thanh tìm kiếm */
+  --text-dark: #191c1e; /* Màu chữ chính đen xám */
+  --text-muted: #434655; /* Màu chữ xám đậm */
+  --text-white: white; /* Màu chữ trắng cho nút và tiêu đề trên nền tối */
+  --color-tertiary: #006242; /* Màu xanh lục của nhãn Độc bản */
+  --outline-border: #c3c6d7; /* Màu đường viền nhạt */
 }
 
 /* ==========================================================================
@@ -21,21 +20,21 @@
 
 /* Định dạng thanh cuộn ngang cho danh sách ảnh thu nhỏ */
 .product-gallery-scroll::-webkit-scrollbar {
-    height: 4px;
+  height: 4px;
 }
 
 .product-gallery-scroll::-webkit-scrollbar-thumb {
-    background: var(--outline-border);
-    border-radius: 10px;
+  background: var(--outline-border);
+  border-radius: 10px;
 }
 
 /* Hiệu ứng thẻ mờ kính (Glassmorphism) */
 .glass-card {
-    backdrop-filter: blur(8px);
-    background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.8);
 }
 
 /* Class trạng thái border active cho ảnh thu nhỏ */
 .active-thumb {
-    border: 2px solid var(--color-primary);
+  border: 2px solid var(--color-primary);
 }

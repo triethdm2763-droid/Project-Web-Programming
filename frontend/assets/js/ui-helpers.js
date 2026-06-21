@@ -4,9 +4,9 @@
  */
 
 // Initialize styling & containers
-(function() {
-    const style = document.createElement('style');
-    style.innerHTML = `
+(function () {
+  const style = document.createElement("style");
+  style.innerHTML = `
         .toast-container {
             position: fixed;
             top: 20px;
@@ -43,51 +43,52 @@
             opacity: 0;
         }
     `;
-    document.head.appendChild(style);
+  document.head.appendChild(style);
 
-    // Create Toast container if not exists
-    document.addEventListener('DOMContentLoaded', () => {
-        if (!document.getElementById('global-toast-container')) {
-            const container = document.createElement('div');
-            container.id = 'global-toast-container';
-            container.className = 'toast-container';
-            document.body.appendChild(container);
-        }
-    });
+  // Create Toast container if not exists
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!document.getElementById("global-toast-container")) {
+      const container = document.createElement("div");
+      container.id = "global-toast-container";
+      container.className = "toast-container";
+      document.body.appendChild(container);
+    }
+  });
 })();
 
 /**
  * Show a sleek Toast Notification in the top-right corner
- * @param {string} message 
- * @param {'success'|'error'|'warning'|'info'} type 
+ * @param {string} message
+ * @param {'success'|'error'|'warning'|'info'} type
  */
-window.showToast = function(message, type = 'success') {
-    const container = document.getElementById('global-toast-container') || document.body;
-    
-    // Create card element
-    const toast = document.createElement('div');
-    toast.className = 'toast-card';
+window.showToast = function (message, type = "success") {
+  const container =
+    document.getElementById("global-toast-container") || document.body;
 
-    let icon = 'check_circle';
-    let iconColor = 'text-green-500';
-    let borderLeft = 'border-l-4 border-green-500';
-    
-    if (type === 'error') {
-        icon = 'error';
-        iconColor = 'text-red-500';
-        borderLeft = 'border-l-4 border-red-500';
-    } else if (type === 'warning') {
-        icon = 'warning';
-        iconColor = 'text-amber-500';
-        borderLeft = 'border-l-4 border-amber-500';
-    } else if (type === 'info') {
-        icon = 'info';
-        iconColor = 'text-blue-500';
-        borderLeft = 'border-l-4 border-blue-500';
-    }
+  // Create card element
+  const toast = document.createElement("div");
+  toast.className = "toast-card";
 
-    toast.className = `toast-card ${borderLeft} flex items-center gap-3`;
-    toast.innerHTML = `
+  let icon = "check_circle";
+  let iconColor = "text-green-500";
+  let borderLeft = "border-l-4 border-green-500";
+
+  if (type === "error") {
+    icon = "error";
+    iconColor = "text-red-500";
+    borderLeft = "border-l-4 border-red-500";
+  } else if (type === "warning") {
+    icon = "warning";
+    iconColor = "text-amber-500";
+    borderLeft = "border-l-4 border-amber-500";
+  } else if (type === "info") {
+    icon = "info";
+    iconColor = "text-blue-500";
+    borderLeft = "border-l-4 border-blue-500";
+  }
+
+  toast.className = `toast-card ${borderLeft} flex items-center gap-3`;
+  toast.innerHTML = `
         <span class="material-symbols-outlined ${iconColor} text-[24px]">${icon}</span>
         <div class="flex-grow pr-2">
             <p class="text-sm font-medium text-gray-800">${message}</p>
@@ -97,53 +98,55 @@ window.showToast = function(message, type = 'success') {
         </button>
     `;
 
-    container.appendChild(toast);
+  container.appendChild(toast);
 
-    // Trigger transition
-    setTimeout(() => toast.classList.add('show'), 10);
+  // Trigger transition
+  setTimeout(() => toast.classList.add("show"), 10);
 
-    // Auto-remove
-    setTimeout(() => {
-        toast.classList.remove('show');
-        toast.classList.add('hide');
-        setTimeout(() => toast.remove(), 355);
-    }, 3200);
+  // Auto-remove
+  setTimeout(() => {
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+    setTimeout(() => toast.remove(), 355);
+  }, 3200);
 };
 
 /**
  * Show a beautiful modal Alert dialog (Returns Promise)
- * @param {string} title 
- * @param {string} message 
- * @param {'success'|'error'|'warning'|'info'} type 
+ * @param {string} title
+ * @param {string} message
+ * @param {'success'|'error'|'warning'|'info'} type
  * @returns {Promise<boolean>}
  */
-window.showAlert = function(title, message, type = 'success') {
-    return new Promise((resolve) => {
-        // Create elements
-        const overlay = document.createElement('div');
-        overlay.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300 pointer-events-none';
-        
-        let icon = 'check_circle';
-        let iconBg = 'bg-green-50 text-green-600';
-        let btnBg = 'bg-[#004ac6] hover:bg-opacity-95'; // brand primary
-        
-        if (type === 'error') {
-            icon = 'error';
-            iconBg = 'bg-red-50 text-red-600';
-            btnBg = 'bg-red-600 hover:bg-red-700';
-        } else if (type === 'warning') {
-            icon = 'warning';
-            iconBg = 'bg-amber-50 text-amber-600';
-            btnBg = 'bg-amber-600 hover:bg-amber-700';
-        } else if (type === 'info') {
-            icon = 'info';
-            iconBg = 'bg-blue-50 text-blue-600';
-            btnBg = 'bg-blue-600 hover:bg-blue-700';
-        }
+window.showAlert = function (title, message, type = "success") {
+  return new Promise((resolve) => {
+    // Create elements
+    const overlay = document.createElement("div");
+    overlay.className =
+      "fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300 pointer-events-none";
 
-        const modal = document.createElement('div');
-        modal.className = 'bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl flex flex-col items-center text-center transform scale-95 transition-all duration-300 pointer-events-auto';
-        modal.innerHTML = `
+    let icon = "check_circle";
+    let iconBg = "bg-green-50 text-green-600";
+    let btnBg = "bg-[#004ac6] hover:bg-opacity-95"; // brand primary
+
+    if (type === "error") {
+      icon = "error";
+      iconBg = "bg-red-50 text-red-600";
+      btnBg = "bg-red-600 hover:bg-red-700";
+    } else if (type === "warning") {
+      icon = "warning";
+      iconBg = "bg-amber-50 text-amber-600";
+      btnBg = "bg-amber-600 hover:bg-amber-700";
+    } else if (type === "info") {
+      icon = "info";
+      iconBg = "bg-blue-50 text-blue-600";
+      btnBg = "bg-blue-600 hover:bg-blue-700";
+    }
+
+    const modal = document.createElement("div");
+    modal.className =
+      "bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl flex flex-col items-center text-center transform scale-95 transition-all duration-300 pointer-events-auto";
+    modal.innerHTML = `
             <div class="w-14 h-14 rounded-full ${iconBg} flex items-center justify-center">
                 <span class="material-symbols-outlined text-[32px]">${icon}</span>
             </div>
@@ -154,58 +157,60 @@ window.showAlert = function(title, message, type = 'success') {
             </button>
         `;
 
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
 
-        // Show transition
-        setTimeout(() => {
-            overlay.classList.remove('opacity-0', 'pointer-events-none');
-            modal.classList.remove('scale-95');
-        }, 10);
+    // Show transition
+    setTimeout(() => {
+      overlay.classList.remove("opacity-0", "pointer-events-none");
+      modal.classList.remove("scale-95");
+    }, 10);
 
-        // Close logic
-        const close = () => {
-            overlay.classList.add('opacity-0', 'pointer-events-none');
-            modal.classList.add('scale-95');
-            setTimeout(() => {
-                overlay.remove();
-                resolve(true);
-            }, 300);
-        };
+    // Close logic
+    const close = () => {
+      overlay.classList.add("opacity-0", "pointer-events-none");
+      modal.classList.add("scale-95");
+      setTimeout(() => {
+        overlay.remove();
+        resolve(true);
+      }, 300);
+    };
 
-        modal.querySelector('#alert-confirm-btn').addEventListener('click', close);
-    });
+    modal.querySelector("#alert-confirm-btn").addEventListener("click", close);
+  });
 };
 
 /**
  * Show a beautiful modal Confirm dialog (Returns Promise resolving to true/false)
- * @param {string} title 
- * @param {string} message 
- * @param {'success'|'error'|'warning'|'info'} type 
+ * @param {string} title
+ * @param {string} message
+ * @param {'success'|'error'|'warning'|'info'} type
  * @returns {Promise<boolean>}
  */
-window.showConfirm = function(title, message, type = 'warning') {
-    return new Promise((resolve) => {
-        const overlay = document.createElement('div');
-        overlay.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300 pointer-events-none';
-        
-        let icon = 'help';
-        let iconBg = 'bg-amber-50 text-amber-600';
-        let btnBg = 'bg-[#004ac6] hover:bg-opacity-95'; // brand primary
-        
-        if (type === 'error') {
-            icon = 'error';
-            iconBg = 'bg-red-50 text-red-600';
-            btnBg = 'bg-red-600 hover:bg-red-700';
-        } else if (type === 'success') {
-            icon = 'check_circle';
-            iconBg = 'bg-green-50 text-green-600';
-            btnBg = 'bg-green-600 hover:bg-green-700';
-        }
+window.showConfirm = function (title, message, type = "warning") {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.className =
+      "fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300 pointer-events-none";
 
-        const modal = document.createElement('div');
-        modal.className = 'bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl flex flex-col items-center text-center transform scale-95 transition-all duration-300 pointer-events-auto';
-        modal.innerHTML = `
+    let icon = "help";
+    let iconBg = "bg-amber-50 text-amber-600";
+    let btnBg = "bg-[#004ac6] hover:bg-opacity-95"; // brand primary
+
+    if (type === "error") {
+      icon = "error";
+      iconBg = "bg-red-50 text-red-600";
+      btnBg = "bg-red-600 hover:bg-red-700";
+    } else if (type === "success") {
+      icon = "check_circle";
+      iconBg = "bg-green-50 text-green-600";
+      btnBg = "bg-green-600 hover:bg-green-700";
+    }
+
+    const modal = document.createElement("div");
+    modal.className =
+      "bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl flex flex-col items-center text-center transform scale-95 transition-all duration-300 pointer-events-auto";
+    modal.innerHTML = `
             <div class="w-14 h-14 rounded-full ${iconBg} flex items-center justify-center">
                 <span class="material-symbols-outlined text-[32px]">${icon}</span>
             </div>
@@ -221,37 +226,39 @@ window.showConfirm = function(title, message, type = 'warning') {
             </div>
         `;
 
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
 
-        // Show transition
-        setTimeout(() => {
-            overlay.classList.remove('opacity-0', 'pointer-events-none');
-            modal.classList.remove('scale-95');
-        }, 10);
+    // Show transition
+    setTimeout(() => {
+      overlay.classList.remove("opacity-0", "pointer-events-none");
+      modal.classList.remove("scale-95");
+    }, 10);
 
-        // Close handlers
-        const handleCancel = () => {
-            overlay.classList.add('opacity-0', 'pointer-events-none');
-            modal.classList.add('scale-95');
-            setTimeout(() => {
-                overlay.remove();
-                resolve(false);
-            }, 300);
-        };
+    // Close handlers
+    const handleCancel = () => {
+      overlay.classList.add("opacity-0", "pointer-events-none");
+      modal.classList.add("scale-95");
+      setTimeout(() => {
+        overlay.remove();
+        resolve(false);
+      }, 300);
+    };
 
-        const handleOk = () => {
-            overlay.classList.add('opacity-0', 'pointer-events-none');
-            modal.classList.add('scale-95');
-            setTimeout(() => {
-                overlay.remove();
-                resolve(true);
-            }, 300);
-        };
+    const handleOk = () => {
+      overlay.classList.add("opacity-0", "pointer-events-none");
+      modal.classList.add("scale-95");
+      setTimeout(() => {
+        overlay.remove();
+        resolve(true);
+      }, 300);
+    };
 
-        modal.querySelector('#confirm-cancel-btn').addEventListener('click', handleCancel);
-        modal.querySelector('#confirm-ok-btn').addEventListener('click', handleOk);
-    });
+    modal
+      .querySelector("#confirm-cancel-btn")
+      .addEventListener("click", handleCancel);
+    modal.querySelector("#confirm-ok-btn").addEventListener("click", handleOk);
+  });
 };
 
 // ==========================================================================
@@ -259,22 +266,26 @@ window.showConfirm = function(title, message, type = 'warning') {
 // (dùng được cả ở navbar người dùng lẫn các trang Admin không include navbar.php)
 // ==========================================================================
 async function logout() {
-    if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
-        try {
-            let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/logout", {
-                method: "POST"
-            });
-            if (res.ok) {
-                showToast("Đăng xuất thành công!", "success");
-                setTimeout(() => {
-                    window.location.href = "/Project-Web-Programming/frontend/pages/home/index.php";
-                }, 1000);
-            } else {
-                showToast("Đăng xuất thất bại.", "error");
-            }
-        } catch (error) {
-            console.error("Logout error:", error);
-            showToast("Lỗi kết nối đến máy chủ.", "error");
-        }
+  if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+    try {
+      let res = await fetch(
+        "/Project-Web-Programming/backend/public/index.php/api/auth/logout",
+        {
+          method: "POST",
+        },
+      );
+      if (res.ok) {
+        showToast("Đăng xuất thành công!", "success");
+        setTimeout(() => {
+          window.location.href =
+            "/Project-Web-Programming/frontend/pages/home/index.php";
+        }, 1000);
+      } else {
+        showToast("Đăng xuất thất bại.", "error");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      showToast("Lỗi kết nối đến máy chủ.", "error");
     }
+  }
 }

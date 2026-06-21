@@ -1,13 +1,16 @@
 <?php
+
 namespace App\Services;
 
 use App\Repositories\UserRepository;
 use App\Validators\Validator;
 
-class AuthService {
+class AuthService
+{
     private $userRepository;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->userRepository = new UserRepository();
     }
 
@@ -17,56 +20,8 @@ class AuthService {
      * @param array $data Input data payload
      * @return array Status array indicating success or failure with error messages
      */
-    public function register(array $data): array {
-
-        $turnstileToken =
-        $data['turnstileToken'] ?? '';
-
-        if (empty($turnstileToken)) {
-            return [
-                'status' => 'error',
-                'code' => 400,
-                'errors' => [
-                    'captcha' => [
-                        'Vui lòng xác thực CAPTCHA.'
-                    ]
-                ]
-            ];
-        }
-
-        $secretKey = "0x4AAAAAADlFZ_VeIH0EhyLYgyBDfmakMKE";
-
-        $ch = curl_init();
-
-        curl_setopt_array($ch, [
-            CURLOPT_URL =>
-                "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-            CURLOPT_POST => true,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POSTFIELDS => [
-                'secret' => $secretKey,
-                'response' => $turnstileToken
-            ]
-        ]);
-
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        $resultCaptcha =
-        json_decode($response, true);
-
-        if (empty($resultCaptcha['success'])) {
-            return [
-                'status' => 'error',
-                'code' => 400,
-                'errors' => [
-                    'captcha' => [
-                        'CAPTCHA không hợp lệ.'
-                    ]
-                ]
-            ];
-        }
-
+    public function register(array $data): array
+    {
         // 1. Validate Input Data
         $rules = [
             'username' => 'required|min:3|max:50',
@@ -89,22 +44,7 @@ class AuthService {
         $password = $data['password'];
         $phone = isset($data['phone']) ? trim($data['phone']) : null;
 
-        if (
-            !preg_match(
-                '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/',
-                $password
-            )
-        ) {
-            return [
-                'status' => 'error',
-                'code' => 400,
-                'errors' => [
-                    'password' => [
-                        'Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.'
-                    ]
-                ]
-            ];
-        }
+
 
         // 2. Check if Username Already Exists
         if ($this->userRepository->findByUsername($username) !== null) {
@@ -143,7 +83,8 @@ class AuthService {
      * @param array $data Input credentials payload
      * @return array Status array indicating success or failure with error messages
      */
-    public function login(array $data): array {
+    public function login(array $data): array
+    {
         // 1. Validate Input Fields
         $rules = [
             'username' => 'required',
@@ -210,7 +151,8 @@ class AuthService {
      * 
      * @return array Status payload with user profile or error details
      */
-    public function getCurrentUser(): array {
+    public function getCurrentUser(): array
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -244,7 +186,8 @@ class AuthService {
      * @param array $data
      * @return array
      */
-    public function requestPasswordReset(array $data): array {
+    public function requestPasswordReset(array $data): array
+    {
         $rules = [
             'email' => 'required|email'
         ];
@@ -292,7 +235,8 @@ class AuthService {
      * @param array $data
      * @return array
      */
-    public function resetPassword(array $data): array {
+    public function resetPassword(array $data): array
+    {
         $rules = [
             'otp'      => 'required',
             'password' => 'required|min:6'

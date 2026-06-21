@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Core\BaseRepository;
 use PDO;
 
-class ProductRepository extends BaseRepository {
+class ProductRepository extends BaseRepository
+{
 
     /**
      * Find active products with filters (category, search keyword)
@@ -12,15 +14,16 @@ class ProductRepository extends BaseRepository {
      * @param array $filters
      * @return array
      */
-    public function findAllActive(array $filters = []): array {
-    $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName,
+    public function findAllActive(array $filters = []): array
+    {
+        $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName,
         (SELECT o.Shipping_address FROM orders o WHERE o.Product_ID = p.ID ORDER BY o.created_at DESC LIMIT 1) AS Location
         FROM `products` p
         JOIN `categories` c ON p.Category_ID = c.ID
         JOIN `users` u ON p.Seller_ID = u.ID
         -- Treat both 'active' and legacy 'available' as visible
         WHERE p.Status IN ('active', 'available')";
-        
+
         $params = [];
 
         if (!empty($filters['category_id'])) {
@@ -45,7 +48,8 @@ class ProductRepository extends BaseRepository {
      *
      * @return array
      */
-    public function findAllForAdmin(): array {
+    public function findAllForAdmin(): array
+    {
         $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName
         FROM `products` p
         JOIN `categories` c ON p.Category_ID = c.ID
@@ -63,14 +67,15 @@ class ProductRepository extends BaseRepository {
      * @param int $id
      * @return array|null
      */
-    public function findById(int $id) {
-    $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName, u.Email as SellerEmail, u.Phone as SellerPhone,
+    public function findById(int $id)
+    {
+        $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName, u.Email as SellerEmail, u.Phone as SellerPhone,
         (SELECT o.Shipping_address FROM orders o WHERE o.Product_ID = p.ID ORDER BY o.created_at DESC LIMIT 1) AS Location
         FROM `products` p
         JOIN `categories` c ON p.Category_ID = c.ID
         JOIN `users` u ON p.Seller_ID = u.ID
         WHERE p.ID = :id LIMIT 1";
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
         $product = $stmt->fetch();
@@ -83,7 +88,8 @@ class ProductRepository extends BaseRepository {
      * @param int $id
      * @return array|null
      */
-    public function findByIdForUpdate(int $id) {
+    public function findByIdForUpdate(int $id)
+    {
         $sql = "SELECT * FROM `products` WHERE `ID` = :id LIMIT 1 FOR UPDATE";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
@@ -97,10 +103,11 @@ class ProductRepository extends BaseRepository {
      * @param array $data
      * @return int
      */
-    public function create(array $data): int {
+    public function create(array $data): int
+    {
         $sql = "INSERT INTO `products` (`Name`, `Description`, `Image`, `Category_ID`, `Seller_ID`, `Price`, `Stock_quantity`, `Status`) 
                 VALUES (:name, :description, :image, :category_id, :seller_id, :price, :stock_quantity, :status)";
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             'name'           => $data['name'],
@@ -123,7 +130,8 @@ class ProductRepository extends BaseRepository {
      * @param string $status
      * @return bool
      */
-    public function updateStatus(int $id, string $status): bool {
+    public function updateStatus(int $id, string $status): bool
+    {
         $sql = "UPDATE `products` SET `Status` = :status WHERE `ID` = :id";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
@@ -139,7 +147,8 @@ class ProductRepository extends BaseRepository {
      * @param array $data
      * @return bool
      */
-    public function update(int $id, array $data): bool {
+    public function update(int $id, array $data): bool
+    {
         $sql = "UPDATE `products` 
                 SET `Name` = :name, 
                     `Description` = :description, 
@@ -148,7 +157,7 @@ class ProductRepository extends BaseRepository {
                     `Price` = :price,
                     `updated_at` = CURRENT_TIMESTAMP
                 WHERE `ID` = :id";
-        
+
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
             'name'        => $data['name'],
@@ -166,7 +175,8 @@ class ProductRepository extends BaseRepository {
      * @param int $id
      * @return bool
      */
-    public function delete(int $id): bool {
+    public function delete(int $id): bool
+    {
         return $this->updateStatus($id, 'deleted');
     }
 
@@ -177,16 +187,17 @@ class ProductRepository extends BaseRepository {
      * @param string|null $status
      * @return array
      */
-    public function findBySeller(int $sellerId, string $status = null): array {
+    public function findBySeller(int $sellerId, string $status = null): array
+    {
         $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName,
             (SELECT o.Shipping_address FROM orders o WHERE o.Product_ID = p.ID ORDER BY o.created_at DESC LIMIT 1) AS Location
             FROM `products` p
             JOIN `categories` c ON p.Category_ID = c.ID
             JOIN `users` u ON p.Seller_ID = u.ID
             WHERE p.Seller_ID = :seller_id AND p.Status != 'deleted'";
-        
+
         $params = ['seller_id' => $sellerId];
-        
+
         if ($status !== null) {
             if ($status === 'available') {
                 $sql .= " AND p.Status IN ('active', 'available')";
@@ -195,12 +206,11 @@ class ProductRepository extends BaseRepository {
                 $params['status'] = $status;
             }
         }
-        
+
         $sql .= " ORDER BY p.created_at DESC";
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
     }
 }
-

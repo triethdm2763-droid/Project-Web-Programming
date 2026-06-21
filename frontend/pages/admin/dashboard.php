@@ -44,7 +44,7 @@ $pendingProducts = $conn->query("
 ")->fetchColumn();
 ?>
 <?php
-    $pendingProductsList = $conn->query("
+$pendingProductsList = $conn->query("
     SELECT
         p.ID,
         p.Name,
@@ -59,10 +59,11 @@ $pendingProducts = $conn->query("
     ORDER BY p.created_at DESC
     LIMIT 5
 ")->fetchAll();
- ?>
+?>
 
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -72,6 +73,7 @@ $pendingProducts = $conn->query("
     <script src="/Project-Web-Programming/frontend/assets/js/ui-helpers.js"></script>
     <script src="/Project-Web-Programming/frontend/assets/js/ui-helpers.js?v=20260618-2"></script>
 </head>
+
 <body class="bg-slate-50 text-slate-800 font-sans">
 
     <div class="flex min-h-screen">
@@ -80,7 +82,7 @@ $pendingProducts = $conn->query("
                 <h1 class="text-xl font-bold text-blue-600">Kênh Quản Trị</h1>
                 <p class="text-xs text-slate-400">Chào mừng trở lại</p>
             </div>
-            
+
             <nav class="space-y-1 flex-1">
                 <a href="/Project-Web-Programming/frontend/pages/admin/dashboard.php" class="flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium">
                     <span class="material-symbols-outlined">dashboard</span> Tổng quan
@@ -117,7 +119,7 @@ $pendingProducts = $conn->query("
         </aside>
 
         <main class="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
-            
+
             <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                 <div>
                     <h2 class="text-2xl font-bold text-slate-900">Bảng Điều Khiển</h2>
@@ -144,7 +146,7 @@ $pendingProducts = $conn->query("
                         </p>
 
                         <h3 class="text-2xl font-bold text-slate-900">
-                            <?= number_format($totalRevenue) ?>  đ
+                            <?= number_format($totalRevenue) ?> đ
                         </h3>
                     </div>
 
@@ -241,8 +243,7 @@ $pendingProducts = $conn->query("
                                         <td class="py-4 flex items-center gap-3">
                                             <img
                                                 src="<?= $product['Image'] ?: 'https://placehold.co/50' ?>"
-                                                class="w-12 h-12 rounded-lg object-cover border"
-                                            >
+                                                class="w-12 h-12 rounded-lg object-cover border">
 
                                             <span class="font-medium">
                                                 <?= htmlspecialchars($product['Name']) ?>
@@ -264,8 +265,7 @@ $pendingProducts = $conn->query("
                                         <td class="py-4 text-center">
                                             <button
                                                 onclick="updateProductStatus(<?= (int)$product['ID'] ?>, 'active')"
-                                                class="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                                            >
+                                                class="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
                                                 Duyệt
                                             </button>
                                         </td>
@@ -276,15 +276,15 @@ $pendingProducts = $conn->query("
 
                             <?php else: ?>
 
-                            <tr>
-                                <td colspan="5" class="py-10 text-center text-slate-400">
-                                    Không có sản phẩm chờ duyệt
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td colspan="5" class="py-10 text-center text-slate-400">
+                                        Không có sản phẩm chờ duyệt
+                                    </td>
+                                </tr>
 
                             <?php endif; ?>
 
-                            </tbody>
+                        </tbody>
 
                     </table>
                 </div>
@@ -294,13 +294,13 @@ $pendingProducts = $conn->query("
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
                     <h3 class="font-bold text-slate-900 text-base mb-4">Người dùng mới</h3>
                     <div id="admin-users-list" class="space-y-4">
-                        </div>
+                    </div>
                 </div>
 
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
                     <h3 class="font-bold text-slate-900 text-base mb-4">Giao dịch gần đây</h3>
                     <div id="admin-orders-list" class="space-y-3">
-                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -310,20 +310,25 @@ $pendingProducts = $conn->query("
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('current-date').innerText = new Date().toLocaleDateString('vi-VN');
-            
+
             // Tải toàn bộ dữ liệu khi trang vừa load
-            
+
         });
 
-    
+
         async function updateProductStatus(id, newStatus) {
             if (!confirm(`Bạn có chắc chắn muốn chuyển trạng thái sản phẩm này sang: ${newStatus}?`)) return;
 
             try {
                 const res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/admin/products/update-status`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id, status: newStatus })
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: id,
+                        status: newStatus
+                    })
                 });
 
                 const result = await res.json();
@@ -340,4 +345,5 @@ $pendingProducts = $conn->query("
         }
     </script>
 </body>
+
 </html>

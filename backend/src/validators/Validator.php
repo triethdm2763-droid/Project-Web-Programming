@@ -1,8 +1,10 @@
 <?php
+
 namespace App\Validators;
 
-class Validator {
-    
+class Validator
+{
+
     /**
      * Validate an input array of data against specified validation rules.
      * 
@@ -10,7 +12,8 @@ class Validator {
      * @param array $rules Rules array (e.g., ['email' => 'required|email', 'password' => 'required|min:6'])
      * @return array Array of validation errors, or empty array if all pass
      */
-    public static function validate(array $data, array $rules): array {
+    public static function validate(array $data, array $rules): array
+    {
         $errors = [];
 
         foreach ($rules as $field => $ruleString) {
