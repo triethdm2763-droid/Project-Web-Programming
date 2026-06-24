@@ -1,13 +1,13 @@
-# Auction Web Project
+# Chợ Thanh Lý Marketplace
 
-Cấu trúc khởi tạo cho đồ án web đấu giá realtime sử dụng PHP + MySQL.
+Nền tảng thương mại điện tử C2C giúp trao đổi và thanh lý đồ cũ dành cho cộng đồng — nhanh chóng, tin cậy và tiết kiệm sử dụng PHP + MySQL + TailwindCSS.
 
 ## Folder chính
 
-- `backend/`: xử lý backend PHP, API, realtime, service, repository.
+- `backend/`: xử lý backend PHP, API, service, repository.
 - `frontend/`: giao diện, CSS, JavaScript, pages, components, ảnh upload.
 - `database/`: schema MySQL, migrations, seeders, procedures, triggers, transaction demo.
-- `docs/`: tài liệu thiết kế database, API, realtime, xử lý đồng thời, hướng dẫn setup.
+- `docs/`: tài liệu thiết kế database, API, xử lý đồng thời, hướng dẫn setup.
 - `tests/`: file test chức năng, API, transaction.
 
 ## Hướng dẫn Setup & Khởi chạy dự án
@@ -67,7 +67,7 @@ Sử dụng các tài khoản sau (nạp từ `seed.sql` mới) để đăng nh�
 ### 5. Các tính năng mới được tích hợp
 
 1. **Khôi phục mật khẩu (Forgot Password):**
-   - Cho phép khôi phục qua mã OTP mô phỏng lưu trong Session.
+   - Cho phép khôi phục mật khẩu bảo mật qua mã OTP mô phỏng lưu trong Session.
    - Giao diện đẹp mắt tích hợp tại `/frontend/pages/auth/forgot-password.php`.
 2. **AJAX Upload ảnh người bán:**
    - Cho phép tải ảnh trực tiếp lên thư mục `/backend/uploads/products/` qua API `/api/products/upload`.
@@ -75,6 +75,17 @@ Sử dụng các tài khoản sau (nạp từ `seed.sql` mới) để đăng nh�
 3. **Giỏ hàng & Đặt hàng tuần tự (C2C):**
    - Hỗ trợ chọn phương thức thanh toán trực tiếp.
    - Đồng bộ cơ chế thanh toán C2C tuần tự (loop API) cho từng mặt hàng trong giỏ hàng.
+4. **Hệ thống Tìm kiếm gợi ý trực tiếp (Live Search Suggestions):**
+   - Tích hợp khung gợi ý sản phẩm mượt mà tại Navbar với cơ chế chống rung (Debounce 300ms) tránh quá tải server.
+   - Hỗ trợ phím di chuyển (Mũi tên Lên / Xuống) để tô sáng kết quả và nhấn `Enter` để truy cập trực tiếp.
+5. **Giao diện quản trị phong cách gương kính mờ (Glassmorphic Admin Dashboard):**
+   - Đồng bộ toàn diện các trang admin (`dashboard.php`, `products.php`, `users.php`, `orders.php`, `wallets.php`, `reports.php`) sang giao diện gương mờ cao cấp với các hiệu ứng hover, shadow chân thực.
+   - Hiển thị các thống kê số liệu thực (Doanh thu, Người dùng, Đơn hàng, Đang chờ duyệt) từ CSDL. Tích hợp biểu đồ cột doanh thu 7 ngày gần nhất bằng Chart.js v4.
+6. **Nhập trực tiếp số lượng trong giỏ hàng:**
+   - Cho phép gõ nhập số lượng bất kỳ trong giỏ hàng thay vì nhấn click liên tục, tự động ràng buộc giá trị nhập với lượng tồn kho thực tế ở CSDL.
+7. **Đề xuất thông minh & Bộ lọc nâng cao (Smart Proximity Recommendations & Filters):**
+   - Bộ lọc theo **Khu vực** (tỉnh thành) và **Tình trạng** (mới/cũ) ở thanh bên trang danh mục.
+   - Đề xuất sản phẩm tương tự cùng danh mục được sắp xếp thông minh theo độ gần gũi về giá (cùng phân khúc giá) hiển thị tại chân trang chi tiết sản phẩm.
 
 ---
 

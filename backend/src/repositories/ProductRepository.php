@@ -19,8 +19,10 @@ class ProductRepository extends BaseRepository
             $params['category_id'] = (int)$filters['category_id'];
         }
         if (!empty($filters['search'])) {
-            $sql .= " AND (p.Name LIKE :search OR p.Description LIKE :search)";
-            $params['search'] = '%' . $filters['search'] . '%';
+            $sql .= " AND (p.Name LIKE :search_name OR p.Description LIKE :search_desc OR u.Username LIKE :search_seller)";
+            $params['search_name'] = '%' . $filters['search'] . '%';
+            $params['search_desc'] = '%' . $filters['search'] . '%';
+            $params['search_seller'] = '%' . $filters['search'] . '%';
         }
         if (isset($filters['min_price']) && is_numeric($filters['min_price'])) {
             $sql .= " AND p.Price >= :min_price";
@@ -29,6 +31,14 @@ class ProductRepository extends BaseRepository
         if (isset($filters['max_price']) && is_numeric($filters['max_price'])) {
             $sql .= " AND p.Price <= :max_price";
             $params['max_price'] = (float)$filters['max_price'];
+        }
+        if (!empty($filters['location'])) {
+            $sql .= " AND p.Description LIKE :location_filter";
+            $params['location_filter'] = '%' . $filters['location'] . '%';
+        }
+        if (!empty($filters['condition_status'])) {
+            $sql .= " AND p.Condition_status LIKE :condition_status";
+            $params['condition_status'] = '%' . $filters['condition_status'] . '%';
         }
 
         $stmt = $this->db->prepare($sql);
@@ -50,8 +60,10 @@ class ProductRepository extends BaseRepository
             $params['category_id'] = (int)$filters['category_id'];
         }
         if (!empty($filters['search'])) {
-            $sql .= " AND (p.Name LIKE :search OR p.Description LIKE :search)";
-            $params['search'] = '%' . $filters['search'] . '%';
+            $sql .= " AND (p.Name LIKE :search_name OR p.Description LIKE :search_desc OR u.Username LIKE :search_seller)";
+            $params['search_name'] = '%' . $filters['search'] . '%';
+            $params['search_desc'] = '%' . $filters['search'] . '%';
+            $params['search_seller'] = '%' . $filters['search'] . '%';
         }
         if (isset($filters['min_price']) && is_numeric($filters['min_price'])) {
             $sql .= " AND p.Price >= :min_price";
@@ -60,6 +72,14 @@ class ProductRepository extends BaseRepository
         if (isset($filters['max_price']) && is_numeric($filters['max_price'])) {
             $sql .= " AND p.Price <= :max_price";
             $params['max_price'] = (float)$filters['max_price'];
+        }
+        if (!empty($filters['location'])) {
+            $sql .= " AND p.Description LIKE :location_filter";
+            $params['location_filter'] = '%' . $filters['location'] . '%';
+        }
+        if (!empty($filters['condition_status'])) {
+            $sql .= " AND p.Condition_status LIKE :condition_status";
+            $params['condition_status'] = '%' . $filters['condition_status'] . '%';
         }
 
         $sort = $filters['sort'] ?? 'newest';
@@ -107,7 +127,7 @@ class ProductRepository extends BaseRepository
             'category_id' => 'Category_ID', 'price' => 'Price', 
             'condition_status' => 'Condition_status', 'accessories' => 'Accessories', 
             'warranty' => 'Warranty', 'used_duration' => 'Used_duration',
-            'stock_quantity' => 'Stock_quantity'
+            'stock_quantity' => 'Stock_quantity', 'status' => 'Status'
         ];
 
         foreach ($map as $key => $column) {

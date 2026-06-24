@@ -4,11 +4,13 @@ $searchKeyword       = isset($_GET['search']) ? trim($_GET['search']) : '';
 $sortOption          = isset($_GET['sort']) ? trim($_GET['sort']) : 'newest';
 $minPrice            = isset($_GET['min_price']) ? trim($_GET['min_price']) : '';
 $maxPrice            = isset($_GET['max_price']) ? trim($_GET['max_price']) : '';
+$locationOption      = isset($_GET['location']) ? trim($_GET['location']) : '';
+$conditionOption     = isset($_GET['condition_status']) ? trim($_GET['condition_status']) : '';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Danh mục sản phẩm | Chợ Cũ</title>
+    <title>Danh mục sản phẩm | Chợ Thanh Lý</title>
     <?php include '../../components/header.php'; ?>
 </head>
 <body class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col">
@@ -17,19 +19,47 @@ $maxPrice            = isset($_GET['max_price']) ? trim($_GET['max_price']) : ''
     <main class="flex-grow px-gutter py-8 w-full max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row gap-8">
             <aside class="w-full md:w-64 flex-shrink-0 space-y-6">
-                <div class="glass-card p-6 rounded-xl border border-outline-variant/40 shadow-sm">
+                <!-- Danh mục -->
+                <div class="glass-card p-6 rounded-xl border border-outline-variant/40 shadow-sm bg-white/60 backdrop-blur-md">
                     <h2 class="font-headline-sm text-primary mb-5">Danh mục</h2>
                     <ul class="space-y-3" id="categoriesList">
                         <li><a href="#" class="block text-on-surface-variant">Đang tải...</a></li>
                     </ul>
                 </div>
 
-                <div class="glass-card p-6 rounded-xl border border-outline-variant/40 shadow-sm">
+                <!-- Khu vực -->
+                <div class="glass-card p-6 rounded-xl border border-outline-variant/40 shadow-sm bg-white/60 backdrop-blur-md">
+                    <h2 class="font-headline-sm text-primary mb-4">Khu vực</h2>
+                    <select id="locationFilter" class="w-full px-3 py-2 text-sm bg-white border border-outline-variant/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer">
+                        <option value="" <?= $locationOption === '' ? 'selected' : '' ?>>Tất cả khu vực</option>
+                        <option value="Hồ Chí Minh" <?= $locationOption === 'Hồ Chí Minh' ? 'selected' : '' ?>>TP. Hồ Chí Minh</option>
+                        <option value="Hà Nội" <?= $locationOption === 'Hà Nội' ? 'selected' : '' ?>>Hà Nội</option>
+                        <option value="Đà Nẵng" <?= $locationOption === 'Đà Nẵng' ? 'selected' : '' ?>>Đà Nẵng</option>
+                        <option value="Cần Thơ" <?= $locationOption === 'Cần Thơ' ? 'selected' : '' ?>>Cần Thơ</option>
+                        <option value="Hải Phòng" <?= $locationOption === 'Hải Phòng' ? 'selected' : '' ?>>Hải Phòng</option>
+                        <option value="Bình Dương" <?= $locationOption === 'Bình Dương' ? 'selected' : '' ?>>Bình Dương</option>
+                        <option value="Đồng Nai" <?= $locationOption === 'Đồng Nai' ? 'selected' : '' ?>>Đồng Nai</option>
+                    </select>
+                </div>
+
+                <!-- Tình trạng -->
+                <div class="glass-card p-6 rounded-xl border border-outline-variant/40 shadow-sm bg-white/60 backdrop-blur-md">
+                    <h2 class="font-headline-sm text-primary mb-4">Tình trạng</h2>
+                    <select id="conditionFilter" class="w-full px-3 py-2 text-sm bg-white border border-outline-variant/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer">
+                        <option value="" <?= $conditionOption === '' ? 'selected' : '' ?>>Tất cả tình trạng</option>
+                        <option value="Mới" <?= $conditionOption === 'Mới' ? 'selected' : '' ?>>Mới</option>
+                        <option value="99%" <?= $conditionOption === '99%' ? 'selected' : '' ?>>99% (Like New)</option>
+                        <option value="Đã sử dụng" <?= $conditionOption === 'Đã sử dụng' ? 'selected' : '' ?>>Đã sử dụng (Cũ)</option>
+                    </select>
+                </div>
+
+                <!-- Khoảng giá -->
+                <div class="glass-card p-6 rounded-xl border border-outline-variant/40 shadow-sm bg-white/60 backdrop-blur-md">
                     <h2 class="font-headline-sm text-primary mb-4">Khoảng giá</h2>
                     <div class="flex items-center gap-2">
-                        <input type="number" min="0" id="minPriceInput" placeholder="Từ" value="<?= htmlspecialchars($minPrice) ?>" class="w-full px-3 py-2 text-sm bg-white border border-outline-variant/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20">
+                        <input type="text" inputmode="numeric" id="minPriceInput" placeholder="Từ" value="<?= htmlspecialchars($minPrice) ?>" class="w-full px-3 py-2 text-sm bg-white border border-outline-variant/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20">
                         <span class="text-on-surface-variant">-</span>
-                        <input type="number" min="0" id="maxPriceInput" placeholder="Đến" value="<?= htmlspecialchars($maxPrice) ?>" class="w-full px-3 py-2 text-sm bg-white border border-outline-variant/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20">
+                        <input type="text" inputmode="numeric" id="maxPriceInput" placeholder="Đến" value="<?= htmlspecialchars($maxPrice) ?>" class="w-full px-3 py-2 text-sm bg-white border border-outline-variant/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20">
                     </div>
                     <div class="flex gap-2 mt-4">
                         <button id="applyPriceFilterBtn" class="flex-grow bg-primary text-white text-sm font-medium py-2 rounded-lg hover:opacity-90 transition-opacity">Áp dụng</button>
@@ -73,8 +103,11 @@ $maxPrice            = isset($_GET['max_price']) ? trim($_GET['max_price']) : ''
         const initialSort = <?= json_encode($sortOption) ?>;
         const initialMinPrice = <?= json_encode($minPrice) ?>;
         const initialMaxPrice = <?= json_encode($maxPrice) ?>;
+        const initialLocation = <?= json_encode($locationOption) ?>;
+        const initialCondition = <?= json_encode($conditionOption) ?>;
 
         let activeCategoryId = selectedCategoryId;
+        let loadedCategoriesData = [];
 
         function syncUrlState(params) {
             const url = new URL(window.location.href);
@@ -85,24 +118,63 @@ $maxPrice            = isset($_GET['max_price']) ? trim($_GET['max_price']) : ''
             window.history.replaceState({}, '', url);
         }
 
+        function updateCategoryUI() {
+            const titleEl = document.getElementById("categoryTitle");
+            const searchVal = document.getElementById('categorySearchInput')?.value.trim();
+            
+            let isAll = !activeCategoryId;
+            let currentCatName = "Tất cả sản phẩm";
+            
+            const list = document.getElementById("categoriesList");
+            if (list) {
+                list.querySelectorAll('.category-link').forEach(link => {
+                    const id = link.getAttribute('data-id');
+                    const linkIsAll = !id;
+                    const isSelected = activeCategoryId == id;
+                    
+                    if (linkIsAll) {
+                        if (isAll) {
+                            link.className = "category-link block text-primary font-medium transition-colors";
+                        } else {
+                            link.className = "category-link block text-on-surface-variant hover:text-primary transition-colors";
+                        }
+                    } else {
+                        const cat = loadedCategoriesData.find(c => c.ID == id);
+                        if (isSelected) {
+                            if (cat) currentCatName = cat.Name;
+                            link.className = `category-link flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium`;
+                        } else {
+                            link.className = `category-link flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-primary`;
+                        }
+                    }
+                });
+            }
+
+            if (isAll) {
+                titleEl.textContent = searchVal ? `Kết quả cho "${searchVal}"` : "Tất cả sản phẩm";
+            } else {
+                titleEl.textContent = searchVal ? `${currentCatName} - "${searchVal}"` : currentCatName;
+            }
+        }
+
         async function loadCategories(onCategoryClick) {
             let list = document.getElementById("categoriesList");
-            let titleEl = document.getElementById("categoryTitle");
             try {
                 let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/categories");
                 let categories = await res.json();
+                loadedCategoriesData = categories;
                 
                 function renderList() {
                     let isAll = !activeCategoryId;
-                    if (isAll) titleEl.textContent = document.getElementById('categorySearchInput')?.value.trim() ? `Kết quả cho "${document.getElementById('categorySearchInput').value.trim()}"` : "Tất cả sản phẩm";
                     
                     let itemsHtml = `<li><a href="#" data-id="" class="category-link block ${isAll ? 'text-primary font-medium' : 'text-on-surface-variant hover:text-primary'} transition-colors">Tất cả danh mục</a></li>`;
                     categories.forEach(cat => {
                         let isSelected = activeCategoryId == cat.ID;
-                        if (isSelected) titleEl.textContent = document.getElementById('categorySearchInput')?.value.trim() ? `${cat.Name} - "${document.getElementById('categorySearchInput').value.trim()}"` : cat.Name;
                         itemsHtml += `<li><a href="#" data-id="${cat.ID}" class="category-link flex items-center gap-2 px-3 py-2 rounded-lg ${isSelected ? 'bg-primary/10 text-primary font-medium' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'}"><span class="material-symbols-outlined text-[20px]">${cat.Icon || 'category'}</span><span>${cat.Name}</span></a></li>`;
                     });
                     list.innerHTML = itemsHtml;
+
+                    updateCategoryUI();
 
                     // Gắn sự kiện click
                     list.querySelectorAll('.category-link').forEach(link => {
@@ -110,7 +182,7 @@ $maxPrice            = isset($_GET['max_price']) ? trim($_GET['max_price']) : ''
                             e.preventDefault();
                             const id = this.getAttribute('data-id');
                             activeCategoryId = id ? parseInt(id) : null;
-                            renderList();
+                            updateCategoryUI();
                             if (onCategoryClick) onCategoryClick(activeCategoryId);
                         });
                     });
@@ -120,34 +192,113 @@ $maxPrice            = isset($_GET['max_price']) ? trim($_GET['max_price']) : ''
             } catch (e) { list.innerHTML = `<li><span class="text-red-500">Lỗi tải danh mục</span></li>`; }
         }
     </script>
-    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260621-1"></script>
+    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260624-1"></script>
     <script>
+        function formatCurrencyInput(input) {
+            let clean = input.value.replace(/\D/g, "");
+            if (!clean) {
+                input.value = "";
+                return;
+            }
+            input.value = new Intl.NumberFormat('vi-VN').format(parseInt(clean));
+        }
+
+        function setupCurrencyInput(id) {
+            const input = document.getElementById(id);
+            if (!input) return;
+            input.type = "text";
+            input.setAttribute("inputmode", "numeric");
+            if (input.value) {
+                let clean = input.value.replace(/\D/g, "");
+                if (clean) input.value = new Intl.NumberFormat('vi-VN').format(parseInt(clean));
+            }
+            input.addEventListener("input", function() {
+                let cursorPosition = this.selectionStart;
+                let originalLength = this.value.length;
+                let clean = this.value.replace(/\D/g, "");
+                if (!clean) {
+                    this.value = "";
+                    return;
+                }
+                this.value = new Intl.NumberFormat('vi-VN').format(parseInt(clean));
+                let newLength = this.value.length;
+                cursorPosition = cursorPosition + (newLength - originalLength);
+                this.setSelectionRange(cursorPosition, cursorPosition);
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('categorySearchInput'), sortSelect = document.getElementById('sortSelect'), minP = document.getElementById('minPriceInput'), maxP = document.getElementById('maxPriceInput');
+            const searchInput = document.getElementById('categorySearchInput');
+            const sortSelect = document.getElementById('sortSelect');
+            const minP = document.getElementById('minPriceInput');
+            const maxP = document.getElementById('maxPriceInput');
+            const locationSelect = document.getElementById('locationFilter');
+            const conditionSelect = document.getElementById('conditionFilter');
+
+            setupCurrencyInput('minPriceInput');
+            setupCurrencyInput('maxPriceInput');
             
             function runSearch() {
-                const search = searchInput.value.trim(), sort = sortSelect.value, minPrice = minP.value.trim(), maxPrice = maxP.value.trim();
-                syncUrlState({ category: activeCategoryId || '', search, sort, min_price: minPrice, max_price: maxPrice });
-                if (typeof fetchProducts === 'function') fetchProducts(search, activeCategoryId || '', true, { sort, minPrice, maxPrice });
+                const search = searchInput.value.trim();
+                const sort = sortSelect.value;
+                const minPrice = minP.value.replace(/\D/g, "");
+                const maxPrice = maxP.value.replace(/\D/g, "");
+                const location = locationSelect.value;
+                const condition = conditionSelect.value;
+
+                updateCategoryUI();
+
+                syncUrlState({
+                    category: activeCategoryId || '',
+                    search,
+                    sort,
+                    min_price: minPrice,
+                    max_price: maxPrice,
+                    location,
+                    condition_status: condition
+                });
+
+                if (typeof fetchProducts === 'function') {
+                    fetchProducts(search, activeCategoryId || '', true, {
+                        sort,
+                        minPrice,
+                        maxPrice,
+                        location,
+                        condition_status: condition
+                    });
+                }
             }
 
             loadCategories((newCategoryId) => {
                 runSearch();
             });
 
-            if (typeof fetchProducts === 'function') fetchProducts(initialSearchKeyword, activeCategoryId, false, { sort: initialSort, minPrice: initialMinPrice, maxPrice: initialMaxPrice });
+            if (typeof fetchProducts === 'function') {
+                const minPriceRaw = initialMinPrice.replace(/\D/g, "");
+                const maxPriceRaw = initialMaxPrice.replace(/\D/g, "");
+                fetchProducts(initialSearchKeyword, activeCategoryId, false, {
+                    sort: initialSort,
+                    minPrice: minPriceRaw,
+                    maxPrice: maxPriceRaw,
+                    location: initialLocation,
+                    condition_status: initialCondition
+                });
+            }
             
             let t; 
             searchInput.addEventListener('input', () => { clearTimeout(t); t = setTimeout(runSearch, 500); });
             sortSelect.addEventListener('change', runSearch);
+            locationSelect.addEventListener('change', runSearch);
+            conditionSelect.addEventListener('change', runSearch);
             document.getElementById('applyPriceFilterBtn').addEventListener('click', runSearch);
             document.getElementById('clearFiltersBtn').addEventListener('click', () => { 
                 searchInput.value = ''; 
                 sortSelect.value = 'newest'; 
                 minP.value = ''; 
                 maxP.value = ''; 
+                locationSelect.value = '';
+                conditionSelect.value = '';
                 activeCategoryId = null;
-                // Gọi loadCategories để render lại trạng thái active của danh mục
                 loadCategories((newCategoryId) => {
                     runSearch();
                 });

@@ -50,7 +50,7 @@ class ProductService
             'category_id'      => intval($data['category_id']),
             'seller_id'        => intval($_SESSION['user_id']),
             'price'            => $price,
-            'status'           => 'active',
+            'status'           => 'pending',
             'condition_status' => trim($data['condition_status'] ?? ''),
             'accessories'      => trim($data['accessories'] ?? ''),
             'warranty'         => trim($data['warranty'] ?? 'Không bảo hành'),
@@ -77,6 +77,11 @@ class ProductService
         $rules = ['name' => 'required|min:3|max:255', 'price' => 'required', 'category_id' => 'required'];
         if (!empty(Validator::validate($data, $rules))) return ['status' => 'error', 'code' => 400, 'message' => 'Dữ liệu không hợp lệ.'];
 
+        $status = $product['Status'];
+        if ($isOwner && !$isAdmin) {
+            $status = 'pending';
+        }
+
         $updateData = [
             'name'             => trim($data['name']),
             'description'      => $data['description'] ?? '',
@@ -86,7 +91,8 @@ class ProductService
             'accessories'      => trim($data['accessories'] ?? ''),
             'warranty'         => trim($data['warranty'] ?? 'Không bảo hành'),
             'used_duration'    => trim($data['used_duration'] ?? ''),
-            'stock_quantity'   => isset($data['stock_quantity']) ? intval($data['stock_quantity']) : 1
+            'stock_quantity'   => isset($data['stock_quantity']) ? intval($data['stock_quantity']) : 1,
+            'status'           => $status
         ];
         if (!empty($data['image'])) $updateData['image'] = $data['image'];
 

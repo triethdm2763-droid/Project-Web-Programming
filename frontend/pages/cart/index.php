@@ -2,7 +2,7 @@
 <html lang="vi">
 
 <head>
-    <title>Giỏ hàng | Chợ Cũ</title>
+    <title>Giỏ hàng | Chợ Thanh Lý</title>
     <?php include '../../components/header.php'; ?>
 </head>
 
@@ -23,7 +23,7 @@
         </div>
 
         <!-- KHỐI DUY NHẤT: danh sách sản phẩm + thanh thanh toán dính liền ở đáy (kiểu Shopee) -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white/60 backdrop-blur-md rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
 
             <!-- Header cột (chỉ hiện khi có sản phẩm) -->
             <div id="cart-table-header"
@@ -114,7 +114,7 @@
                 </div>
 
                 <!-- Thanh thanh toán: full-width, dính liền đáy của khối, theo đúng bố cục Shopee -->
-                <div class="bg-white border-t border-slate-200 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+                <div class="bg-white/60 backdrop-blur-md border-t border-outline-variant/10 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
 
                     <!-- Trái: chọn tất cả (mobile) + voucher -->
                     <div class="flex-1 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 min-w-0">
@@ -171,7 +171,7 @@
                     Có thể bạn cũng thích
                 </h2>
                 <p class="text-sm text-slate-500 mt-2">
-                    Một vài gợi ý từ các danh mục khác trên Chợ Cũ
+                    Một vài gợi ý từ các danh mục khác trên Chợ Thanh Lý
                 </p>
                 <div id="recommendations-list"
                     class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 mt-6">
