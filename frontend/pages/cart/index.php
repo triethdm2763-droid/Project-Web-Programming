@@ -182,7 +182,7 @@
 
     <?php include '../../components/footer.php'; ?>
 
-    <script src="../../assets/js/cart.js?v=20260618-2"></script>
+    <script src="../../assets/js/cart.js?v=<?php echo time(); ?>"></script>
 
 </body>
 

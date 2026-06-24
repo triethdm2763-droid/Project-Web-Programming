@@ -214,13 +214,13 @@ if (session_status() === PHP_SESSION_NONE) {
 
                 if (products && products.length > 0) {
                     const productsHtml = products.map(row => `
-                    <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-outline-variant/10 flex flex-col">
+                    <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${row.ID}" class="bg-white rounded-xl overflow-hidden shadow-sm border border-outline-variant/10 flex flex-col hover:shadow-md hover:border-primary/30 transition-all group">
                         <div class="h-48 bg-surface-container flex items-center justify-center relative text-outline/50 overflow-hidden">
                             <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm">Độc Bản (SL=1)</span>
-                            <img src="${(row.Image && (row.Image.startsWith('http://') || row.Image.startsWith('https://'))) ? escapeHtml(row.Image) : '/Project-Web-Programming/backend/uploads/products/' + escapeHtml(row.Image || 'placeholder.png')}" alt="${escapeHtml(row.Name)}" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'" class="w-full h-full object-contain p-4">
+                            <img src="${(row.Image && (row.Image.startsWith('http://') || row.Image.startsWith('https://'))) ? escapeHtml(row.Image) : '/Project-Web-Programming/backend/uploads/products/' + escapeHtml(row.Image || 'placeholder.png')}" alt="${escapeHtml(row.Name)}" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'" class="w-full h-full object-contain p-4 group-hover:scale-[1.03] transition-transform">
                         </div>
                         <div class="p-4 flex flex-col flex-grow space-y-2">
-                            <h3 class="font-semibold text-[15px] line-clamp-2 h-11 block">
+                            <h3 class="font-semibold text-[15px] line-clamp-2 h-11 block text-slate-800 group-hover:text-primary transition-colors">
                                 ${escapeHtml(row.Name)}
                             </h3>
                             <div class="text-primary font-bold text-lg">
@@ -229,11 +229,8 @@ if (session_status() === PHP_SESSION_NONE) {
                             <div class="text-[13px] text-on-surface-variant">
                                 ${escapeHtml(row.SellerName || 'Người bán ẩn danh')} • ${escapeHtml(row.CategoryName || '')}
                             </div>
-                            <div class="mt-3">
-                                <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${row.ID}" class="inline-block w-full text-center border border-primary text-primary rounded-md px-4 py-2 hover:bg-primary/10">Xem chi tiết</a>
-                            </div>
                         </div>
-                    </div>
+                    </a>
                     `).join('');
                     
                     container.insertAdjacentHTML('beforeend', productsHtml);

@@ -104,15 +104,24 @@ function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false, 
             
             products.forEach(p => {
                 const img = p.Image ? (p.Image.startsWith('http') ? p.Image : `/Project-Web-Programming/backend/uploads/products/${p.Image}`) : '';
+                const qty = p.Stock_quantity ?? p.stock_quantity ?? 1;
+                const qtyBadge = parseInt(qty) === 1 
+                    ? `<span class="bg-orange-50 text-orange-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-orange-100 whitespace-nowrap">Độc bản (SL: 1)</span>` 
+                    : `<span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-100 whitespace-nowrap">Số lượng: ${qty}</span>`;
+
                 productGrid.insertAdjacentHTML('beforeend', `
-                    <div class="bg-white p-3 rounded-2xl shadow-sm border border-outline-variant/20 hover:shadow-md transition-all">
-                        <div class="aspect-square bg-slate-100 rounded-xl overflow-hidden mb-3">
-                            <img src="${img}" class="w-full h-full object-contain" alt="${escapeHtml(p.Name || p.name)}">
+                    <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${p.ID || p.id}" class="bg-white p-3 rounded-2xl shadow-sm border border-outline-variant/20 hover:shadow-md hover:border-primary/30 transition-all flex flex-col justify-between group">
+                        <div>
+                            <div class="aspect-square bg-slate-100 rounded-xl overflow-hidden mb-3">
+                                <img src="${img}" class="w-full h-full object-contain group-hover:scale-[1.03] transition-transform" alt="${escapeHtml(p.Name || p.name)}">
+                            </div>
+                            <h3 class="font-medium text-[14px] line-clamp-2 text-slate-800 group-hover:text-primary transition-colors">${escapeHtml(p.Name || p.name)}</h3>
+                            <div class="flex items-center justify-between gap-1 mt-2">
+                                <div class="text-primary font-bold text-[15px]">${new Intl.NumberFormat('vi-VN', {style:'currency', currency:'VND'}).format(p.Price || p.price)}</div>
+                                ${qtyBadge}
+                            </div>
                         </div>
-                        <h3 class="font-medium text-[14px] line-clamp-2">${escapeHtml(p.Name || p.name)}</h3>
-                        <div class="text-primary font-bold text-[15px] mt-1">${new Intl.NumberFormat('vi-VN', {style:'currency', currency:'VND'}).format(p.Price || p.price)}</div>
-                        <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${p.ID || p.id}" class="block mt-3 text-center py-2 border border-primary text-primary rounded-xl text-[13px] hover:bg-primary hover:text-white">Xem chi tiết</a>
-                    </div>
+                    </a>
                 `);
             });
 
