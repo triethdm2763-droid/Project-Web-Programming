@@ -54,7 +54,8 @@ class ProductService
             'condition_status' => trim($data['condition_status'] ?? ''),
             'accessories'      => trim($data['accessories'] ?? ''),
             'warranty'         => trim($data['warranty'] ?? 'Không bảo hành'),
-            'used_duration'    => trim($data['used_duration'] ?? '')
+            'used_duration'    => trim($data['used_duration'] ?? ''),
+            'stock_quantity'   => isset($data['stock_quantity']) ? intval($data['stock_quantity']) : 1
         ];
 
         return ['status' => 'success', 'code' => 201, 'product_id' => $this->productRepository->create($insertData)];
@@ -84,7 +85,8 @@ class ProductService
             'condition_status' => trim($data['condition_status'] ?? ''),
             'accessories'      => trim($data['accessories'] ?? ''),
             'warranty'         => trim($data['warranty'] ?? 'Không bảo hành'),
-            'used_duration'    => trim($data['used_duration'] ?? '')
+            'used_duration'    => trim($data['used_duration'] ?? ''),
+            'stock_quantity'   => isset($data['stock_quantity']) ? intval($data['stock_quantity']) : 1
         ];
         if (!empty($data['image'])) $updateData['image'] = $data['image'];
 

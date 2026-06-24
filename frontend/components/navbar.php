@@ -36,7 +36,7 @@ function nav_class($pathFragment, $currentPath)
         <div class="flex items-center gap-4">
             <a href="/Project-Web-Programming/frontend/pages/cart/index.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative block">
                 shopping_cart
-                <span id="nav-cart-badge" class="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
+                <span id="nav-cart-badge" class="absolute -top-0.5 -right-0.5 bg-[#fd761a] text-white text-[9px] font-bold rounded-full px-1 min-w-[16px] h-4 flex items-center justify-center ring-2 ring-white shadow-sm hidden">0</span>
             </a>
 
             <?php
@@ -49,7 +49,7 @@ function nav_class($pathFragment, $currentPath)
                     <div class="relative">
                         <button id="nav-btn-notifications" onclick="toggleNavNotificationsDropdown(event)" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative block cursor-pointer" title="Thông báo">
                             notifications
-                            <span id="nav-notification-badge" class="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
+                            <span id="nav-notification-badge" class="absolute -top-0.5 -right-0.5 bg-[#fd761a] text-white text-[9px] font-bold rounded-full px-1 min-w-[16px] h-4 flex items-center justify-center ring-2 ring-white shadow-sm hidden">0</span>
                         </button>
 
                         <!-- Dropdown Container -->

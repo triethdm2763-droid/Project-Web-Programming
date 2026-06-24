@@ -116,6 +116,49 @@
                             </div>
                         </div>
 
+                    <!-- Chọn số lượng & Thanh kéo -->
+                    <div id="quantity-selector-container" class="flex flex-col gap-3 py-3 border-t border-b border-outline-variant/10">
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm font-semibold text-on-surface-variant uppercase tracking-wider">Số lượng:</span>
+                            <div class="flex items-center border border-slate-200 rounded-xl bg-slate-50 shadow-sm overflow-hidden">
+                                <button type="button" onclick="changeDetailQuantity(-1)" class="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-all font-bold select-none text-lg">-</button>
+                                <input type="text" id="detail-qty-input" value="1" readonly class="w-14 text-center bg-transparent border-none outline-none font-semibold text-slate-800 select-none text-base">
+                                <button type="button" onclick="changeDetailQuantity(1)" class="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-all font-bold select-none text-lg">+</button>
+                            </div>
+                            <span id="stock-qty-helper" class="text-sm text-outline font-medium"></span>
+                        </div>
+                        <!-- Thanh kéo số lượng (chỉ hiện khi stockQty > 1) -->
+                        <div id="quantity-slider-wrapper" class="flex items-center gap-3 w-full max-w-[280px] mt-1 pl-[75px]">
+                            <span class="text-xs text-slate-400 font-semibold select-none">1</span>
+                            <input type="range" id="detail-qty-slider" min="1" max="1" value="1" oninput="syncQuantityFromSlider(this.value)" class="flex-grow h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#F97316] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#F97316] [&::-webkit-slider-thumb]:shadow [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-white">
+                            <span id="qty-slider-max-label" class="text-xs text-slate-400 font-semibold select-none">1</span>
+                        </div>
+                    </div>
+
+                    <!-- Tính năng mới: Bộ ước tính phí vận chuyển -->
+                    <div id="shipping-estimator-container" class="p-4 bg-slate-50 border border-slate-200/60 rounded-xl space-y-3">
+                        <div class="flex items-center gap-2 text-primary font-semibold text-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
+                            <span>Ước tính phí vận chuyển & giao hàng</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                            <select id="shipping-province" onchange="calculateShippingFee()" class="w-full sm:w-44 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none text-slate-700 cursor-pointer hover:border-primary/50 transition-colors">
+                                <option value="hanoi">Hà Nội (Gốc)</option>
+                                <option value="danang">Đà Nẵng</option>
+                                <option value="hcm">TP. Hồ Chí Minh</option>
+                                <option value="haiphong">Hải Phòng</option>
+                                <option value="cantho">Cần Thơ</option>
+                                <option value="other">Các tỉnh thành khác</option>
+                            </select>
+                            <div class="flex-wrap items-center text-left w-full flex gap-x-2 gap-y-1">
+                                <span class="text-xs text-slate-500">Phí ship:</span>
+                                <span id="shipping-fee-val" class="text-sm font-bold text-slate-800">₫15.000</span>
+                                <span class="text-slate-300">|</span>
+                                <span id="shipping-time-val" class="text-xs text-slate-500 font-medium">Trong ngày hoặc ngày mai</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="flex flex-col sm:flex-row gap-4 pt-4">
 
                         <button
@@ -149,6 +192,7 @@
 
     <script>
 
+    const currentUserId = <?php echo isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 'null'; ?>;
     let currentProduct = null;
 
     async function loadProductDetail() {
@@ -258,13 +302,13 @@
 
             // Status
             const stockQty = parseInt(currentProduct.Stock_quantity || currentProduct.stock_quantity || 0);
-            let statusText = `Còn hàng (Số lượng: ${stockQty})`;
+            let statusText = stockQty === 1 ? "Còn hàng (Độc bản - SL: 1)" : `Còn hàng (Số lượng: ${stockQty})`;
             let statusColor = "bg-green-500";
             if (status === "sold") {
                 statusText = "Đã bán (Số lượng: 0)";
                 statusColor = "bg-red-500";
             } else if (status === "pending") {
-                statusText = `Chờ duyệt (Số lượng: ${stockQty})`;
+                statusText = stockQty === 1 ? "Chờ duyệt (Độc bản - SL: 1)" : `Chờ duyệt (Số lượng: ${stockQty})`;
                 statusColor = "bg-yellow-500";
             } else if (status === "rejected" || status === "deleted") {
                 statusText = "Ngừng kinh doanh";
@@ -275,11 +319,65 @@
             const statusDotEl = document.getElementById("status-dot");
             if (statusDotEl) statusDotEl.className = `w-2.5 h-2.5 rounded-full ${statusColor}`;
 
+            // Configure quantity selector & slider
+            const qtySelectorContainer = document.getElementById("quantity-selector-container");
+            const qtyInput = document.getElementById("detail-qty-input");
+            const stockHelper = document.getElementById("stock-qty-helper");
+            const qtySlider = document.getElementById("detail-qty-slider");
+            const sliderWrapper = document.getElementById("quantity-slider-wrapper");
+            const maxLabel = document.getElementById("qty-slider-max-label");
+            const shippingContainer = document.getElementById("shipping-estimator-container");
+
+            if (qtyInput) {
+                qtyInput.value = 1;
+                qtyInput.max = stockQty;
+            }
+            if (stockHelper) {
+                stockHelper.innerText = `${stockQty} sản phẩm có sẵn`;
+            }
+            if (qtySlider) {
+                qtySlider.min = 1;
+                qtySlider.max = stockQty;
+                qtySlider.value = 1;
+            }
+            if (maxLabel) {
+                maxLabel.innerText = stockQty;
+            }
+            if (sliderWrapper) {
+                if (stockQty <= 1) {
+                    sliderWrapper.style.display = 'none';
+                } else {
+                    sliderWrapper.style.display = 'flex';
+                }
+            }
+            if (qtySelectorContainer) {
+                if (status === "sold" || status === "pending" || status === "rejected" || status === "deleted" || stockQty <= 0) {
+                    qtySelectorContainer.style.display = 'none';
+                    if (shippingContainer) shippingContainer.style.display = 'none';
+                } else {
+                    qtySelectorContainer.style.display = 'flex';
+                    if (shippingContainer) shippingContainer.style.display = 'block';
+                }
+            }
+
             // Handle Buy/Add to Cart buttons state based on status
             const btnBuyNow = document.getElementById("btn-buy-now");
             const btnAddToCart = document.getElementById("btn-add-to-cart");
 
-            if (status === "sold" || status === "pending") {
+            const sellerId = parseInt(currentProduct.SellerID || currentProduct.Seller_ID || currentProduct.seller_id || 0);
+
+            if (currentUserId && sellerId === currentUserId) {
+                if (btnBuyNow) {
+                    btnBuyNow.disabled = true;
+                    btnBuyNow.innerText = "SẢN PHẨM CỦA BẠN";
+                    btnBuyNow.className = "flex-1 bg-gray-400 text-white py-4 rounded-xl font-headline-sm cursor-not-allowed uppercase tracking-wide opacity-70";
+                }
+                if (btnAddToCart) {
+                    btnAddToCart.disabled = true;
+                    btnAddToCart.innerText = "SẢN PHẨM CỦA BẠN";
+                    btnAddToCart.className = "flex-1 border border-gray-400 text-gray-400 py-4 rounded-xl font-headline-sm cursor-not-allowed uppercase tracking-wide opacity-70";
+                }
+            } else if (status === "sold" || status === "pending") {
                 if (btnBuyNow) {
                     btnBuyNow.disabled = true;
                     btnBuyNow.innerText = status === "sold" ? "ĐÃ BÁN" : "CHỜ DUYỆT";
@@ -312,6 +410,61 @@
 
     }
 
+    function syncQuantityFromSlider(val) {
+        const qtyInput = document.getElementById("detail-qty-input");
+        if (qtyInput) {
+            qtyInput.value = val;
+        }
+    }
+
+    function calculateShippingFee() {
+        const province = document.getElementById("shipping-province").value;
+        const feeVal = document.getElementById("shipping-fee-val");
+        const timeVal = document.getElementById("shipping-time-val");
+        if (!feeVal || !timeVal) return;
+
+        let fee = 25000;
+        let days = "1-2 ngày";
+
+        if (province === "hanoi") {
+            fee = 15000;
+            days = "Trong ngày hoặc ngày mai";
+        } else if (province === "hcm") {
+            fee = 30000;
+            days = "Nhận hàng sau 2-3 ngày";
+        } else if (province === "danang") {
+            fee = 20000;
+            days = "Nhận hàng sau 1-2 ngày";
+        } else if (province === "cantho") {
+            fee = 35000;
+            days = "Nhận hàng sau 3-4 ngày";
+        } else if (province === "other") {
+            fee = 40000;
+            days = "Nhận hàng sau 3-5 ngày";
+        }
+
+        feeVal.innerText = `₫${fee.toLocaleString('vi-VN')}`;
+        timeVal.innerText = days;
+    }
+
+    function changeDetailQuantity(delta) {
+        if (!currentProduct) return;
+        const stockQty = parseInt(currentProduct.Stock_quantity || currentProduct.stock_quantity || 1);
+        const qtyInput = document.getElementById("detail-qty-input");
+        const qtySlider = document.getElementById("detail-qty-slider");
+        if (!qtyInput) return;
+        let newQty = parseInt(qtyInput.value || 1) + delta;
+        if (newQty < 1) newQty = 1;
+        if (newQty > stockQty) {
+            newQty = stockQty;
+            showToast(`Sản phẩm này chỉ còn ${stockQty} sản phẩm trong kho.`, "warning");
+        }
+        qtyInput.value = newQty;
+        if (qtySlider) {
+            qtySlider.value = newQty;
+        }
+    }
+
     function addToCart() {
 
         if (!currentProduct) {
@@ -325,18 +478,37 @@
             return;
         }
 
-        let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-        const isExist = cart.find(item => (item.ID || item.id) === currentId);
-        if(isExist) {
-            showToast("Sản phẩm này đã có sẵn trong giỏ hàng của bạn!", "info");
+        const sellerId = parseInt(currentProduct.SellerID || currentProduct.Seller_ID || currentProduct.seller_id || 0);
+        if (currentUserId && sellerId === currentUserId) {
+            showToast("Bạn không thể thêm sản phẩm của chính mình vào giỏ hàng!", "warning");
             return;
         }
 
-        cart.push({ ...currentProduct, Quantity: 1 });
-        localStorage.setItem("cart", JSON.stringify(cart));
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        const qtyInput = document.getElementById("detail-qty-input");
+        const quantityToAdd = qtyInput ? parseInt(qtyInput.value || 1) : 1;
+
+        const isExistIndex = cart.findIndex(item => (item.ID || item.id) === currentId);
+        if(isExistIndex > -1) {
+            const stockQty = parseInt(currentProduct.Stock_quantity || currentProduct.stock_quantity || 1);
+            const currentQty = parseInt(cart[isExistIndex].Quantity || 1);
+            const newQty = currentQty + quantityToAdd;
+            if (newQty > stockQty) {
+                cart[isExistIndex].Quantity = stockQty;
+                localStorage.setItem("cart", JSON.stringify(cart));
+                showToast(`Sản phẩm đã có sẵn trong giỏ hàng. Đã cập nhật số lượng trong giỏ lên mức tối đa là ${stockQty}!`, "info");
+            } else {
+                cart[isExistIndex].Quantity = newQty;
+                localStorage.setItem("cart", JSON.stringify(cart));
+                showToast("Đã cập nhật thêm số lượng sản phẩm vào giỏ hàng!", "success");
+            }
+        } else {
+            cart.push({ ...currentProduct, Quantity: quantityToAdd });
+            localStorage.setItem("cart", JSON.stringify(cart));
+            showToast("Đã thêm sản phẩm vào giỏ hàng thành công!", "success");
+        }
+
         if (typeof updateNavbarCartBadge === 'function') updateNavbarCartBadge();
-        showToast("Đã thêm sản phẩm vào giỏ hàng thành công!", "success");
         if (typeof updateNavCartBadge === 'function') {
             updateNavCartBadge();
         }
@@ -353,16 +525,30 @@
             return;
         }
 
-        let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-        const isExist = cart.find(item => (item.ID || item.id) === currentId);
-        if(!isExist) {
-            cart.push({ ...currentProduct, Quantity: 1 });
-            localStorage.setItem("cart", JSON.stringify(cart));
-            if (typeof updateNavbarCartBadge === 'function') updateNavbarCartBadge();
+        const sellerId = parseInt(currentProduct.SellerID || currentProduct.Seller_ID || currentProduct.seller_id || 0);
+        if (currentUserId && sellerId === currentUserId) {
+            showToast("Bạn không thể mua sản phẩm của chính mình!", "warning");
+            return;
         }
 
-        window.location.href = `../payment/index.php?id=${encodeURIComponent(currentId)}`;
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        const qtyInput = document.getElementById("detail-qty-input");
+        const quantityToAdd = qtyInput ? parseInt(qtyInput.value || 1) : 1;
+
+        const isExistIndex = cart.findIndex(item => (item.ID || item.id) === currentId);
+        if(isExistIndex > -1) {
+            const stockQty = parseInt(currentProduct.Stock_quantity || currentProduct.stock_quantity || 1);
+            const currentQty = parseInt(cart[isExistIndex].Quantity || 1);
+            const newQty = currentQty + quantityToAdd;
+            cart[isExistIndex].Quantity = Math.min(newQty, stockQty);
+            localStorage.setItem("cart", JSON.stringify(cart));
+        } else {
+            cart.push({ ...currentProduct, Quantity: quantityToAdd });
+            localStorage.setItem("cart", JSON.stringify(cart));
+        }
+        if (typeof updateNavbarCartBadge === 'function') updateNavbarCartBadge();
+
+        window.location.href = `../cart/index.php`;
 
     }
     function requireLogin(message) {

@@ -106,7 +106,8 @@ class ProductRepository extends BaseRepository
             'name' => 'Name', 'description' => 'Description', 'image' => 'Image', 
             'category_id' => 'Category_ID', 'price' => 'Price', 
             'condition_status' => 'Condition_status', 'accessories' => 'Accessories', 
-            'warranty' => 'Warranty', 'used_duration' => 'Used_duration'
+            'warranty' => 'Warranty', 'used_duration' => 'Used_duration',
+            'stock_quantity' => 'Stock_quantity'
         ];
 
         foreach ($map as $key => $column) {
@@ -128,7 +129,11 @@ class ProductRepository extends BaseRepository
     }
 
     public function findById(int $id) {
-        $stmt = $this->db->prepare("SELECT p.*, c.Name as CategoryName FROM `products` p JOIN `categories` c ON p.Category_ID = c.ID WHERE p.ID = :id LIMIT 1");
+        $stmt = $this->db->prepare("SELECT p.*, c.Name as CategoryName, u.Username as SellerName, u.Phone as SellerPhone, u.Email as SellerEmail 
+                                    FROM `products` p 
+                                    JOIN `categories` c ON p.Category_ID = c.ID 
+                                    JOIN `users` u ON p.Seller_ID = u.ID 
+                                    WHERE p.ID = :id LIMIT 1");
         $stmt->execute(['id' => $id]);
         return $stmt->fetch() ?: null;
     }
@@ -139,8 +144,12 @@ class ProductRepository extends BaseRepository
                 WHERE p.Seller_ID = :seller_id AND p.Status != 'deleted'";
         $params = ['seller_id' => $sellerId];
         if ($status !== null) {
-            $sql .= " AND p.Status = :status";
-            $params['status'] = $status;
+            if ($status === 'available') {
+                $sql .= " AND p.Status IN ('active', 'available')";
+            } else {
+                $sql .= " AND p.Status = :status";
+                $params['status'] = $status;
+            }
         }
         $sql .= " ORDER BY p.created_at DESC";
         $stmt = $this->db->prepare($sql);

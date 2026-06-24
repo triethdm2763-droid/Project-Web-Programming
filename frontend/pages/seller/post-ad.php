@@ -43,7 +43,7 @@
                     <input type="text" id="title" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl outline-none" placeholder="Nhập tiêu đề..." required>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Danh mục *</label>
                         <select id="category_id" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl outline-none" required>
@@ -56,6 +56,10 @@
                             <input type="number" id="price" min="1" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl outline-none pr-8" placeholder="0" required>
                             <span class="absolute right-4 top-1/2 -translate-y-1/2 text-outline">đ</span>
                         </div>
+                    </div>
+                    <div>
+                        <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Số lượng kho *</label>
+                        <input type="number" id="stock_quantity" min="1" value="1" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl outline-none" placeholder="1" required>
                     </div>
                 </div>
 
@@ -198,6 +202,7 @@
                 document.getElementById('title').value = product.Name || '';
                 document.getElementById('category_id').value = product.Category_ID || product.CategoryID || '';
                 document.getElementById('price').value = product.Price || '';
+                document.getElementById('stock_quantity').value = product.Stock_quantity ?? product.stock_quantity ?? 1;
                 document.getElementById('condition').value = product.Condition_status || '';
                 document.getElementById('input-usage').value = product.Used_duration || '';
                 document.getElementById('input-warranty').value = product.Warranty || '';
@@ -316,6 +321,12 @@
                 showAlert("Giá không hợp lệ", "Giá bán phải lớn hơn hoặc bằng 1 VNĐ.", "warning");
                 return;
             }
+            const stockQty = document.getElementById('stock_quantity').value;
+            if (parseInt(stockQty) < 1 || isNaN(parseInt(stockQty))) {
+                showAlert("Số lượng không hợp lệ", "Số lượng kho phải lớn hơn hoặc bằng 1.", "warning");
+                return;
+            }
+
             const condition = document.getElementById('condition').value.trim();
             const usage = document.getElementById('input-usage').value.trim();
             const warranty = document.getElementById('input-warranty').value.trim();
@@ -347,7 +358,8 @@
                 condition_status: condition,
                 used_duration: usage,
                 warranty: warranty,
-                accessories: accessories
+                accessories: accessories,
+                stock_quantity: parseInt(stockQty)
             };
 
             const isEditing = !!editingProductId;
