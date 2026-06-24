@@ -74,7 +74,7 @@ if (!isset($_SESSION['user_id'])) {
                     <div id="tab-profile" class="tab-panel block">
                         <div class="flex justify-between items-center mb-6">
                             <h2 class="text-headline-sm font-bold text-on-surface">Thông tin cơ bản</h2>
-                            <button type="submit" form="form-profile-update" class="px-5 py-2 bg-primary text-on-primary rounded-xl hover:opacity-90 transition-all text-sm font-medium shadow-sm cursor-pointer">Lưu thay đổi</button>
+                            <button type="submit" form="form-profile-update" class="px-5 py-2 bg-primary text-white rounded-xl hover:opacity-90 transition-all text-sm font-medium shadow-sm cursor-pointer">Lưu thay đổi</button>
                         </div>
 
                         <form id="form-profile-update" class="flex flex-col lg:flex-row gap-8">
