@@ -16,20 +16,45 @@ function nav_class($pathFragment, $currentPath)
 ?>
 
 <header class="bg-surface/80 backdrop-blur-md font-body-md text-body-md docked full-width top-0 sticky z-50 shadow-sm border-b border-outline-variant/30">
+    <style>
+        /* CSS hỗ trợ hiển thị menu danh mục khi rê chuột (hover) */
+        .group:hover #nav-categories-dropdown-list {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: translateY(0) !important;
+        }
+        #nav-categories-dropdown-list {
+            transform: translateY(8px);
+            transition: all 0.2s ease-in-out;
+        }
+    </style>
     <div class="flex justify-between items-center px-gutter py-3 max-w-container-max mx-auto w-full">
 
         <div class="flex items-center gap-8">
-            <a class="font-headline-md text-headline-md font-bold text-primary tracking-tight" href="/Project-Web-Programming/frontend/pages/home/index.php">Chợ Cũ</a>
-            <nav class="hidden md:flex gap-6 font-medium text-[16px]">
+            <a class="font-headline-md text-headline-md font-bold text-primary tracking-tight" href="/Project-Web-Programming/frontend/pages/home/index.php">Chợ Thanh Lý</a>
+            <nav class="hidden md:flex gap-6 font-medium text-[16px] items-center">
                 <a class="<?php echo nav_class('/frontend/pages/home/index.php', $currentPath); ?>" href="/Project-Web-Programming/frontend/pages/home/index.php">Trang chủ</a>
-                <a class="<?php echo nav_class('/frontend/pages/products/category.php', $currentPath); ?>" href="/Project-Web-Programming/frontend/pages/products/category.php" data-navigate="1">Danh mục</a>
+                <div class="relative group py-2">
+                    <a class="flex items-center gap-0.5 cursor-pointer <?php echo nav_class('/frontend/pages/products/category.php', $currentPath); ?>" href="/Project-Web-Programming/frontend/pages/products/category.php">
+                        <span>Danh mục</span>
+                        <span class="material-symbols-outlined text-[18px] transition-transform duration-250 group-hover:rotate-180 select-none">keyboard_arrow_down</span>
+                    </a>
+                    <!-- Hover Dropdown Menu -->
+                    <div class="absolute left-0 mt-1 w-64 bg-white/85 backdrop-blur-md border border-outline-variant/30 rounded-2xl shadow-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[100] p-2 space-y-0.5" id="nav-categories-dropdown-list">
+                        <div class="text-center py-4 text-xs text-slate-400">Đang tải...</div>
+                    </div>
+                </div>
             </nav>
         </div>
 
-        <div class="flex-1 max-w-xl mx-8 hidden md:block">
+        <div class="flex-1 max-w-xl mx-8 hidden md:block relative" id="search-wrapper">
             <div class="relative group">
                 <span id="search-btn" class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors cursor-pointer hover:text-primary">search</span>
-                <input id="search-input" class="w-full pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary/20 transition-all text-[15px]" placeholder="Tìm kiếm sản phẩm đồ cũ..." type="text" />
+                <input id="search-input" class="w-full pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary/20 transition-all text-[15px]" placeholder="Tìm kiếm sản phẩm đồ cũ..." type="text" value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>" autocomplete="off" />
+            </div>
+            <!-- Search Suggestions Dropdown (Glassmorphism) -->
+            <div id="search-suggestions-dropdown" class="absolute left-0 right-0 mt-2 bg-white/90 backdrop-blur-md border border-outline-variant/30 rounded-2xl shadow-xl z-[150] hidden p-2 space-y-1 overflow-hidden">
+                <div class="text-center py-4 text-xs text-slate-400">Đang tải gợi ý...</div>
             </div>
         </div>
 
@@ -53,7 +78,7 @@ function nav_class($pathFragment, $currentPath)
                         </button>
 
                         <!-- Dropdown Container -->
-                        <div id="nav-notifications-dropdown" class="absolute right-0 mt-2 w-80 bg-white border border-outline-variant/40 rounded-xl shadow-lg overflow-hidden z-[100] hidden">
+                        <div id="nav-notifications-dropdown" class="absolute right-0 mt-2 w-80 bg-white/85 backdrop-blur-md border border-outline-variant/40 rounded-xl shadow-lg overflow-hidden z-[100] hidden">
                             <div class="p-3 border-b border-outline-variant/20 flex items-center justify-between">
                                 <span class="font-bold text-sm text-slate-800">Thông báo</span>
                                 <button onclick="markAllNavNotificationsAsRead(event)" class="text-xs text-primary font-semibold hover:underline">Đọc tất cả</button>
@@ -64,13 +89,20 @@ function nav_class($pathFragment, $currentPath)
                         </div>
                     </div>
 
-                    <a href="<?php echo ($_SESSION['role'] === 'admin') ? '/Project-Web-Programming/frontend/pages/admin/dashboard.php' : '/Project-Web-Programming/frontend/pages/user/dashboard.php'; ?>" class="flex items-center gap-1.5 p-1.5 hover:bg-surface-container rounded-full transition-colors text-on-surface-variant hover:text-primary">
-                        <span class="material-symbols-outlined">account_circle</span>
-                        <span class="text-sm font-semibold max-w-[100px] truncate"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
-                    </a>
-                    <button onclick="logout()" class="material-symbols-outlined p-2 text-on-surface-variant hover:text-error hover:bg-surface-container rounded-full transition-colors" title="Đăng xuất">
-                        logout
-                    </button>
+                    <!-- Nhóm tài khoản & Đăng xuất Hover Dropdown (Glassmorphism) -->
+                    <div class="relative group py-2 flex items-center">
+                        <a href="<?php echo ($_SESSION['role'] === 'admin') ? '/Project-Web-Programming/frontend/pages/admin/dashboard.php' : '/Project-Web-Programming/frontend/pages/user/dashboard.php'; ?>" class="flex items-center gap-1.5 p-1.5 hover:bg-surface-container rounded-full transition-colors text-on-surface-variant hover:text-primary">
+                            <span class="material-symbols-outlined">account_circle</span>
+                            <span class="text-sm font-semibold max-w-[100px] truncate"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
+                        </a>
+                        
+                        <div class="absolute right-0 top-full mt-1 bg-white/90 backdrop-blur-md border border-outline-variant/30 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] p-1.5 min-w-[130px]">
+                            <button onclick="logout()" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-on-surface-variant hover:text-error hover:bg-surface-container rounded-lg transition-colors cursor-pointer" title="Đăng xuất">
+                                <span class="material-symbols-outlined text-[18px]">logout</span>
+                                <span class="font-medium">Đăng xuất</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             <?php else: ?>
                 <a href="/Project-Web-Programming/frontend/pages/auth/login.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors block" title="Đăng nhập">
@@ -183,8 +215,13 @@ function nav_class($pathFragment, $currentPath)
         if (searchInput) {
             const keyword = searchInput.value.trim();
             if (keyword) {
-                // Chuyển hướng sang trang danh mục sản phẩm kèm tham số tìm kiếm (?search=...)
-                window.location.href = "/Project-Web-Programming/frontend/pages/products/category.php?search=" + encodeURIComponent(keyword);
+                const params = new URLSearchParams(window.location.search);
+                const category = params.get('category');
+                let redirectUrl = "/Project-Web-Programming/frontend/pages/products/category.php?search=" + encodeURIComponent(keyword);
+                if (category) {
+                    redirectUrl += "&category=" + encodeURIComponent(category);
+                }
+                window.location.href = redirectUrl;
             }
         }
     }
@@ -273,17 +310,190 @@ function nav_class($pathFragment, $currentPath)
         }
     }
 
+    async function loadNavbarCategories() {
+        const dropdownList = document.getElementById("nav-categories-dropdown-list");
+        if (!dropdownList) return;
+        try {
+            const res = await fetch("/Project-Web-Programming/backend/public/index.php/api/categories");
+            if (res.ok) {
+                const categories = await res.json();
+                const items = Array.isArray(categories) ? categories : (categories.data || []);
+                if (items.length === 0) {
+                    dropdownList.innerHTML = `<div class="text-center py-2 text-xs text-slate-400">Không có danh mục nào</div>`;
+                    return;
+                }
+                dropdownList.innerHTML = items.map(cat => `
+                    <a href="/Project-Web-Programming/frontend/pages/products/category.php?category=${cat.ID || cat.id}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors font-medium text-left">
+                        <span class="material-symbols-outlined text-[18px] text-slate-400">${getNavbarCategoryIcon(cat.Name)}</span>
+                        <span>${escapeHtmlNav(cat.Name)}</span>
+                    </a>
+                `).join('');
+            }
+        } catch (e) {
+            console.error("Lỗi tải danh mục navbar:", e);
+        }
+    }
+
+    function getNavbarCategoryIcon(catName) {
+        const name = catName.toLowerCase();
+        if (name.includes('điện tử') || name.includes('công nghệ')) return 'devices';
+        if (name.includes('điện thoại') || name.includes('máy tính bảng')) return 'smartphone';
+        if (name.includes('nam')) return 'male';
+        if (name.includes('nữ')) return 'female';
+        if (name.includes('sách') || name.includes('tài liệu')) return 'menu_book';
+        if (name.includes('gia dụng') || name.includes('nội thất')) return 'home';
+        if (name.includes('xe cộ') || name.includes('phụ tùng')) return 'directions_car';
+        if (name.includes('thể thao') || name.includes('dã ngoại')) return 'sports_soccer';
+        if (name.includes('mẹ') || name.includes('bé')) return 'child_care';
+        if (name.includes('nhạc cụ') || name.includes('âm thanh')) return 'music_note';
+        return 'category';
+    }
+
+    function escapeHtmlNav(text) {
+        if (!text) return '';
+        return text.toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     // Chờ giao diện tải xong để bắt các sự kiện click / gõ phím và khởi tạo
     document.addEventListener("DOMContentLoaded", function() {
         updateNavbarCartBadge();
+        loadNavbarCategories();
 
         const searchInput = document.getElementById('search-input');
         const searchBtn = document.getElementById('search-btn');
+        const suggestionsDropdown = document.getElementById('search-suggestions-dropdown');
+        let activeSuggestionIndex = -1;
+        let suggestionItems = [];
+        let searchDebounceTimer = null;
 
-        // 1. Xử lý khi người dùng nhấn phím Enter trong ô tìm kiếm
-        searchInput?.addEventListener('keypress', function(e) {
+        // 1. Xử lý khi người dùng nhấn phím Enter hoặc phím điều hướng trong ô tìm kiếm
+        searchInput?.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
-                executeGlobalSearch();
+                if (!suggestionsDropdown || suggestionsDropdown.classList.contains('hidden')) {
+                    executeGlobalSearch();
+                } else if (activeSuggestionIndex >= 0 && activeSuggestionIndex < suggestionItems.length) {
+                    e.preventDefault();
+                    suggestionItems[activeSuggestionIndex].click();
+                } else {
+                    executeGlobalSearch();
+                }
+            } else if (e.key === 'ArrowDown') {
+                if (suggestionsDropdown && !suggestionsDropdown.classList.contains('hidden')) {
+                    e.preventDefault();
+                    activeSuggestionIndex = (activeSuggestionIndex + 1) % suggestionItems.length;
+                    updateSuggestionHighlight();
+                }
+            } else if (e.key === 'ArrowUp') {
+                if (suggestionsDropdown && !suggestionsDropdown.classList.contains('hidden')) {
+                    e.preventDefault();
+                    activeSuggestionIndex = (activeSuggestionIndex - 1 + suggestionItems.length) % suggestionItems.length;
+                    updateSuggestionHighlight();
+                }
+            } else if (e.key === 'Escape') {
+                hideSearchSuggestions();
+            }
+        });
+
+        function updateSuggestionHighlight() {
+            const items = suggestionsDropdown.querySelectorAll('.suggestion-item');
+            items.forEach((item, index) => {
+                if (index === activeSuggestionIndex) {
+                    item.classList.add('bg-primary/10', 'text-primary');
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.classList.remove('bg-primary/10', 'text-primary');
+                }
+            });
+        }
+
+        function hideSearchSuggestions() {
+            if (suggestionsDropdown) {
+                suggestionsDropdown.classList.add('hidden');
+                activeSuggestionIndex = -1;
+                suggestionItems = [];
+            }
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        async function fetchSearchSuggestions(keyword) {
+            if (!keyword || !suggestionsDropdown) {
+                hideSearchSuggestions();
+                return;
+            }
+
+            try {
+                const res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products?search=${encodeURIComponent(keyword)}&limit=5`);
+                const result = await res.json();
+                const products = result.data || result || [];
+
+                if (!products.length) {
+                    suggestionsDropdown.innerHTML = `<div class="text-center py-4 text-xs text-slate-400">Không tìm thấy sản phẩm gợi ý nào.</div>`;
+                    suggestionsDropdown.classList.remove('hidden');
+                    return;
+                }
+
+                suggestionsDropdown.innerHTML = '';
+                suggestionItems = [];
+
+                products.forEach(p => {
+                    const img = p.Image ? (p.Image.startsWith('http') ? p.Image : `/Project-Web-Programming/backend/uploads/products/${p.Image}`) : '/Project-Web-Programming/frontend/assets/images/placeholder.png';
+                    const cleanName = escapeHtml(p.Name || p.name || '');
+                    
+                    const regex = new RegExp(`(${escapeRegExp(keyword)})`, 'gi');
+                    const highlightedName = cleanName.replace(regex, `<span class="text-primary font-bold">$1</span>`);
+                    
+                    const priceFormatted = new Intl.NumberFormat('vi-VN', {style:'currency', currency:'VND'}).format(p.Price || p.price || 0);
+
+                    const itemHtml = `
+                        <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${p.ID || p.id}" class="suggestion-item flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer text-left">
+                            <img src="${img}" class="w-10 h-10 object-contain rounded-lg bg-slate-50 border border-slate-100 flex-shrink-0" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'">
+                            <div class="flex-grow min-w-0">
+                                <h4 class="text-sm text-slate-800 font-medium truncate">${highlightedName}</h4>
+                                <p class="text-xs text-slate-500 font-semibold mt-0.5">${priceFormatted}</p>
+                            </div>
+                        </a>
+                    `;
+                    suggestionsDropdown.insertAdjacentHTML('beforeend', itemHtml);
+                });
+
+                const params = new URLSearchParams(window.location.search);
+                const category = params.get('category');
+                const categoryParam = category ? `&category=${encodeURIComponent(category)}` : '';
+
+                const seeAllHtml = `
+                    <a href="/Project-Web-Programming/frontend/pages/products/category.php?search=${encodeURIComponent(keyword)}${categoryParam}" class="suggestion-item block text-center py-2.5 text-xs text-primary font-semibold border-t border-slate-100/50 hover:bg-slate-50 transition-colors mt-1">
+                        Xem tất cả kết quả cho "${escapeHtml(keyword)}"
+                    </a>
+                `;
+                suggestionsDropdown.insertAdjacentHTML('beforeend', seeAllHtml);
+
+                suggestionItems = suggestionsDropdown.querySelectorAll('.suggestion-item');
+                suggestionsDropdown.classList.remove('hidden');
+                activeSuggestionIndex = -1;
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        searchInput?.addEventListener('input', function() {
+            const keyword = this.value.trim();
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => fetchSearchSuggestions(keyword), 300);
+        });
+
+        searchInput?.addEventListener('focus', function() {
+            const keyword = this.value.trim();
+            if (keyword) {
+                fetchSearchSuggestions(keyword);
             }
         });
 
@@ -292,12 +502,18 @@ function nav_class($pathFragment, $currentPath)
             executeGlobalSearch();
         });
 
-        // Close dropdown on click outside
+        // Close dropdowns on click outside
         document.addEventListener("click", function(event) {
-            const dropdown = document.getElementById("nav-notifications-dropdown");
-            const trigger = document.getElementById("nav-btn-notifications");
-            if (dropdown && !dropdown.classList.contains("hidden") && !dropdown.contains(event.target) && event.target !== trigger) {
-                dropdown.classList.add("hidden");
+            // Notifications dropdown
+            const notificationsDropdown = document.getElementById("nav-notifications-dropdown");
+            const notificationsTrigger = document.getElementById("nav-btn-notifications");
+            if (notificationsDropdown && !notificationsDropdown.classList.contains("hidden") && !notificationsDropdown.contains(event.target) && event.target !== notificationsTrigger) {
+                notificationsDropdown.classList.add("hidden");
+            }
+
+            // Suggestions dropdown
+            if (suggestionsDropdown && !suggestionsDropdown.contains(event.target) && event.target !== searchInput) {
+                hideSearchSuggestions();
             }
         });
 

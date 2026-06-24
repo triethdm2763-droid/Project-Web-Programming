@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Chi tiết sản phẩm | Chợ Cũ</title>
+    <title>Chi tiết sản phẩm | Chợ Thanh Lý</title>
     <?php include '../../components/header.php'; ?>
 </head>
 
@@ -22,7 +22,7 @@
         <div id="product-detail-container" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
             <div class="lg:col-span-5">
-                <div id="product-image-container" class="bg-white rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
+                <div id="product-image-container" class="bg-white/60 backdrop-blur-md rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
                     <img
                         id="product-image"
                         src="https://placehold.co/600x600"
@@ -34,7 +34,7 @@
 
             <div class="lg:col-span-7">
 
-                <div class="bg-white rounded-2xl border border-outline-variant/20 shadow-sm p-6 space-y-6">
+                <div class="bg-white/60 backdrop-blur-md rounded-2xl border border-outline-variant/10 shadow-sm p-6 space-y-6">
 
                     <div>
                         <h1
@@ -136,7 +136,7 @@
                     </div>
 
                     <!-- Tính năng mới: Bộ ước tính phí vận chuyển -->
-                    <div id="shipping-estimator-container" class="p-4 bg-slate-50 border border-slate-200/60 rounded-xl space-y-3">
+                    <div id="shipping-estimator-container" class="p-4 bg-slate-50/60 backdrop-blur-md border border-outline-variant/10 rounded-xl space-y-3">
                         <div class="flex items-center gap-2 text-primary font-semibold text-sm">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
                             <span>Ước tính phí vận chuyển & giao hàng</span>
@@ -171,7 +171,6 @@
 
                         <button
                             id="btn-add-to-cart"
-                            onclick="addToCart()"
                             data-logged-in="<?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>"
                             class="flex-1 border border-primary text-primary py-4 rounded-xl font-headline-sm hover:bg-primary hover:text-white transition-all uppercase tracking-wide"
                         >
@@ -182,9 +181,17 @@
 
                 </div>
 
-            </div>
-
         </div>
+    </div>
+
+        <!-- Sản phẩm tương tự (Đề xuất thông minh) -->
+        <section id="similar-products-section" class="mt-12 bg-white/60 backdrop-blur-md rounded-2xl border border-outline-variant/10 p-6 shadow-sm hidden">
+            <h3 class="text-xl font-bold text-slate-800 mb-1">Sản phẩm tương tự</h3>
+            <p class="text-xs text-slate-400 mb-6">Đề xuất các mặt hàng thanh lý cùng danh mục và cùng phân khúc giá</p>
+            <div id="similar-products-grid" class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <!-- Tải động bằng JS -->
+            </div>
+        </section>
 
     </main>
 
@@ -401,6 +408,10 @@
                 }
             }
 
+            // Tải sản phẩm tương tự (Đề xuất thông minh)
+            const categoryId = currentProduct.Category_ID || currentProduct.category_id;
+            loadSimilarProducts(categoryId, currentProduct.ID || currentProduct.id, priceVal);
+
         } catch (error) {
 
             console.error(error);
@@ -408,6 +419,68 @@
 
         }
 
+    }
+
+    function escapeHtml(text) {
+        return text ? String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
+    }
+
+    async function loadSimilarProducts(categoryId, currentId, priceVal) {
+        const section = document.getElementById("similar-products-section");
+        const grid = document.getElementById("similar-products-grid");
+        if (!section || !grid || !categoryId) return;
+
+        try {
+            const res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products?category_id=${categoryId}&limit=12`);
+            if (!res.ok) return;
+            const result = await res.json();
+            const products = result.data || result || [];
+
+            let similar = products.filter(p => (p.ID || p.id) !== currentId);
+
+            // Sắp xếp đề xuất: Ưu tiên các sản phẩm có giá trị gần nhất với sản phẩm hiện tại
+            similar.sort((a, b) => {
+                const diffA = Math.abs((a.Price || a.price || 0) - priceVal);
+                const diffB = Math.abs((b.Price || b.price || 0) - priceVal);
+                return diffA - diffB;
+            });
+
+            similar = similar.slice(0, 4);
+
+            if (similar.length === 0) {
+                section.classList.add("hidden");
+                return;
+            }
+
+            section.classList.remove("hidden");
+            grid.innerHTML = similar.map(p => {
+                const img = p.Image ? (p.Image.startsWith('http') ? p.Image : `/Project-Web-Programming/backend/uploads/products/${p.Image}`) : 'https://placehold.co/300x300';
+                const priceFormatted = new Intl.NumberFormat('vi-VN').format(p.Price || p.price) + ' đ';
+                const name = p.Name || p.name || 'Sản phẩm';
+                const qty = p.Stock_quantity ?? p.stock_quantity ?? 1;
+                const qtyBadge = parseInt(qty) === 1 
+                    ? `<span class="bg-orange-50 text-orange-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-orange-100 whitespace-nowrap">Độc bản</span>` 
+                    : `<span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-100 whitespace-nowrap">SL: ${qty}</span>`;
+
+                return `
+                <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${p.ID || p.id}" class="bg-white/80 p-3 rounded-2xl border border-outline-variant/10 hover:border-primary/30 transition-all flex flex-col justify-between group shadow-sm hover:shadow">
+                    <div>
+                        <div class="aspect-square bg-slate-50 rounded-xl overflow-hidden mb-3">
+                            <img src="${img}" class="w-full h-full object-contain group-hover:scale-[1.03] transition-transform" alt="${escapeHtml(name)}">
+                        </div>
+                        <h4 class="font-medium text-xs sm:text-sm line-clamp-2 text-slate-800 group-hover:text-primary transition-colors">${escapeHtml(name)}</h4>
+                        <div class="flex items-center justify-between gap-1 mt-2">
+                            <div class="text-primary font-bold text-xs sm:text-sm">${priceFormatted}</div>
+                            ${qtyBadge}
+                        </div>
+                    </div>
+                </a>
+                `;
+            }).join('');
+
+        } catch (e) {
+            console.error("Lỗi khi tải sản phẩm tương tự:", e);
+        }
     }
 
     function syncQuantityFromSlider(val) {

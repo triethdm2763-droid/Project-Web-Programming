@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Đăng nhập | Chợ Cũ</title>
+    <title>Đăng nhập | Chợ Thanh Lý</title>
     <?php include '../../components/header.php'; ?>
 </head>
 <body class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col">

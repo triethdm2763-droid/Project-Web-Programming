@@ -28,7 +28,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Kênh Người Bán | Chợ Cũ</title>
+    <title>Kênh Người Bán | Chợ Thanh Lý</title>
     <?php include '../../components/header.php'; ?>
 </head>
 

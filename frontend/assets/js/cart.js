@@ -247,7 +247,7 @@ function renderCartItemRow(item, index) {
         : `
         <div class="inline-flex items-center border border-slate-200 rounded-lg overflow-hidden">
             <button id="btn-dec-${index}" type="button" onclick="changeItemQuantity(${index}, -1)" ${quantity <= 1 ? 'disabled' : ''} class="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:text-slate-300 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors"><span class="material-symbols-outlined text-[16px]">remove</span></button>
-            <span id="qty-val-${index}" class="w-9 h-8 flex items-center justify-center text-sm font-medium border-x border-slate-200 select-none">${quantity}</span>
+            <input id="qty-input-${index}" type="number" min="1" max="${maxStock}" value="${quantity}" onchange="handleQtyInputChange(${index}, this.value)" class="w-12 h-8 text-center text-sm font-medium border-x border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#0066cc]/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
             <button id="btn-inc-${index}" type="button" onclick="changeItemQuantity(${index}, 1)" ${quantity >= maxStock ? 'disabled' : ''} class="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:text-slate-300 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors"><span class="material-symbols-outlined text-[16px]">add</span></button>
         </div>
         `;
@@ -409,11 +409,11 @@ function changeItemQuantity(index, delta) {
         // Cập nhật trực tiếp nội dung số lượng trong DOM mà không cần reload trang hay gọi API
         const decBtn = document.getElementById(`btn-dec-${index}`);
         const incBtn = document.getElementById(`btn-inc-${index}`);
-        const qtyVal = document.getElementById(`qty-val-${index}`);
+        const qtyInput = document.getElementById(`qty-input-${index}`);
         const lineTotalDesktop = document.getElementById(`line-total-desktop-${index}`);
         const lineTotalMobile = document.getElementById(`line-total-mobile-${index}`);
 
-        if (qtyVal) qtyVal.innerText = newQty;
+        if (qtyInput) qtyInput.value = newQty;
         if (decBtn) decBtn.disabled = (newQty <= 1);
         if (incBtn) incBtn.disabled = (newQty >= maxStock);
 
@@ -426,6 +426,26 @@ function changeItemQuantity(index, delta) {
         // Tính toán lại tổng tiền của giỏ
         updateCartSummary(cart);
     }
+}
+
+function handleQtyInputChange(index, value) {
+    const cart = loadCartFromStorage();
+    const item = cart[index];
+    if (!item) return;
+
+    const maxStock = Math.max(1, parseInt(item.Stock_quantity ?? item.stock_quantity, 10) || 1);
+    let newQty = parseInt(value, 10);
+
+    if (isNaN(newQty) || newQty < 1) {
+        newQty = 1;
+    }
+    if (newQty > maxStock) {
+        newQty = maxStock;
+        showToast(`Sản phẩm này chỉ còn ${maxStock} sản phẩm trong kho.`, "warning");
+    }
+
+    item.Quantity = newQty;
+    saveCartToStorage(cart);
 }
 
 // --- 4. GỢI Ý SẢN PHẨM KHÁC (lấy một vài sản phẩm từ MỖI danh mục) ---

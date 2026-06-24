@@ -8,7 +8,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <html lang="vi">
 
 <head>
-    <title>Trang Chủ | Chợ Cũ Marketplace</title>
+    <title>Trang Chủ | Chợ Thanh Lý Marketplace</title>
     <!-- Nhúng Header chứa cấu hình Tailwind và biến màu style.css của Triết -->
     <?php include '../../components/header.php'; ?>
 </head>
@@ -55,28 +55,8 @@ if (session_status() === PHP_SESSION_NONE) {
 
         </div>
         <!-- ==========================================================================
-            2. BROWSE BY CATEGORIES (Bộ lọc danh mục trực quan)
+            2. PRODUCT MARKETPLACE GRID (Lưới sản phẩm mới nhất)
             ========================================================================== -->
-        <section class="space-y-5">
-
-            <h2 class="font-headline-md text-xl md:text-2xl font-bold text-on-background flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary">
-                    grid_view
-                </span>
-                Danh Mục Nổi Bật
-            </h2>
-
-            <div
-                id="categories-container"
-                class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
-                <!-- JS sẽ render danh mục vào đây -->
-            </div>
-
-        </section>
-
-        <!-- ==========================================================================
-           3. PRODUCT MARKETPLACE GRID (Lưới trống chờ đổ dữ liệu Tuần 2)
-           ========================================================================== -->
         <section class="space-y-6" id="products-section">
             <div>
                 <h2 class="font-headline-md text-xl font-bold text-on-background flex items-center gap-2">
@@ -98,7 +78,7 @@ if (session_status() === PHP_SESSION_NONE) {
         <!-- ==========================================================================
            4. THREE FEATURE HIGHLIGHTS (Giao dịch an toàn / Vận chuyển nhanh / Hỗ trợ 24/7)
            ========================================================================== -->
-        <section class="mt-12 bg-[rgba(0,74,198,0.1)] py-8 rounded-lg">
+        <section class="mt-12 bg-white/40 backdrop-blur-md border border-outline-variant/10 shadow-sm py-8 rounded-[24px]">
             <div class="max-w-container-max mx-auto px-gutter">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                     <div class="p-6">
@@ -136,7 +116,6 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            loadCategories();
             loadProducts(1);
             initBannerSlider();
 
@@ -149,47 +128,6 @@ if (session_status() === PHP_SESSION_NONE) {
             }
         });
 
-        function getCategoryIcon(catName) {
-            const name = catName.toLowerCase();
-            if (name.includes('điện tử') || name.includes('công nghệ')) return 'devices';
-            if (name.includes('điện thoại') || name.includes('máy tính bảng')) return 'smartphone';
-            if (name.includes('nam')) return 'male';
-            if (name.includes('nữ')) return 'female';
-            if (name.includes('sách') || name.includes('tài liệu')) return 'menu_book';
-            if (name.includes('gia dụng') || name.includes('nội thất')) return 'home';
-            if (name.includes('xe cộ') || name.includes('phụ tùng')) return 'directions_car';
-            if (name.includes('thể thao') || name.includes('dã ngoại')) return 'sports_soccer';
-            if (name.includes('mẹ') || name.includes('bé')) return 'child_care';
-            if (name.includes('nhạc cụ') || name.includes('âm thanh')) return 'music_note';
-            return 'category';
-        }
-
-        async function loadCategories() {
-            let container = document.getElementById("categories-container");
-            container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Đang tải danh mục...</div>`;
-
-            try {
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/categories");
-                let categories = await res.json();
-
-                if (categories && categories.length > 0) {
-                    // Hiển thị tối đa 6 danh mục
-                    let limitCats = categories.slice(0, 6);
-                    container.innerHTML = limitCats.map(cat => `
-                    <a href="/Project-Web-Programming/frontend/pages/products/category.php?category=${cat.ID}" data-id="${cat.ID}" data-navigate="1" class="category-btn bg-white border border-outline-variant/20 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-primary hover:shadow-sm transition-all group">
-                        <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary mb-2">${getCategoryIcon(cat.Name)}</span>
-                        <span class="text-label-sm font-semibold text-on-surface">${escapeHtml(cat.Name)}</span>
-                    </a>
-                `).join('');
-                } else {
-                    container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Không có danh mục nào.</div>`;
-                }
-            } catch (error) {
-                console.error("Error loading categories:", error);
-                container.innerHTML = `<div class="col-span-full text-center text-red-500 py-4">Lỗi tải danh mục.</div>`;
-            }
-        }
-
         let homeCurrentPage = 1;
         const homeLimit = 8;
         let homeTotalProducts = 0;
@@ -197,7 +135,7 @@ if (session_status() === PHP_SESSION_NONE) {
         async function loadProducts(page = 1) {
             let container = document.getElementById("products-container");
             const loadMoreBtn = document.getElementById("loadMoreBtn");
-            
+
             if (page === 1) {
                 container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Đang tải sản phẩm...</div>`;
             }
@@ -206,17 +144,22 @@ if (session_status() === PHP_SESSION_NONE) {
                 let res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products?limit=${homeLimit}&page=${page}`);
                 let result = await res.json();
                 let products = result.data || [];
-                homeTotalProducts = result.total !== undefined ? result.total : products.length;
+                homeTotalProducts = result.total || 0;
 
                 if (page === 1) {
                     container.innerHTML = '';
                 }
 
                 if (products && products.length > 0) {
-                    const productsHtml = products.map(row => `
-                    <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${row.ID}" class="bg-white rounded-xl overflow-hidden shadow-sm border border-outline-variant/10 flex flex-col hover:shadow-md hover:border-primary/30 transition-all group">
+                    const productsHtml = products.map(row => {
+                        const qty = parseInt(row.Stock_quantity ?? row.stock_quantity ?? 1);
+                        const badgeHtml = qty === 1
+                            ? `<span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[13px] px-2.5 py-1 rounded-md shadow-sm">Độc Bản (SL=1)</span>`
+                            : `<span class="absolute top-3 left-3 bg-[#004ac6] text-white font-semibold text-[13px] px-2.5 py-1 rounded-md shadow-sm">Số lượng: ${qty}</span>`;
+                        return `
+                    <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${row.ID}" class="bg-white/60 backdrop-blur-md rounded-xl overflow-hidden shadow-sm border border-outline-variant/10 flex flex-col hover:shadow-md hover:bg-white/90 hover:border-primary/30 transition-all group">
                         <div class="h-48 bg-surface-container flex items-center justify-center relative text-outline/50 overflow-hidden">
-                            <span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[11px] px-2 py-1 rounded shadow-sm">Độc Bản (SL=1)</span>
+                            ${badgeHtml}
                             <img src="${(row.Image && (row.Image.startsWith('http://') || row.Image.startsWith('https://'))) ? escapeHtml(row.Image) : '/Project-Web-Programming/backend/uploads/products/' + escapeHtml(row.Image || 'placeholder.png')}" alt="${escapeHtml(row.Name)}" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'" class="w-full h-full object-contain p-4 group-hover:scale-[1.03] transition-transform">
                         </div>
                         <div class="p-4 flex flex-col flex-grow space-y-2">
@@ -231,8 +174,9 @@ if (session_status() === PHP_SESSION_NONE) {
                             </div>
                         </div>
                     </a>
-                    `).join('');
-                    
+                    `;
+                    }).join('');
+
                     container.insertAdjacentHTML('beforeend', productsHtml);
                 } else if (page === 1) {
                     container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Chưa có sản phẩm nào trong hệ thống.</div>`;

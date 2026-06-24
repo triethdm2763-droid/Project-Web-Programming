@@ -46,6 +46,12 @@ class ProductController extends BaseController
         if (isset($_GET['sort'])) {
             $filters['sort'] = $_GET['sort'];
         }
+        if (isset($_GET['location'])) {
+            $filters['location'] = $_GET['location'];
+        }
+        if (isset($_GET['condition_status'])) {
+            $filters['condition_status'] = $_GET['condition_status'];
+        }
         if (isset($_GET['limit'])) {
             $filters['limit'] = intval($_GET['limit']);
             $page = isset($_GET['page']) ? intval($_GET['page']) : 1;

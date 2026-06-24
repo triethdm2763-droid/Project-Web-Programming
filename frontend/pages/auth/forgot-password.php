@@ -2,7 +2,7 @@
 <html lang="vi">
 
 <head>
-    <title>Khôi phục mật khẩu | Chợ Cũ</title>
+    <title>Khôi phục mật khẩu | Chợ Thanh Lý</title>
     <?php include '../../components/header.php'; ?>
 </head>
 

@@ -2,7 +2,7 @@
 <html lang="vi">
 
 <head>
-    <title id="page-title">Đăng tin mới | Chợ Cũ</title>
+    <title id="page-title">Đăng tin mới | Chợ Thanh Lý</title>
     <?php include '../../components/header.php'; ?>
 </head>
 
@@ -53,9 +53,10 @@
                     <div>
                         <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Giá bán (VNĐ) *</label>
                         <div class="relative">
-                            <input type="number" id="price" min="1" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl outline-none pr-8" placeholder="0" required>
+                            <input type="text" inputmode="numeric" id="price" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl outline-none pr-8" placeholder="0" oninput="updatePricePreview()" required>
                             <span class="absolute right-4 top-1/2 -translate-y-1/2 text-outline">đ</span>
                         </div>
+                        <div id="price-preview" class="text-xs text-primary font-semibold mt-1.5 min-h-[16px]"></div>
                     </div>
                     <div>
                         <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Số lượng kho *</label>
@@ -65,7 +66,12 @@
 
                 <div class="space-y-2 pt-2">
                     <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Tình trạng *</label>
-                    <input type="text" id="condition" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl outline-none text-body-md" placeholder="Tự nhập tình trạng sản phẩm (VD: Mới, 99%, trầy xước nhẹ...)" required>
+                    <select id="condition" class="w-full px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl outline-none text-body-md cursor-pointer" required>
+                        <option value="">Chọn tình trạng sản phẩm</option>
+                        <option value="Mới">Mới (Chưa qua sử dụng)</option>
+                        <option value="99%">99% (Like New - Như mới)</option>
+                        <option value="Đã sử dụng">Đã sử dụng (Cũ)</option>
+                    </select>
                 </div>
 
                 <div class="space-y-2">
@@ -146,6 +152,118 @@
             document.getElementById('input-' + fieldId).value = val;
         }
 
+        function setupCurrencyInput(id, onInputCallback) {
+            const input = document.getElementById(id);
+            if (!input) return;
+            input.type = "text";
+            input.setAttribute("inputmode", "numeric");
+            if (input.value) {
+                let clean = input.value.replace(/\D/g, "");
+                if (clean) input.value = new Intl.NumberFormat('vi-VN').format(parseInt(clean));
+            }
+            input.addEventListener("input", function() {
+                let cursorPosition = this.selectionStart;
+                let originalLength = this.value.length;
+                let clean = this.value.replace(/\D/g, "");
+                if (!clean) {
+                    this.value = "";
+                    if (onInputCallback) onInputCallback();
+                    return;
+                }
+                this.value = new Intl.NumberFormat('vi-VN').format(parseInt(clean));
+                let newLength = this.value.length;
+                cursorPosition = cursorPosition + (newLength - originalLength);
+                this.setSelectionRange(cursorPosition, cursorPosition);
+                if (onInputCallback) onInputCallback();
+            });
+        }
+
+        function updatePricePreview() {
+            const priceInput = document.getElementById('price');
+            const previewDiv = document.getElementById('price-preview');
+            if (!priceInput || !previewDiv) return;
+
+            const val = priceInput.value.replace(/\D/g, "");
+            if (!val || isNaN(val)) {
+                previewDiv.innerText = '';
+                return;
+            }
+
+            const num = parseInt(val);
+            if (num <= 0) {
+                previewDiv.innerText = '';
+                return;
+            }
+
+            const formatted = new Intl.NumberFormat('vi-VN').format(num) + ' đ';
+            const words = convertNumberToVietnameseWords(num);
+            previewDiv.innerText = `${formatted} (${words})`;
+        }
+
+        function convertNumberToVietnameseWords(number) {
+            const units = ["", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
+            const places = ["", "nghìn", "triệu", "tỷ", "nghìn tỷ", "triệu tỷ"];
+            
+            if (number === 0) return "không đồng";
+            
+            let str = "";
+            let numberStr = number.toString();
+            
+            while (numberStr.length % 3 !== 0) {
+                numberStr = "0" + numberStr;
+            }
+            
+            let groups = [];
+            for (let i = 0; i < numberStr.length; i += 3) {
+                groups.push(numberStr.substr(i, 3));
+            }
+            
+            for (let i = 0; i < groups.length; i++) {
+                let g = groups[i];
+                let h = parseInt(g[0]);
+                let t = parseInt(g[1]);
+                let u = parseInt(g[2]);
+                
+                if (h === 0 && t === 0 && u === 0) continue;
+                
+                let groupStr = "";
+                
+                if (h > 0 || str !== "") {
+                    groupStr += units[h] + " trăm ";
+                }
+                
+                if (t === 0) {
+                    if (u > 0 && (h > 0 || str !== "")) {
+                        groupStr += "lẻ ";
+                    }
+                } else if (t === 1) {
+                    groupStr += "mười ";
+                } else {
+                    groupStr += units[t] + " mươi ";
+                }
+                
+                if (u > 0) {
+                    if (t > 1 && u === 1) {
+                        groupStr += "mốt ";
+                    } else if (t > 0 && u === 5) {
+                        groupStr += "lăm ";
+                    } else {
+                        groupStr += units[u] + " ";
+                    }
+                }
+                
+                let placeIdx = groups.length - 1 - i;
+                if (placeIdx > 0) {
+                    groupStr += places[placeIdx] + " ";
+                }
+                
+                str += groupStr;
+            }
+            
+            str = str.trim();
+            return str.charAt(0).toUpperCase() + str.slice(1) + " đồng";
+        }
+
         // Với mô tả được tạo bởi bản submitProduct() mới (không còn gộp Tình trạng/Sử dụng/
         // Bảo hành/Phụ kiện vào trong Description), ta có thể tách lại SĐT/Khu vực/Mô tả gốc
         // theo định dạng cố định bên dưới để phục vụ việc chỉnh sửa tin đăng.
@@ -166,6 +284,8 @@
         }
 
         async function initPage() {
+            setupCurrencyInput('price', updatePricePreview);
+
             // Tải danh mục từ API
             let categories = [];
             try {
@@ -186,7 +306,7 @@
             if (!id) return;
 
             editingProductId = id;
-            document.getElementById('page-title').innerText = 'Chỉnh sửa tin đăng | Chợ Cũ';
+            document.getElementById('page-title').innerText = 'Chỉnh sửa tin đăng | Chợ Thanh Lý';
             document.getElementById('page-heading').innerText = 'Chỉnh sửa tin đăng';
             document.getElementById('submitBtn').innerText = 'LƯU THAY ĐỔI';
 
@@ -201,9 +321,26 @@
 
                 document.getElementById('title').value = product.Name || '';
                 document.getElementById('category_id').value = product.Category_ID || product.CategoryID || '';
-                document.getElementById('price').value = product.Price || '';
+                
+                const rawPrice = product.Price || product.price || '';
+                if (rawPrice) {
+                    document.getElementById('price').value = new Intl.NumberFormat('vi-VN').format(parseInt(rawPrice));
+                } else {
+                    document.getElementById('price').value = '';
+                }
+                updatePricePreview();
                 document.getElementById('stock_quantity').value = product.Stock_quantity ?? product.stock_quantity ?? 1;
-                document.getElementById('condition').value = product.Condition_status || '';
+                
+                let rawCondition = product.Condition_status || '';
+                let mappedCondition = "";
+                if (rawCondition.toLowerCase().includes("mới")) {
+                    mappedCondition = "Mới";
+                } else if (rawCondition.toLowerCase().includes("99") || rawCondition.toLowerCase().includes("like new") || rawCondition.toLowerCase().includes("99%")) {
+                    mappedCondition = "99%";
+                } else if (rawCondition) {
+                    mappedCondition = "Đã sử dụng";
+                }
+                document.getElementById('condition').value = mappedCondition;
                 document.getElementById('input-usage').value = product.Used_duration || '';
                 document.getElementById('input-warranty').value = product.Warranty || '';
                 document.getElementById('accessories').value = product.Accessories || '';
@@ -315,9 +452,9 @@
 
             const title = document.getElementById('title').value.trim();
             const categoryId = document.getElementById('category_id').value;
-            const price = document.getElementById('price').value;
+            const price = document.getElementById('price').value.replace(/\D/g, "");
 
-            if (parseFloat(price) < 1) {
+            if (parseFloat(price) < 1 || isNaN(parseFloat(price))) {
                 showAlert("Giá không hợp lệ", "Giá bán phải lớn hơn hoặc bằng 1 VNĐ.", "warning");
                 return;
             }

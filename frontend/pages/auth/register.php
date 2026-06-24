@@ -2,7 +2,7 @@
 <html lang="vi">
 
 <head>
-    <title>Đăng ký | Chợ Cũ</title>
+    <title>Đăng ký | Chợ Thanh Lý</title>
     <?php include '../../components/header.php'; ?>
 </head>
 

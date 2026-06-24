@@ -15,71 +15,56 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     <?php include '../../components/header.php'; ?>
 </head>
 
-<body class="bg-slate-50">
-
-    <div class="flex">
-
+<body class="bg-slate-50 font-body-md text-on-surface">
+    <div class="flex min-h-screen">
         <?php include '../../components/sidebar.php'; ?>
-
-        <main class="flex-1 p-8">
-
+        <main class="flex-grow p-8 max-w-7xl mx-auto w-full">
             <div class="mb-8">
-                <h1 class="text-3xl font-black text-slate-800">
-                    Quản lý đơn hàng
-                </h1>
-
-                <p class="text-slate-500 mt-2">
-                    Theo dõi trạng thái giao dịch của người dùng
-                </p>
+                <h1 class="text-3xl font-black text-slate-800">Quản lý đơn hàng</h1>
+                <p class="text-slate-500 mt-2">Theo dõi và giám sát toàn bộ trạng thái giao dịch của người dùng trên sàn</p>
             </div>
 
-            <div class="bg-white rounded-3xl shadow-sm border overflow-hidden">
-
-                <div class="p-6 border-b flex justify-between items-center">
-                    <input
-                        id="order-search-input"
-                        type="text"
-                        placeholder="Tìm kiếm theo khách hàng hoặc sản phẩm..."
-                        class="border rounded-xl px-4 py-3 w-80 outline-none focus:ring-2 focus:ring-blue-500"
-                        oninput="filterOrders()">
+            <div class="bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden">
+                <div class="p-5 border-b border-slate-100/60 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="relative w-full sm:w-80">
+                        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+                        <input
+                            id="order-search-input"
+                            type="text"
+                            placeholder="Tìm khách hàng hoặc sản phẩm..."
+                            class="w-full pl-10 pr-4 py-2.5 bg-white border border-outline-variant/30 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                            oninput="filterOrders()">
+                    </div>
 
                     <button
                         onclick="showToast('Tính năng xuất Excel đang được phát triển.', 'info')"
-                        class="bg-blue-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-blue-700">
+                        class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all hover:scale-[1.02] active:scale-95">
                         Xuất Excel
                     </button>
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full">
-
-                        <thead class="bg-slate-50">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-100/50 text-slate-500 text-xs uppercase border-b border-slate-100">
                             <tr>
-                                <th class="p-4 text-left">Mã đơn</th>
-                                <th class="p-4 text-left">Khách hàng</th>
-                                <th class="p-4 text-left">Sản phẩm</th>
-                                <th class="p-4 text-left">Tổng tiền</th>
-                                <th class="p-4 text-center">Trạng thái</th>
+                                <th class="p-4 font-semibold">Mã đơn</th>
+                                <th class="p-4 font-semibold">Khách mua hàng</th>
+                                <th class="p-4 font-semibold">Tên sản phẩm</th>
+                                <th class="p-4 font-semibold">Tổng tiền thanh toán</th>
+                                <th class="p-4 text-center font-semibold">Trạng thái</th>
                             </tr>
                         </thead>
-
-                        <tbody
-                            id="orders-table"
-                            class="divide-y">
+                        <tbody id="orders-table" class="divide-y divide-slate-100/50">
                             <tr>
                                 <td colspan="5" class="p-8 text-center text-slate-400">
                                     Đang tải danh sách đơn hàng...
                                 </td>
                             </tr>
                         </tbody>
-
                     </table>
                 </div>
-
             </div>
-
         </main>
-
     </div>
 
     <script>
@@ -91,15 +76,15 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
         function renderOrderStatus(status) {
             if (status === 'pending') {
-                return `<span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm">Chờ xử lý</span>`;
+                return `<span class="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-semibold border border-amber-100">Chờ xử lý</span>`;
             }
             if (status === 'success' || status === 'completed') {
-                return `<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">Hoàn tất</span>`;
+                return `<span class="px-2.5 py-1 bg-green-50 text-green-700 rounded-full text-xs font-semibold border border-green-100">Hoàn tất</span>`;
             }
             if (status === 'cancelled') {
-                return `<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">Đã hủy</span>`;
+                return `<span class="px-2.5 py-1 bg-red-50 text-red-700 rounded-full text-xs font-semibold border border-red-100">Đã hủy</span>`;
             }
-            return `<span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm">${escapeHtml(status)}</span>`;
+            return `<span class="px-2.5 py-1 bg-slate-50 text-slate-700 rounded-full text-xs font-semibold border border-slate-100">${escapeHtml(status)}</span>`;
         }
 
         function renderOrders(orders) {
@@ -120,28 +105,22 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
             orders.forEach(order => {
                 html += `
-                <tr class="hover:bg-slate-50">
-
-                    <td class="p-4 font-medium">
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="p-4 font-semibold text-sm text-slate-800">
                         #${order.ID}
                     </td>
-
-                    <td class="p-4 text-slate-600">
+                    <td class="p-4 text-sm text-slate-600">
                         ${escapeHtml(order.BuyerName)}
                     </td>
-
-                    <td class="p-4 text-slate-600">
+                    <td class="p-4 text-sm text-slate-600 font-medium">
                         ${escapeHtml(order.ProductName)}
                     </td>
-
-                    <td class="p-4 font-semibold text-blue-600">
+                    <td class="p-4 text-sm font-bold text-slate-800">
                         ${Number(order.Total_price).toLocaleString("vi-VN")} đ
                     </td>
-
                     <td class="p-4 text-center">
                         ${renderOrderStatus(order.Status)}
                     </td>
-
                 </tr>
             `;
             });
