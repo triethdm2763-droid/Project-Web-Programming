@@ -35,7 +35,7 @@ function nav_class($pathFragment, $currentPath)
             class="flex items-center">
                 <img src="/Project-Web-Programming/frontend/assets/images/logo.png"
                     alt="Chợ Thanh Lý"
-                    class="h-[70px] w-auto object-contain">
+                    class="h-[70px] w-auto object-contain relative top-[4px]">
             </a>
             <nav class="hidden md:flex gap-6 font-medium text-[16px] items-center">
                 <a class="<?php echo nav_class('/frontend/pages/home/index.php', $currentPath); ?>" href="/Project-Web-Programming/frontend/pages/home/index.php">Trang chủ</a>
