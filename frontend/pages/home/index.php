@@ -40,7 +40,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
             <div class="relative z-20 h-full flex flex-col justify-center px-6 md:px-10 max-w-xl space-y-4 text-white">
                 <span class="bg-orange-500 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-md w-max">
-                    SÀN C2C UY TÍN TOÀN QUỐC
+                    SÀN THANH LÝ UY TÍN TOÀN QUỐC
                 </span>
                 <h1 class="text-3xl md:text-4xl font-extrabold leading-tight">
                     Nền Tảng Mua Bán &<br>Thanh Lý Đồ Cũ Chính Chủ
