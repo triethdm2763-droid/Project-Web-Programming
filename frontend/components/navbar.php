@@ -31,10 +31,11 @@ function nav_class($pathFragment, $currentPath)
     <div class="flex justify-between items-center px-gutter py-3 max-w-container-max mx-auto w-full">
 
         <div class="flex items-center gap-8">
-            <a href="/Project-Web-Programming/frontend/pages/home/index.php" class="flex items-center">
+            <a href="/Project-Web-Programming/frontend/pages/home/index.php"
+            class="flex items-center">
                 <img src="/Project-Web-Programming/frontend/assets/images/logo.png"
                     alt="Chợ Thanh Lý"
-                    class="h-14 w-auto">
+                    class="h-[70px] w-auto object-contain">
             </a>
             <nav class="hidden md:flex gap-6 font-medium text-[16px] items-center">
                 <a class="<?php echo nav_class('/frontend/pages/home/index.php', $currentPath); ?>" href="/Project-Web-Programming/frontend/pages/home/index.php">Trang chủ</a>
