@@ -2,13 +2,46 @@
 
 Nền tảng thương mại điện tử C2C giúp trao đổi và thanh lý đồ cũ dành cho cộng đồng — nhanh chóng, tin cậy và tiết kiệm sử dụng PHP + MySQL + TailwindCSS.
 
-## Folder chính
+## Sơ đồ cấu trúc thư mục (Directory Tree)
 
-- `backend/`: xử lý backend PHP, API, service, repository.
-- `frontend/`: giao diện, CSS, JavaScript, pages, components, ảnh upload.
-- `database/`: schema MySQL, migrations, seeders, procedures, triggers, transaction demo.
-- `docs/`: tài liệu thiết kế database, API, xử lý đồng thời, hướng dẫn setup.
-- `tests/`: file test chức năng, API, transaction.
+```text
+Project-Web-Programming/
+├── backend/
+│   ├── public/                 # Entry point cho API (index.php)
+│   ├── realtime/               # Xử lý các logic thời gian thực
+│   ├── src/
+│   │   ├── config/             # Cấu hình Database, JWT, v.v.
+│   │   ├── controllers/        # Điều hướng và xử lý request
+│   │   ├── core/               # Khung lõi (Router, Request, Response)
+│   │   ├── middlewares/        # Bộ lọc kiểm tra quyền truy cập (AuthMiddleware)
+│   │   ├── repositories/       # Truy vấn cơ sở dữ liệu trực tiếp
+│   │   ├── services/           # Logic nghiệp vụ chính (Business logic)
+│   │   ├── utils/              # Các hàm bổ trợ (JWT, Hash, v.v.)
+│   │   └── validators/         # Ràng buộc và kiểm tra dữ liệu đầu vào
+│   ├── storage/                # Lưu trữ file log, file tạm
+│   └── uploads/                # Ảnh tải lên (sản phẩm, avatar)
+├── database/
+│   ├── 001_schema.sql          # Cấu trúc cơ sở dữ liệu
+│   └── 002_seed.sql            # Dữ liệu mẫu (Seed data)
+├── docs/                       # Tài liệu thiết kế & Hướng dẫn
+├── frontend/
+│   ├── assets/                 # CSS, JS, hình ảnh giao diện
+│   │   ├── css/                # Định dạng style chung
+│   │   └── js/                 # Logic JavaScript phía client (products.js, cart.js...)
+│   ├── components/             # Các thành phần giao diện dùng chung (navbar, footer, session...)
+│   └── pages/                  # Các trang nghiệp vụ chính
+│       ├── admin/              # Giao diện Quản trị viên
+│       ├── auth/               # Đăng ký, đăng nhập, khôi phục mật khẩu
+│       ├── cart/               # Giỏ hàng
+│       ├── home/               # Trang chủ
+│       ├── payment/            # Thanh toán hóa đơn và lịch sử giao dịch
+│       ├── products/           # Danh sách và chi tiết sản phẩm
+│       ├── seller/             # Đăng tin thanh lý, thống kê cửa hàng
+│       └── user/               # Thông tin tài khoản người dùng
+├── tests/                      # Kịch bản kiểm thử API tự động
+├── import_db.php               # Script tự động khởi tạo cơ sở dữ liệu nhanh
+└── README.md                   # Tài liệu hướng dẫn dự án
+```
 
 ## Hướng dẫn Setup & Khởi chạy dự án
 
@@ -86,6 +119,10 @@ Sử dụng các tài khoản sau (nạp từ `seed.sql` mới) để đăng nh�
 7. **Đề xuất thông minh & Bộ lọc nâng cao (Smart Proximity Recommendations & Filters):**
    - Bộ lọc theo **Khu vực** (tỉnh thành) và **Tình trạng** (mới/cũ) ở thanh bên trang danh mục.
    - Đề xuất sản phẩm tương tự cùng danh mục được sắp xếp thông minh theo độ gần gũi về giá (cùng phân khúc giá) hiển thị tại chân trang chi tiết sản phẩm.
+8. **Tối ưu hóa hiển thị số lượng & Giao diện Responsive sản phẩm:**
+   - Tối ưu hóa nhãn số lượng (`Độc bản`, `Còn X`) siêu nhỏ gọn (`text-[9px]` đến `text-[10px]`), loại bỏ hoàn toàn lỗi tràn khung và vỡ layout trên mọi màn hình từ Desktop, iPad tới Mobile.
+   - Thiết kế lại danh mục lọc (`category.php`): Tự động xoay thành thanh cuộn ngang mượt mà trên Mobile/Tablet để tối ưu diện tích dọc, và hỗ trợ tự động xuống dòng trên Desktop để tránh tràn thanh sidebar.
+   - Tích hợp cơ chế Bust Cache thủ công qua tham số phiên bản script (`v=20260626-4`) để trình duyệt cập nhật giao diện mới lập tức.
 
 ---
 
