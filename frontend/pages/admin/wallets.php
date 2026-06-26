@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../components/session.php';
 
 // Kiểm tra quyền admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {

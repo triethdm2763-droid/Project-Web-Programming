@@ -383,9 +383,59 @@
             document.getElementById('image-file-input').click();
         }
 
+        // Hàm nén và chỉnh kích thước ảnh bằng HTML5 Canvas phía client
+        function compressImage(file, maxDimension, quality = 0.8) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxDimension || height > maxDimension) {
+                            if (width > height) {
+                                height = Math.round((height * maxDimension) / width);
+                                width = maxDimension;
+                            } else {
+                                width = Math.round((width * maxDimension) / height);
+                                height = maxDimension;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                // Thay đổi phần mở rộng file thành .jpg cho đồng bộ
+                                const originalName = file.name;
+                                const dotIndex = originalName.lastIndexOf('.');
+                                const baseName = dotIndex !== -1 ? originalName.substring(0, dotIndex) : originalName;
+                                resolve(new File([blob], `${baseName}.jpg`, {
+                                    type: 'image/jpeg',
+                                    lastModified: Date.now()
+                                }));
+                            } else {
+                                reject(new Error('Canvas toBlob failed'));
+                            }
+                        }, 'image/jpeg', quality);
+                    };
+                    img.onerror = (err) => reject(err);
+                };
+                reader.onerror = (err) => reject(err);
+            });
+        }
+
         // Xử lý upload ảnh trực tiếp qua API uploadImage mới
         async function handleImageUpload(event) {
-            const file = event.target.files[0];
+            let file = event.target.files[0];
             if (!file) return;
 
             // Hiển thị trạng thái đang upload
@@ -394,10 +444,19 @@
             trigger.innerHTML = `<span class="text-xs text-slate-400">Đang tải lên...</span>`;
             trigger.style.pointerEvents = 'none';
 
-            const formData = new FormData();
-            formData.append('image', file);
-
             try {
+                // Nén ảnh trước khi tải lên (Tối đa 800px, chất lượng 80%)
+                if (file.type.startsWith('image/')) {
+                    try {
+                        file = await compressImage(file, 800, 0.8);
+                    } catch (e) {
+                        console.warn("Lỗi nén ảnh phía client, gửi file gốc:", e);
+                    }
+                }
+
+                const formData = new FormData();
+                formData.append('image', file);
+
                 let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/products/upload", {
                     method: "POST",
                     body: formData
@@ -437,6 +496,8 @@
             } finally {
                 trigger.innerHTML = originalHTML;
                 trigger.style.pointerEvents = 'auto';
+                // Reset file input value to allow re-uploading the same file
+                document.getElementById('image-file-input').value = '';
             }
         }
 
@@ -444,6 +505,8 @@
             btn.parentElement.remove();
             document.getElementById('uploaded-image-name').value = '';
             document.getElementById('upload-trigger').style.display = 'flex';
+            // Clear file input value
+            document.getElementById('image-file-input').value = '';
         }
 
         // Đăng sản phẩm mới HOẶC lưu chỉnh sửa tin đăng hiện có (editingProductId)

@@ -1,8 +1,6 @@
 <?php
 // Frontend trang chủ - Hoàn toàn không truy vấn cơ sở dữ liệu trực tiếp nữa
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../../components/session.php';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -112,7 +110,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <!-- Nhúng chân trang Footer -->
     <?php include '../../components/footer.php'; ?>
     <!-- Nhúng file JavaScript để xử lý tương tác sản phẩm -->
-    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260618-2"></script>
+    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260626-4"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -154,8 +152,8 @@ if (session_status() === PHP_SESSION_NONE) {
                     const productsHtml = products.map(row => {
                         const qty = parseInt(row.Stock_quantity ?? row.stock_quantity ?? 1);
                         const badgeHtml = qty === 1
-                            ? `<span class="absolute top-3 left-3 bg-tertiary text-white font-semibold text-[13px] px-2.5 py-1 rounded-md shadow-sm">Độc Bản (SL=1)</span>`
-                            : `<span class="absolute top-3 left-3 bg-[#004ac6] text-white font-semibold text-[13px] px-2.5 py-1 rounded-md shadow-sm">Số lượng: ${qty}</span>`;
+                            ? `<span class="absolute top-2 left-2 bg-tertiary text-white font-bold text-[10px] px-1.5 py-0.5 rounded shadow-sm">Độc bản</span>`
+                            : `<span class="absolute top-2 left-2 bg-[#004ac6] text-white font-bold text-[10px] px-1.5 py-0.5 rounded shadow-sm">Còn ${qty}</span>`;
                         return `
                     <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${row.ID}" class="bg-white/60 backdrop-blur-md rounded-xl overflow-hidden shadow-sm border border-outline-variant/10 flex flex-col hover:shadow-md hover:bg-white/90 hover:border-primary/30 transition-all group">
                         <div class="h-48 bg-surface-container flex items-center justify-center relative text-outline/50 overflow-hidden">

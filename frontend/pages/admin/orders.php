@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../components/session.php';
 
 // Kiểm tra quyền admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
@@ -107,7 +107,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 html += `
                 <tr class="hover:bg-slate-50/50 transition-colors">
                     <td class="p-4 font-semibold text-sm text-slate-800">
-                        #${order.ID}
+                        <a href="/Project-Web-Programming/frontend/pages/payment/track.php?id=${encodeURIComponent(order.Order_Code)}" class="hover:underline text-[#0066cc]" title="Tra cứu đơn hàng">${order.Order_Code}</a>
                     </td>
                     <td class="p-4 text-sm text-slate-600">
                         ${escapeHtml(order.BuyerName)}

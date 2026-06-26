@@ -1,5 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) session_start();
+require_once __DIR__ . '/../../components/session.php';
 
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['user_id'])) {
@@ -142,7 +142,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
 
     <?php include '../../components/footer.php'; ?>
 
-    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260621-1"></script>
+    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260626-4"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Tải dữ liệu thống kê từ API thực tế của backend
@@ -290,7 +290,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
                                                 <div class="flex justify-between items-center mt-1">
                                                     <div class="text-blue-600 font-extrabold text-base">${formattedPrice}</div>
                                                     <span class="text-[11px] text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100 font-medium">
-                                                        ${parseInt(p.Stock_quantity ?? p.stock_quantity ?? 1) === 1 ? 'Độc bản (SL: 1)' : 'Kho: ' + (p.Stock_quantity ?? p.stock_quantity ?? 1)}
+                                                        ${parseInt(p.Stock_quantity ?? p.stock_quantity ?? 1) === 1 ? 'Độc bản' : 'SL: ' + (p.Stock_quantity ?? p.stock_quantity ?? 1)}
                                                     </span>
                                                 </div>
                                             </div>

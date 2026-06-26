@@ -181,6 +181,47 @@ class AuthService
     }
 
     /**
+     * Update user profile details.
+     * 
+     * @param int $userId
+     * @param array $data Input fields (fullname, phone, address, and optionally avatar)
+     * @return array Status array
+     */
+    public function updateProfile(int $userId, array $data): array
+    {
+        $rules = [
+            'fullname' => 'required|min:2|max:100',
+            'phone'    => 'phone',
+            'address'  => 'max:255'
+        ];
+
+        $errors = Validator::validate($data, $rules);
+        if (!empty($errors)) {
+            return [
+                'status' => 'error',
+                'code'   => 400,
+                'errors' => $errors,
+                'message'=> 'Thông tin cập nhật không hợp lệ.'
+            ];
+        }
+
+        $success = $this->userRepository->updateProfile($userId, $data);
+        if ($success) {
+            return [
+                'status'  => 'success',
+                'code'    => 200,
+                'message' => 'Cập nhật thông tin cá nhân thành công!'
+            ];
+        }
+
+        return [
+            'status'  => 'error',
+            'code'    => 500,
+            'message' => 'Lỗi kết nối cơ sở dữ liệu khi cập nhật hồ sơ.'
+        ];
+    }
+
+    /**
      * Request password reset OTP
      * 
      * @param array $data

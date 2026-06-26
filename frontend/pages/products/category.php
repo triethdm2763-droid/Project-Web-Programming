@@ -22,7 +22,7 @@ $conditionOption     = isset($_GET['condition_status']) ? trim($_GET['condition_
                 <!-- Danh mục -->
                 <div class="glass-card p-6 rounded-xl border border-outline-variant/40 shadow-sm bg-white/60 backdrop-blur-md">
                     <h2 class="font-headline-sm text-primary mb-5">Danh mục</h2>
-                    <ul class="space-y-3" id="categoriesList">
+                    <ul class="flex flex-row md:flex-col gap-2 md:space-y-2 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-none" id="categoriesList">
                         <li><a href="#" class="block text-on-surface-variant">Đang tải...</a></li>
                     </ul>
                 </div>
@@ -121,30 +121,29 @@ $conditionOption     = isset($_GET['condition_status']) ? trim($_GET['condition_
         function updateCategoryUI() {
             const titleEl = document.getElementById("categoryTitle");
             const searchVal = document.getElementById('categorySearchInput')?.value.trim();
-            
+            const list = document.getElementById("categoriesList");
             let isAll = !activeCategoryId;
             let currentCatName = "Tất cả sản phẩm";
             
-            const list = document.getElementById("categoriesList");
             if (list) {
                 list.querySelectorAll('.category-link').forEach(link => {
                     const id = link.getAttribute('data-id');
                     const linkIsAll = !id;
-                    const isSelected = activeCategoryId == id;
+                    const isSelected = id ? (activeCategoryId == id) : isAll;
                     
                     if (linkIsAll) {
-                        if (isAll) {
-                            link.className = "category-link block text-primary font-medium transition-colors";
+                        if (isSelected) {
+                            link.className = `category-link flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium whitespace-nowrap md:whitespace-normal`;
                         } else {
-                            link.className = "category-link block text-on-surface-variant hover:text-primary transition-colors";
+                            link.className = `category-link flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-primary whitespace-nowrap md:whitespace-normal`;
                         }
                     } else {
                         const cat = loadedCategoriesData.find(c => c.ID == id);
                         if (isSelected) {
                             if (cat) currentCatName = cat.Name;
-                            link.className = `category-link flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium`;
+                            link.className = `category-link flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium whitespace-nowrap md:whitespace-normal`;
                         } else {
-                            link.className = `category-link flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-primary`;
+                            link.className = `category-link flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-primary whitespace-nowrap md:whitespace-normal`;
                         }
                     }
                 });
@@ -164,19 +163,17 @@ $conditionOption     = isset($_GET['condition_status']) ? trim($_GET['condition_
                 let categories = await res.json();
                 loadedCategoriesData = categories;
                 
-                function renderList() {
+                const renderList = () => {
                     let isAll = !activeCategoryId;
-                    
-                    let itemsHtml = `<li><a href="#" data-id="" class="category-link block ${isAll ? 'text-primary font-medium' : 'text-on-surface-variant hover:text-primary'} transition-colors">Tất cả danh mục</a></li>`;
+                    let itemsHtml = `<li class="shrink-0 md:shrink"><a href="#" data-id="" class="category-link flex items-center gap-2 px-3 py-2 rounded-lg ${isAll ? 'bg-primary/10 text-primary font-medium' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'} whitespace-nowrap md:whitespace-normal"><span class="material-symbols-outlined text-[20px]">grid_view</span><span>Tất cả</span></a></li>`;
                     categories.forEach(cat => {
                         let isSelected = activeCategoryId == cat.ID;
-                        itemsHtml += `<li><a href="#" data-id="${cat.ID}" class="category-link flex items-center gap-2 px-3 py-2 rounded-lg ${isSelected ? 'bg-primary/10 text-primary font-medium' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'}"><span class="material-symbols-outlined text-[20px]">${cat.Icon || 'category'}</span><span>${cat.Name}</span></a></li>`;
+                        itemsHtml += `<li class="shrink-0 md:shrink"><a href="#" data-id="${cat.ID}" class="category-link flex items-center gap-2 px-3 py-2 rounded-lg ${isSelected ? 'bg-primary/10 text-primary font-medium' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'} whitespace-nowrap md:whitespace-normal"><span class="material-symbols-outlined text-[20px]">${cat.Icon || 'category'}</span><span>${cat.Name}</span></a></li>`;
                     });
                     list.innerHTML = itemsHtml;
 
                     updateCategoryUI();
 
-                    // Gắn sự kiện click
                     list.querySelectorAll('.category-link').forEach(link => {
                         link.addEventListener('click', function(e) {
                             e.preventDefault();
@@ -192,7 +189,7 @@ $conditionOption     = isset($_GET['condition_status']) ? trim($_GET['condition_
             } catch (e) { list.innerHTML = `<li><span class="text-red-500">Lỗi tải danh mục</span></li>`; }
         }
     </script>
-    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260624-1"></script>
+    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260626-4"></script>
     <script>
         function formatCurrencyInput(input) {
             let clean = input.value.replace(/\D/g, "");

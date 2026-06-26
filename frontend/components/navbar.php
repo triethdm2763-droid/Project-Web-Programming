@@ -1,7 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/session.php';
 
 // Determine current path so we can highlight active nav link
 $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
@@ -49,6 +47,7 @@ function nav_class($pathFragment, $currentPath)
                         <div class="text-center py-4 text-xs text-slate-400">Đang tải...</div>
                     </div>
                 </div>
+                <a class="<?php echo nav_class('/frontend/pages/payment/track.php', $currentPath); ?>" href="/Project-Web-Programming/frontend/pages/payment/track.php">Tra cứu đơn hàng</a>
             </nav>
         </div>
 

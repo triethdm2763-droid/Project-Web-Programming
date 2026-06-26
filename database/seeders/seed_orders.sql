@@ -1,5 +1,6 @@
 INSERT INTO
     orders (
+        order_code,
         buyer_id,
         seller_id,
         product_id,
@@ -8,6 +9,7 @@ INSERT INTO
         status
     )
 VALUES (
+        'DH2606260001',
         6,
         2,
         1,
@@ -16,6 +18,7 @@ VALUES (
         'completed'
     ),
     (
+        'DH2606260002',
         7,
         2,
         2,
@@ -24,6 +27,7 @@ VALUES (
         'completed'
     ),
     (
+        'DH2606260003',
         8,
         2,
         3,
@@ -32,6 +36,7 @@ VALUES (
         'pending'
     ),
     (
+        'DH2606260004',
         9,
         2,
         4,
@@ -40,6 +45,7 @@ VALUES (
         'confirmed'
     ),
     (
+        'DH2606260005',
         10,
         5,
         5,
@@ -48,6 +54,7 @@ VALUES (
         'completed'
     ),
     (
+        'DH2606260006',
         6,
         5,
         6,
@@ -56,6 +63,7 @@ VALUES (
         'pending'
     ),
     (
+        'DH2606260007',
         7,
         4,
         7,
@@ -64,6 +72,7 @@ VALUES (
         'completed'
     ),
     (
+        'DH2606260008',
         8,
         2,
         8,
@@ -72,6 +81,7 @@ VALUES (
         'confirmed'
     ),
     (
+        'DH2606260009',
         9,
         3,
         9,
@@ -80,6 +90,7 @@ VALUES (
         'pending'
     ),
     (
+        'DH2606260010',
         10,
         2,
         10,

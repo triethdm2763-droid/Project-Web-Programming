@@ -66,7 +66,8 @@ CREATE TABLE `products` (
 -- 4. BẢNG ĐƠN HÀNG
 CREATE TABLE `orders` (
     `ID` int(11) NOT NULL AUTO_INCREMENT,
-    `Buyer_ID` int(11) NOT NULL,
+    `Order_Code` varchar(50) NOT NULL,
+    `Buyer_ID` int(11) DEFAULT NULL,
     `Seller_ID` int(11) NOT NULL,
     `Product_ID` int(11) NOT NULL,
     `Total_price` decimal(15, 2) NOT NULL,
@@ -75,6 +76,7 @@ CREATE TABLE `orders` (
     `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
     `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
     PRIMARY KEY (`ID`),
+    UNIQUE KEY `order_code` (`Order_Code`),
     KEY `fk_order_buyer` (`Buyer_ID`),
     KEY `fk_order_seller` (`Seller_ID`),
     KEY `fk_order_product` (`Product_ID`),

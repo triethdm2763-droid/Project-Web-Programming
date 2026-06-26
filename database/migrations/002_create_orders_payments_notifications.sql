@@ -3,7 +3,8 @@ START TRANSACTION;
 -- 1. BẢNG ĐƠN HÀNG (ORDERS)
 CREATE TABLE `orders` (
     `ID` int(11) NOT NULL,
-    `Buyer_ID` int(11) NOT NULL,
+    `Order_Code` varchar(50) NOT NULL,
+    `Buyer_ID` int(11) DEFAULT NULL,
     `Seller_ID` int(11) NOT NULL,
     `Product_ID` int(11) NOT NULL,
     `Total_price` decimal(15, 2) NOT NULL,
@@ -38,6 +39,7 @@ CREATE TABLE `notifications` (
 -- THIẾT LẬP KHÓA CHÍNH VÀ CÁC CHỈ MỤC
 ALTER TABLE `orders`
 ADD PRIMARY KEY (`ID`),
+ADD UNIQUE KEY `order_code` (`Order_Code`),
 ADD KEY `fk_order_buyer` (`Buyer_ID`),
 ADD KEY `fk_order_seller` (`Seller_ID`),
 ADD KEY `fk_order_product` (`Product_ID`);

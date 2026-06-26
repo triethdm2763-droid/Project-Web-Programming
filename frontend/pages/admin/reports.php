@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../components/session.php';
 
 require_once '../../../backend/src/config/Database.php';
 
