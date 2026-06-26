@@ -33,11 +33,12 @@ class OrderRepository extends BaseRepository
             }
 
             // 2. Insert Order
-            $orderSql = "INSERT INTO `orders` (`Buyer_ID`, `Seller_ID`, `Product_ID`, `Total_price`, `Shipping_address`, `Status`) 
-                         VALUES (:buyer_id, :seller_id, :product_id, :total_price, :shipping_address, :status)";
+            $orderSql = "INSERT INTO `orders` (`Order_Code`, `Buyer_ID`, `Seller_ID`, `Product_ID`, `Total_price`, `Shipping_address`, `Status`) 
+                         VALUES (:order_code, :buyer_id, :seller_id, :product_id, :total_price, :shipping_address, :status)";
 
             $orderStmt = $this->db->prepare($orderSql);
             $orderStmt->execute([
+                'order_code'       => $orderData['order_code'],
                 'buyer_id'         => $orderData['buyer_id'],
                 'seller_id'        => $orderData['seller_id'],
                 'product_id'       => $orderData['product_id'],
@@ -116,17 +117,41 @@ class OrderRepository extends BaseRepository
     public function findById(int $id)
     {
         $sql = "SELECT o.*, p.Name as ProductName, p.Image as ProductImage, 
-                       b.Username as BuyerName, s.Username as SellerName,
+                       COALESCE(b.Username, 'Khách vãng lai') as BuyerName, s.Username as SellerName,
                        pm.Payment_method, pm.Status as PaymentStatus
                 FROM `orders` o
                 JOIN `products` p ON o.Product_ID = p.ID
-                JOIN `users` b ON o.Buyer_ID = b.ID
+                LEFT JOIN `users` b ON o.Buyer_ID = b.ID
                 JOIN `users` s ON o.Seller_ID = s.ID
                 LEFT JOIN `payments` pm ON pm.Order_ID = o.ID
                 WHERE o.ID = :id LIMIT 1";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
+        $order = $stmt->fetch();
+        return $order ?: null;
+    }
+
+    /**
+     * Find order details by unique Order_Code
+     * 
+     * @param string $code
+     * @return array|null
+     */
+    public function findByCode(string $code)
+    {
+        $sql = "SELECT o.*, p.Name as ProductName, p.Image as ProductImage, 
+                       COALESCE(b.Username, 'Khách vãng lai') as BuyerName, s.Username as SellerName,
+                       pm.Payment_method, pm.Status as PaymentStatus
+                FROM `orders` o
+                JOIN `products` p ON o.Product_ID = p.ID
+                LEFT JOIN `users` b ON o.Buyer_ID = b.ID
+                JOIN `users` s ON o.Seller_ID = s.ID
+                LEFT JOIN `payments` pm ON pm.Order_ID = o.ID
+                WHERE o.Order_Code = :code LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['code' => $code]);
         $order = $stmt->fetch();
         return $order ?: null;
     }
@@ -159,10 +184,10 @@ class OrderRepository extends BaseRepository
      */
     public function findBySeller(int $sellerId): array
     {
-        $sql = "SELECT o.*, p.Name as ProductName, p.Image as ProductImage, b.Username as BuyerName
+        $sql = "SELECT o.*, p.Name as ProductName, p.Image as ProductImage, COALESCE(b.Username, 'Khách vãng lai') as BuyerName
                 FROM `orders` o
                 JOIN `products` p ON o.Product_ID = p.ID
-                JOIN `users` b ON o.Buyer_ID = b.ID
+                LEFT JOIN `users` b ON o.Buyer_ID = b.ID
                 WHERE o.Seller_ID = :seller_id
                 ORDER BY o.created_at DESC";
 
@@ -200,11 +225,11 @@ class OrderRepository extends BaseRepository
             SELECT
                 o.*,
                 p.Name AS ProductName,
-                u.Username AS BuyerName
+                COALESCE(u.Username, 'Khách vãng lai') AS BuyerName
             FROM orders o
             JOIN products p
                 ON o.Product_ID = p.ID
-            JOIN users u
+            LEFT JOIN users u
                 ON o.Buyer_ID = u.ID
             ORDER BY o.created_at DESC
         ";

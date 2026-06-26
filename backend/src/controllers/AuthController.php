@@ -41,19 +41,31 @@ class AuthController extends BaseController {
         $result = $this->authService->login($data);
 
         if ($result['status'] === 'success') {
+            $user = $result['user'];
+
+            // Generate JWT
+            $token = \App\Utils\JWT::encode([
+                'user_id'  => $user['ID'],
+                'username' => $user['Username'],
+                'role'     => $user['Role']
+            ]);
+
+            // Set cookie for browser clients (expires in 24 hours, httpOnly = true)
+            setcookie('token', $token, time() + 3600 * 24, '/', '', false, true);
+
             // Bind authentication parameters into active Session State
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
 
-            $user = $result['user'];
             $_SESSION['user_id']  = $user['ID'];
             $_SESSION['username'] = $user['Username'];
             $_SESSION['role']     = $user['Role'];
 
             return $this->json([
                 'message' => 'Đăng nhập thành công!',
-                'user'    => $user
+                'user'    => $user,
+                'token'   => $token
             ], 200);
         }
 
@@ -75,6 +87,9 @@ class AuthController extends BaseController {
 
         // Clear all session variables
         $_SESSION = [];
+
+        // Clear JWT cookie
+        setcookie('token', '', time() - 3600, '/', '', false, true);
 
         // Clear browser session cookie
         if (ini_get("session.use_cookies")) {

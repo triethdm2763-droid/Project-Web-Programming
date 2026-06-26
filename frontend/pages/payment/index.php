@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../components/session.php';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -122,6 +122,7 @@ session_start();
     <script>
         let currentProducts = [];
         let currentQRImage = "";
+        let isLoggedIn = false;
 
         const PRODUCT_IMAGE_BASE = '/Project-Web-Programming/backend/uploads/products/';
         const PRODUCTS_API_URL = '/Project-Web-Programming/backend/public/index.php/api/products';
@@ -227,15 +228,11 @@ session_start();
         async function loadUserInfo() {
             try {
                 const res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/me");
-                if (res.status === 401) {
-                    // Redirect to login if unauthenticated
-                    window.location.href = "/Project-Web-Programming/frontend/pages/auth/login.php?redirect=" + encodeURIComponent(window.location.href);
-                    return;
-                }
                 if (res.ok) {
                     const data = await res.json();
                     const user = data.user;
                     if (user) {
+                        isLoggedIn = true;
                         document.getElementById('fullname').value = user.Fullname || '';
                         document.getElementById('phone').value = user.Phone || '';
                         document.getElementById('email').value = user.Email || '';
@@ -356,6 +353,8 @@ session_start();
 
             showToast("Đang tạo đơn hàng, vui lòng đợi...", "info");
 
+            let createdOrderIds = [];
+
             try {
                 // Sequentially create order for each product in checkout list
                 for (let i = 0; i < currentProducts.length; i++) {
@@ -380,6 +379,9 @@ session_start();
                     if (!response.ok) {
                         throw new Error(resJson.error || `Lỗi khi tạo đơn hàng cho sản phẩm ${product.Name}`);
                     }
+                    if (resJson.order_code) {
+                        createdOrderIds.push(resJson.order_code);
+                    }
                 }
 
                 // Successful checkout! Remove successfully ordered products from localStorage cart
@@ -401,7 +403,8 @@ session_start();
                 showAlert("Thành công", "Đơn hàng đã được tạo thành công!", "success");
                 
                 setTimeout(() => {
-                    window.location.href = "../user/dashboard.php";
+                    const targetId = createdOrderIds.length > 0 ? createdOrderIds[0] : '';
+                    window.location.href = "./track.php?id=" + encodeURIComponent(targetId);
                 }, 2000);
 
             } catch (error) {

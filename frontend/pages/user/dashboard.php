@@ -1,7 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../../components/session.php';
 if (!isset($_SESSION['user_id'])) {
     header("Location: /Project-Web-Programming/frontend/pages/auth/login.php");
     exit;
@@ -210,6 +208,7 @@ if (!isset($_SESSION['user_id'])) {
                     let avatarUrl = user.Avatar || 'https://placehold.co/150x150';
                     document.getElementById('sidebar-avatar').src = avatarUrl;
                     document.getElementById('profile-avatar').src = avatarUrl;
+                    document.getElementById('input-avatar').value = '';
 
                     // Input fields
                     document.getElementById('input-fullname').value = user.Fullname || '';
@@ -239,7 +238,7 @@ if (!isset($_SESSION['user_id'])) {
 
                             rowsHtml += `
                             <tr>
-                                <td class="py-4 px-4 font-medium text-primary">#${order.ID}</td>
+                                <td class="py-4 px-4 font-medium text-[#0066cc]"><a href="/Project-Web-Programming/frontend/pages/payment/track.php?id=${encodeURIComponent(order.Order_Code)}" class="hover:underline text-[#0066cc]" title="Tra cứu đơn hàng">${order.Order_Code}</a></td>
                                 <td class="py-4 px-4">
                                     <div class="flex items-center gap-2">
                                         ${order.ProductImage ? `<img src="/Project-Web-Programming/backend/uploads/products/${order.ProductImage}" class="w-8 h-8 rounded object-cover">` : ''}
@@ -442,11 +441,73 @@ if (!isset($_SESSION['user_id'])) {
             }
         });
 
+        // Hàm nén và chỉnh kích thước ảnh bằng HTML5 Canvas phía client
+        function compressImage(file, maxDimension, quality = 0.8) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxDimension || height > maxDimension) {
+                            if (width > height) {
+                                height = Math.round((height * maxDimension) / width);
+                                width = maxDimension;
+                            } else {
+                                width = Math.round((width * maxDimension) / height);
+                                height = maxDimension;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                const originalName = file.name;
+                                const dotIndex = originalName.lastIndexOf('.');
+                                const baseName = dotIndex !== -1 ? originalName.substring(0, dotIndex) : originalName;
+                                resolve(new File([blob], `${baseName}.jpg`, {
+                                    type: 'image/jpeg',
+                                    lastModified: Date.now()
+                                }));
+                            } else {
+                                reject(new Error('Canvas toBlob failed'));
+                            }
+                        }, 'image/jpeg', quality);
+                    };
+                    img.onerror = (err) => reject(err);
+                };
+                reader.onerror = (err) => reject(err);
+            });
+        }
+
         // Form profile submit handler
         document.getElementById('form-profile-update').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             let formData = new FormData(this);
+            const avatarInput = document.getElementById('input-avatar');
+            if (avatarInput.files && avatarInput.files[0]) {
+                const file = avatarInput.files[0];
+                if (file.type.startsWith('image/')) {
+                    try {
+                        const compressedFile = await compressImage(file, 200, 0.8);
+                        formData.set('avatar', compressedFile);
+                    } catch (e) {
+                        console.warn("Lỗi nén avatar phía client, gửi file gốc:", e);
+                    }
+                }
+            }
+
             try {
                 let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/profile/update", {
                     method: "POST",

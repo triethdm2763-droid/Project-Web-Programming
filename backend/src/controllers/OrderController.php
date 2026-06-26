@@ -21,8 +21,9 @@ class OrderController extends BaseController {
 
         if ($result['status'] === 'success') {
             return $this->json([
-                'message'  => 'Đặt hàng thành công!',
-                'order_id' => $result['order_id']
+                'message'    => 'Đặt hàng thành công!',
+                'order_id'   => $result['order_id'],
+                'order_code' => $result['order_code']
             ], 201);
         }
 
@@ -92,5 +93,22 @@ class OrderController extends BaseController {
         return $this->json([
             'error' => $result['message'] ?? 'Cập nhật trạng thái đơn hàng thất bại.'
         ], $result['code']);
+    }
+
+    /**
+     * GET /api/orders/track
+     * Track an order by ID or Order Code (public)
+     */
+    public function track() {
+        $code = isset($_GET['code']) ? trim($_GET['code']) : (isset($_GET['id']) ? trim($_GET['id']) : null);
+        if (!$code) {
+            return $this->json(['error' => 'Thiếu mã tra cứu đơn hàng.'], 400);
+        }
+
+        $result = $this->orderService->trackOrder($code);
+        if ($result['status'] === 'success') {
+            return $this->json($result['data'], 200);
+        }
+        return $this->json(['error' => $result['message']], $result['code']);
     }
 }

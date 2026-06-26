@@ -4,6 +4,26 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Hydrate session from JWT cookie or Authorization header
+$token = $_COOKIE['token'] ?? null;
+if (empty($token) && !empty($_SERVER['HTTP_AUTHORIZATION'])) {
+    if (preg_match('/Bearer\s(\S+)/i', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
+        $token = $matches[1];
+    }
+}
+
+if (!empty($token)) {
+    require_once __DIR__ . '/../src/utils/JWT.php';
+    $payload = \App\Utils\JWT::decode($token);
+    if ($payload) {
+        $_SESSION['user_id']  = $payload['user_id'];
+        $_SESSION['username'] = $payload['username'];
+        $_SESSION['role']     = $payload['role'];
+    } else {
+        $_SESSION = [];
+    }
+}
+
 // 1. SMART PSR-4 AUTOLOADER
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
@@ -90,6 +110,7 @@ $routes = [
         '/api/categories/detail'  => ['App\Controllers\CategoryController', 'detail'],
         '/api/orders/buyer'       => ['App\Controllers\OrderController', 'buyerOrders'],
         '/api/orders/seller'      => ['App\Controllers\OrderController', 'sellerOrders'],
+        '/api/orders/track'       => ['App\Controllers\OrderController', 'track'],
         '/api/seller/stats'       => ['App\Controllers\ProductController', 'sellerStats'],
         '/api/notifications'      => ['App\Controllers\NotificationController', 'list'],
         // Admin dashboard endpoints

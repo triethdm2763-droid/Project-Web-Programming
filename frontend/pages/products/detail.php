@@ -159,7 +159,7 @@
                         </div>
                     </div>
 
-                    <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                    <div id="product-actions-container" class="flex flex-col sm:flex-row gap-4 pt-4">
 
                         <button
                             id="btn-buy-now"
@@ -361,6 +361,10 @@
                 if (status === "sold" || status === "pending" || status === "rejected" || status === "deleted" || stockQty <= 0) {
                     qtySelectorContainer.style.display = 'none';
                     if (shippingContainer) shippingContainer.style.display = 'none';
+                } else if (stockQty === 1) {
+                    // Ẩn chọn số lượng với sản phẩm độc bản (SL: 1)
+                    qtySelectorContainer.style.display = 'none';
+                    if (shippingContainer) shippingContainer.style.display = 'block';
                 } else {
                     qtySelectorContainer.style.display = 'flex';
                     if (shippingContainer) shippingContainer.style.display = 'block';
@@ -370,8 +374,21 @@
             // Handle Buy/Add to Cart buttons state based on status
             const btnBuyNow = document.getElementById("btn-buy-now");
             const btnAddToCart = document.getElementById("btn-add-to-cart");
+            const actionsContainer = document.getElementById("product-actions-container");
 
             const sellerId = parseInt(currentProduct.SellerID || currentProduct.Seller_ID || currentProduct.seller_id || 0);
+
+            // Reset display defaults
+            if (btnBuyNow) btnBuyNow.style.display = 'block';
+            if (btnAddToCart) btnAddToCart.style.display = 'block';
+
+            if (actionsContainer) {
+                if (stockQty === 1) {
+                    actionsContainer.className = "flex flex-col gap-4 pt-4";
+                } else {
+                    actionsContainer.className = "flex flex-col sm:flex-row gap-4 pt-4";
+                }
+            }
 
             if (currentUserId && sellerId === currentUserId) {
                 if (btnBuyNow) {
@@ -624,63 +641,23 @@
         window.location.href = `../cart/index.php`;
 
     }
-    function requireLogin(message) {
 
-        showToast(message, "warning");
-
-        setTimeout(() => {
-            window.location.href =
-                "/Project-Web-Programming/frontend/pages/auth/login.php";
-        }, 1500);
-
-    }
     document.addEventListener("DOMContentLoaded", function(){
-
-    const btnBuy = document.getElementById("btn-buy-now");
-
+        const btnBuy = document.getElementById("btn-buy-now");
         if(btnBuy){
-
             btnBuy.addEventListener("click", function(){
-
-                if(this.dataset.loggedIn !== "true"){
-
-                    requireLogin(
-                        "Vui lòng đăng nhập trước khi mua hàng!"
-                    );
-
-                    return;
-                }
-
                 buyNow();
-
             });
-
         }
-
     });
+
     document.addEventListener("DOMContentLoaded", function(){
-
-    const btnCart = document.getElementById("btn-add-to-cart");
-
+        const btnCart = document.getElementById("btn-add-to-cart");
         if(btnCart){
-
             btnCart.addEventListener("click", function(){
-
-                if(this.dataset.loggedIn !== "true"){
-
-                    requireLogin(
-                        "Vui lòng đăng nhập trước khi thêm sản phẩm vào giỏ hàng!"
-                    );
-
-                    return;
-                }
-
                 addToCart();
-
             });
-
         }
-
     });
 
     </script>

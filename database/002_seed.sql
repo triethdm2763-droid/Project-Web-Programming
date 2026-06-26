@@ -189,6 +189,7 @@ INSERT INTO `products` (
 
 -- 4. SEED DỮ LIỆU BẢNG ĐƠN HÀNG (ORDERS)
 INSERT INTO `orders` (
+    `Order_Code`,
     `Buyer_ID`,
     `Seller_ID`,
     `Product_ID`,
@@ -196,16 +197,16 @@ INSERT INTO `orders` (
     `Shipping_address`,
     `Status`
 ) VALUES 
-(6, 2, 1, 8500000, 'Thu Duc, TP.HCM', 'completed'),
-(7, 2, 2, 2200000, 'Bien Hoa, Dong Nai', 'completed'),
-(8, 2, 3, 9800000, 'Can Tho', 'pending'),
-(9, 2, 4, 7500000, 'Long An', 'confirmed'),
-(10, 5, 5, 280000, 'Hoi An, Quang Nam', 'completed'),
-(6, 5, 6, 1200000, 'TP.HCM', 'pending'),
-(7, 4, 7, 120000, 'Vung Tau', 'completed'),
-(8, 2, 8, 65000, 'Nha Trang, Khanh Hoa', 'confirmed'),
-(9, 3, 9, 350000, 'Ben Tre', 'pending'),
-(10, 2, 10, 3200000, 'Tay Ninh', 'completed');
+('DH2606260001', 6, 2, 1, 8500000, 'Thu Duc, TP.HCM', 'completed'),
+('DH2606260002', 7, 2, 2, 2200000, 'Bien Hoa, Dong Nai', 'completed'),
+('DH2606260003', 8, 2, 3, 9800000, 'Can Tho', 'pending'),
+('DH2606260004', 9, 2, 4, 7500000, 'Long An', 'confirmed'),
+('DH2606260005', 10, 5, 5, 280000, 'Hoi An, Quang Nam', 'completed'),
+('DH2606260006', 6, 5, 6, 1200000, 'TP.HCM', 'pending'),
+('DH2606260007', 7, 4, 7, 120000, 'Vung Tau', 'completed'),
+('DH2606260008', 8, 2, 8, 65000, 'Nha Trang, Khanh Hoa', 'confirmed'),
+('DH2606260009', 9, 3, 9, 350000, 'Ben Tre', 'pending'),
+('DH2606260010', 10, 2, 10, 3200000, 'Tay Ninh', 'completed');
 
 -- Cập nhật trạng thái một số sản phẩm đã bán tương ứng
 UPDATE `products` SET `Status` = 'sold', `Stock_quantity` = 0 WHERE `ID` IN (2, 6, 8);

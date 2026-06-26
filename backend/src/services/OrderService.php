@@ -35,13 +35,6 @@ class OrderService
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        if (empty($_SESSION['user_id'])) {
-            return [
-                'status'  => 'error',
-                'code'    => 401,
-                'message' => 'Bạn phải đăng nhập để mua sản phẩm.'
-            ];
-        }
 
         $rules = [
             'product_id'       => 'required',
@@ -59,7 +52,7 @@ class OrderService
         }
 
         $productId = intval($data['product_id']);
-        $buyerId = intval($_SESSION['user_id']);
+        $buyerId = !empty($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
 
         // Check if product exists
         $product = $this->productRepository->findById($productId);
@@ -81,7 +74,7 @@ class OrderService
         }
 
         // Prevent buying own product
-        if (intval($product['Seller_ID']) === $buyerId) {
+        if ($buyerId !== null && intval($product['Seller_ID']) === $buyerId) {
             return [
                 'status'  => 'error',
                 'code'    => 400,
@@ -89,22 +82,33 @@ class OrderService
             ];
         }
 
-        // Map order and payment structure
-        $orderData = [
-            'buyer_id'         => $buyerId,
-            'seller_id'        => (int)$product['Seller_ID'],
-            'product_id'       => $productId,
-            'total_price'      => floatval($product['Price']),
-            'shipping_address' => trim($data['shipping_address']),
-            'status'           => 'pending'
-        ];
-
-        // Tự động lưu/cập nhật thông tin nhận hàng vào hồ sơ cá nhân nếu chưa có hoặc có thay đổi
         $fullname = isset($data['fullname']) ? trim($data['fullname']) : '';
         $phone = isset($data['phone']) ? trim($data['phone']) : '';
         $address = isset($data['shipping_address']) ? trim($data['shipping_address']) : '';
 
-        if (!empty($fullname) || !empty($phone) || !empty($address)) {
+        // If guest checkout, prepend their contact info into the shipping address field
+        if ($buyerId === null) {
+            $shippingAddressText = "Khách vãng lai: {$fullname} (SĐT: {$phone}) - Địa chỉ: {$address}";
+        } else {
+            $shippingAddressText = $address;
+        }
+
+        // Generate a unique order code
+        $orderCode = 'DH' . date('ymd') . strtoupper(bin2hex(random_bytes(3)));
+
+        // Map order and payment structure
+        $orderData = [
+            'order_code'       => $orderCode,
+            'buyer_id'         => $buyerId,
+            'seller_id'        => (int)$product['Seller_ID'],
+            'product_id'       => $productId,
+            'total_price'      => floatval($product['Price']),
+            'shipping_address' => $shippingAddressText,
+            'status'           => 'pending'
+        ];
+
+        // Tự động lưu/cập nhật thông tin nhận hàng vào hồ sơ cá nhân nếu chưa có hoặc có thay đổi
+        if ($buyerId !== null && (!empty($fullname) || !empty($phone) || !empty($address))) {
             $user = $this->userRepository->findById($buyerId);
             if ($user) {
                 $profileUpdateData = [
@@ -127,23 +131,30 @@ class OrderService
             $orderId = $this->orderRepository->createWithTransaction($orderData, $paymentData);
 
             // Send notification to seller
+            $buyerName = !empty($_SESSION['username']) ? $_SESSION['username'] : 'Khách vãng lai';
+            if ($buyerId === null && !empty($fullname)) {
+                $buyerName = "Khách vãng lai ({$fullname})";
+            }
             $this->notificationService->send(
                 $orderData['seller_id'],
                 "Bạn có đơn hàng mới!",
-                "Sản phẩm '" . $product['Name'] . "' của bạn đã được '" . $_SESSION['username'] . "' đặt mua thành công. Vui lòng giao hàng."
+                "Sản phẩm '" . $product['Name'] . "' của bạn đã được '" . $buyerName . "' đặt mua thành công. Vui lòng giao hàng."
             );
 
             // Send notification to buyer
-            $this->notificationService->send(
-                $buyerId,
-                "Đặt mua thành công!",
-                "Đơn hàng mua '" . $product['Name'] . "' đã được tạo thành công với mã #" . $orderId . ". Tổng số tiền: " . number_format($product['Price'], 0, ',', '.') . " đ."
-            );
+            if ($buyerId !== null) {
+                $this->notificationService->send(
+                    $buyerId,
+                    "Đặt mua thành công!",
+                    "Đơn hàng mua '" . $product['Name'] . "' đã được tạo thành công với mã #" . $orderId . ". Tổng số tiền: " . number_format($product['Price'], 0, ',', '.') . " đ."
+                );
+            }
 
             return [
-                'status'   => 'success',
-                'code'     => 201,
-                'order_id' => $orderId
+                'status'     => 'success',
+                'code'       => 201,
+                'order_id'   => $orderId,
+                'order_code' => $orderCode
             ];
         } catch (Exception $e) {
             return [
@@ -371,6 +382,45 @@ class OrderService
             'status'  => 'error',
             'code'    => 500,
             'message' => 'Không thể cập nhật trạng thái đơn hàng.'
+        ];
+    }
+
+    /**
+     * Track an order details by ID or Order Code (public)
+     * 
+     * @param string $codeOrId
+     * @return array
+     */
+    public function trackOrder(string $codeOrId): array
+    {
+        $order = $this->orderRepository->findByCode(trim($codeOrId));
+        if ($order === null && is_numeric($codeOrId)) {
+            $order = $this->orderRepository->findById(intval($codeOrId));
+        }
+
+        if ($order === null) {
+            return [
+                'status'  => 'error',
+                'code'    => 404,
+                'message' => 'Không tìm thấy đơn hàng này.'
+            ];
+        }
+
+        return [
+            'status' => 'success',
+            'code'   => 200,
+            'data'   => [
+                'id' => $order['ID'],
+                'order_code' => $order['Order_Code'],
+                'product_name' => $order['ProductName'],
+                'product_image' => $order['ProductImage'],
+                'total_price' => $order['Total_price'],
+                'shipping_address' => $order['Shipping_address'],
+                'status' => $order['Status'],
+                'payment_method' => $order['Payment_method'],
+                'payment_status' => $order['PaymentStatus'],
+                'created_at' => $order['created_at']
+            ]
         ];
     }
 }
