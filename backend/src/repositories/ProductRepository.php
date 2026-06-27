@@ -37,8 +37,16 @@ class ProductRepository extends BaseRepository
             $params['location_filter'] = '%' . $filters['location'] . '%';
         }
         if (!empty($filters['condition_status'])) {
-            $sql .= " AND p.Condition_status LIKE :condition_status";
-            $params['condition_status'] = '%' . $filters['condition_status'] . '%';
+            if ($filters['condition_status'] === 'Mới') {
+                $sql .= " AND p.Condition_status = 'Mới'";
+            } elseif ($filters['condition_status'] === '99%') {
+                $sql .= " AND (p.Condition_status LIKE '%99%' OR p.Condition_status LIKE '%like new%')";
+            } elseif ($filters['condition_status'] === 'Đã sử dụng') {
+                $sql .= " AND p.Condition_status != 'Mới' AND p.Condition_status NOT LIKE '%99%' AND p.Condition_status NOT LIKE '%like new%'";
+            } else {
+                $sql .= " AND p.Condition_status LIKE :condition_status";
+                $params['condition_status'] = '%' . $filters['condition_status'] . '%';
+            }
         }
 
         $stmt = $this->db->prepare($sql);
@@ -78,8 +86,16 @@ class ProductRepository extends BaseRepository
             $params['location_filter'] = '%' . $filters['location'] . '%';
         }
         if (!empty($filters['condition_status'])) {
-            $sql .= " AND p.Condition_status LIKE :condition_status";
-            $params['condition_status'] = '%' . $filters['condition_status'] . '%';
+            if ($filters['condition_status'] === 'Mới') {
+                $sql .= " AND p.Condition_status = 'Mới'";
+            } elseif ($filters['condition_status'] === '99%') {
+                $sql .= " AND (p.Condition_status LIKE '%99%' OR p.Condition_status LIKE '%like new%')";
+            } elseif ($filters['condition_status'] === 'Đã sử dụng') {
+                $sql .= " AND p.Condition_status != 'Mới' AND p.Condition_status NOT LIKE '%99%' AND p.Condition_status NOT LIKE '%like new%'";
+            } else {
+                $sql .= " AND p.Condition_status LIKE :condition_status";
+                $params['condition_status'] = '%' . $filters['condition_status'] . '%';
+            }
         }
 
         $sort = $filters['sort'] ?? 'newest';
@@ -149,7 +165,7 @@ class ProductRepository extends BaseRepository
     }
 
     public function findById(int $id) {
-        $stmt = $this->db->prepare("SELECT p.*, c.Name as CategoryName, u.Username as SellerName, u.Phone as SellerPhone, u.Email as SellerEmail 
+        $stmt = $this->db->prepare("SELECT p.*, c.Name as CategoryName, u.Username as SellerName, u.Phone as SellerPhone, u.Email as SellerEmail, u.Avatar as SellerAvatar 
                                     FROM `products` p 
                                     JOIN `categories` c ON p.Category_ID = c.ID 
                                     JOIN `users` u ON p.Seller_ID = u.ID 
@@ -192,5 +208,33 @@ class ProductRepository extends BaseRepository
             'revenue' => (float)($row['revenue'] ?? 0.0),
             'delivered_orders' => (int)($row['delivered_count'] ?? 0)
         ];
+    }
+
+    public function findAllForAdmin(array $filters = []): array {
+        $sql = "SELECT p.*, c.Name as CategoryName, u.Username as SellerName, u.Phone as SellerPhone, u.Email as SellerEmail
+                FROM `products` p
+                JOIN `categories` c ON p.Category_ID = c.ID
+                JOIN `users` u ON p.Seller_ID = u.ID
+                WHERE p.Status != 'deleted'";
+
+        $params = [];
+        if (!empty($filters['search'])) {
+            $sql .= " AND (p.Name LIKE :search_name OR u.Username LIKE :search_seller)";
+            $params['search_name'] = '%' . $filters['search'] . '%';
+            $params['search_seller'] = '%' . $filters['search'] . '%';
+        }
+        if (!empty($filters['status'])) {
+            if ($filters['status'] === 'active') {
+                $sql .= " AND p.Status IN ('active', 'available')";
+            } else {
+                $sql .= " AND p.Status = :status";
+                $params['status'] = $filters['status'];
+            }
+        }
+
+        $sql .= " ORDER BY p.created_at DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 }

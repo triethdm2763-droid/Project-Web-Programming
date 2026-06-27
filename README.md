@@ -78,10 +78,10 @@ Sau khi cài đặt xong CSDL, dự án sẽ được phục vụ toàn bộ (c�
 Mở trình duyệt web của bạn và truy cập trực tiếp theo đường dẫn:
 
 ```text
-http://localhost/Project-Web-Programming/index.php
+http://localhost/Project-Web-Programming/
 ```
 
-Hệ thống sẽ tự động khởi chạy và chuyển hướng bạn đến giao diện trang chủ của ứng dụng. Bạn không cần phải mở server PHP CLI (`php -S`) riêng biệt.
+Hệ thống sẽ tự động khởi chạy và chuyển hướng bạn đến giao diện Chào sân (Intro Page) của ứng dụng. Bạn không cần phải mở server PHP CLI (`php -S`) riêng biệt.
 
 ### 4. Tài khoản kiểm thử có sẵn (Seed Accounts)
 
@@ -123,6 +123,12 @@ Sử dụng các tài khoản sau (nạp từ `seed.sql` mới) để đăng nh�
    - Tối ưu hóa nhãn số lượng (`Độc bản`, `Còn X`) siêu nhỏ gọn (`text-[9px]` đến `text-[10px]`), loại bỏ hoàn toàn lỗi tràn khung và vỡ layout trên mọi màn hình từ Desktop, iPad tới Mobile.
    - Thiết kế lại danh mục lọc (`category.php`): Tự động xoay thành thanh cuộn ngang mượt mà trên Mobile/Tablet để tối ưu diện tích dọc, và hỗ trợ tự động xuống dòng trên Desktop để tránh tràn thanh sidebar.
    - Tích hợp cơ chế Bust Cache thủ công qua tham số phiên bản script (`v=20260626-4`) để trình duyệt cập nhật giao diện mới lập tức.
+9. **Bảo mật và chống rò rỉ dữ liệu (Anti-IDOR):**
+   - Đã khắc phục triệt để lỗ hổng Insecure Direct Object Reference (IDOR) trong API tra cứu đơn hàng, ngăn chặn kẻ xấu duyệt tuần tự ID để lấy cắp thông tin khách hàng.
+10. **Giao diện Chào sân (Splash Screen / Intro Page):**
+    - Trang chào mừng xuất hiện trước khi vào website, sử dụng phong cách Glassmorphism trong suốt tinh tế.
+    - Nền hiển thị 3 hàng sản phẩm trượt ngang liên tục (Infinite Marquee) tự động kéo dữ liệu thật từ cơ sở dữ liệu.
+    - Hỗ trợ thanh đếm ngược tự động chuyển hướng vào Trang chủ sau 5 giây.
 
 ---
 

@@ -112,7 +112,12 @@ $pendingProductsList = $conn->query("
                                 <?php foreach ($pendingProductsList as $p): ?>
                                 <tr class="hover:bg-slate-50/50 transition-colors">
                                     <td class="py-3.5 flex items-center gap-3">
-                                        <img src="<?= $p['Image'] ? '/Project-Web-Programming/backend/uploads/products/'.$p['Image'] : '/Project-Web-Programming/frontend/assets/images/placeholder.png' ?>" class="w-12 h-12 rounded-lg object-contain border bg-slate-50 flex-shrink-0" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'">
+                                        <?php
+                                        $imgSrc = $p['Image'] 
+                                            ? (strpos($p['Image'], 'http') === 0 ? $p['Image'] : '/Project-Web-Programming/backend/uploads/products/' . $p['Image'])
+                                            : '/Project-Web-Programming/frontend/assets/images/placeholder.png';
+                                        ?>
+                                        <img src="<?= $imgSrc ?>" class="w-12 h-12 rounded-lg object-contain border bg-slate-50 flex-shrink-0" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'">
                                         <span class="font-medium text-sm text-slate-800 line-clamp-1"><?= htmlspecialchars($p['Name']) ?></span>
                                     </td>
                                     <td class="py-3.5 text-sm text-slate-600"><?= htmlspecialchars($p['CategoryName']) ?></td>
@@ -133,7 +138,7 @@ $pendingProductsList = $conn->query("
 
     <script>
         async function updateProductStatus(id, status) {
-            if (!confirm("Xác nhận phê duyệt sản phẩm này?")) return;
+            if (!await showConfirm("Phê duyệt sản phẩm", "Xác nhận phê duyệt sản phẩm này?")) return;
             try {
                 const res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/admin/products/update-status`, {
                     method: 'POST',

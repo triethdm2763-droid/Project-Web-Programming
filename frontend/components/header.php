@@ -1,5 +1,6 @@
 <meta charset="utf-8" />
 <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+<link rel="icon" type="image/png" href="/Project-Web-Programming/frontend/assets/images/favicon.png?v=<?= time() ?>">
 
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 

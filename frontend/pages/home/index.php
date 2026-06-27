@@ -62,7 +62,7 @@ require_once __DIR__ . '/../../components/session.php';
                     Tin đăng mới nhất
                 </h2>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-gutter" id="products-container">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-gutter" id="products-container">
                 <!-- Sẽ được tải động qua API -->
             </div>
             <div class="flex justify-center mt-8">
@@ -76,31 +76,31 @@ require_once __DIR__ . '/../../components/session.php';
         <!-- ==========================================================================
            4. THREE FEATURE HIGHLIGHTS (Giao dịch an toàn / Vận chuyển nhanh / Hỗ trợ 24/7)
            ========================================================================== -->
-        <section class="mt-12 bg-white/40 backdrop-blur-md border border-outline-variant/10 shadow-sm py-8 rounded-[24px]">
-            <div class="max-w-container-max mx-auto px-gutter">
+        <section class="mt-4">
+            <div class="max-w-container-max mx-auto">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                    <div class="p-6">
-                        <div class="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                            <span class="material-symbols-outlined text-primary">verified</span>
+                    <div class="bg-white border border-slate-100 p-8 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 flex flex-col items-center group">
+                        <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4 ring-8 ring-blue-50/50 group-hover:scale-105 transition-transform duration-300">
+                            <span class="material-symbols-outlined text-blue-600 text-[26px]">verified</span>
                         </div>
-                        <h3 class="font-semibold text-md mb-2">Giao dịch an toàn</h3>
-                        <p class="text-sm text-on-surface-variant">Quy trình xác thực người dùng và tin đăng nghiêm ngặt, đảm bảo an toàn tối đa cho người mua và người bán.</p>
+                        <h3 class="font-bold text-slate-800 text-base mb-2">Giao dịch an toàn</h3>
+                        <p class="text-xs text-slate-400 max-w-[250px] leading-relaxed">Quy trình xác thực người dùng và tin đăng nghiêm ngặt, đảm bảo an toàn tối đa cho người mua và người bán.</p>
                     </div>
 
-                    <div class="p-6">
-                        <div class="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                            <span class="material-symbols-outlined text-primary">local_shipping</span>
+                    <div class="bg-white border border-slate-100 p-8 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 flex flex-col items-center group">
+                        <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4 ring-8 ring-blue-50/50 group-hover:scale-105 transition-transform duration-300">
+                            <span class="material-symbols-outlined text-blue-600 text-[26px]">local_shipping</span>
                         </div>
-                        <h3 class="font-semibold text-md mb-2">Vận chuyển nhanh</h3>
-                        <p class="text-sm text-on-surface-variant">Hợp tác với các đơn vị vận chuyển hàng đầu, lấy hàng tận nơi, giao hàng tận tay chỉ trong vài ngày.</p>
+                        <h3 class="font-bold text-slate-800 text-base mb-2">Vận chuyển nhanh</h3>
+                        <p class="text-xs text-slate-400 max-w-[250px] leading-relaxed">Hợp tác với các đơn vị vận chuyển hàng đầu, lấy hàng tận nơi, giao hàng tận tay chỉ trong vài ngày.</p>
                     </div>
 
-                    <div class="p-6">
-                        <div class="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                            <span class="material-symbols-outlined text-primary">support_agent</span>
+                    <div class="bg-white border border-slate-100 p-8 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 flex flex-col items-center group">
+                        <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4 ring-8 ring-blue-50/50 group-hover:scale-105 transition-transform duration-300">
+                            <span class="material-symbols-outlined text-blue-600 text-[26px]">support_agent</span>
                         </div>
-                        <h3 class="font-semibold text-md mb-2">Hỗ trợ 24/7</h3>
-                        <p class="text-sm text-on-surface-variant">Đội ngũ chăm sóc khách hàng luôn sẵn sàng giải đáp mọi thắc mắc và khiếu nại của bạn bất cứ lúc nào.</p>
+                        <h3 class="font-bold text-slate-800 text-base mb-2">Hỗ trợ 24/7</h3>
+                        <p class="text-xs text-slate-400 max-w-[250px] leading-relaxed">Đội ngũ chăm sóc khách hàng luôn sẵn sàng giải đáp mọi thắc mắc và khiếu nại của bạn bất cứ lúc nào.</p>
                     </div>
                 </div>
             </div>
@@ -127,7 +127,7 @@ require_once __DIR__ . '/../../components/session.php';
         });
 
         let homeCurrentPage = 1;
-        const homeLimit = 8;
+        const homeLimit = 10;
         let homeTotalProducts = 0;
 
         async function loadProducts(page = 1) {
@@ -152,23 +152,29 @@ require_once __DIR__ . '/../../components/session.php';
                     const productsHtml = products.map(row => {
                         const qty = parseInt(row.Stock_quantity ?? row.stock_quantity ?? 1);
                         const badgeHtml = qty === 1
-                            ? `<span class="absolute top-2 left-2 bg-tertiary text-white font-bold text-[10px] px-1.5 py-0.5 rounded shadow-sm">Độc bản</span>`
-                            : `<span class="absolute top-2 left-2 bg-[#004ac6] text-white font-bold text-[10px] px-1.5 py-0.5 rounded shadow-sm">Còn ${qty}</span>`;
+                            ? `<span class="absolute top-3 left-3 bg-[#fd761a] text-white font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-sm">Độc bản</span>`
+                            : `<span class="absolute top-3 left-3 bg-blue-600 text-white font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-sm">Còn ${qty}</span>`;
                         return `
-                    <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${row.ID}" class="bg-white/60 backdrop-blur-md rounded-xl overflow-hidden shadow-sm border border-outline-variant/10 flex flex-col hover:shadow-md hover:bg-white/90 hover:border-primary/30 transition-all group">
-                        <div class="h-48 bg-surface-container flex items-center justify-center relative text-outline/50 overflow-hidden">
+                    <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${row.ID}" class="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 flex flex-col group">
+                        <div class="aspect-square bg-slate-50 flex items-center justify-center relative overflow-hidden shrink-0">
                             ${badgeHtml}
-                            <img src="${(row.Image && (row.Image.startsWith('http://') || row.Image.startsWith('https://'))) ? escapeHtml(row.Image) : '/Project-Web-Programming/backend/uploads/products/' + escapeHtml(row.Image || 'placeholder.png')}" alt="${escapeHtml(row.Name)}" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'" class="w-full h-full object-contain p-4 group-hover:scale-[1.03] transition-transform">
+                            <img src="${(row.Image && (row.Image.startsWith('http://') || row.Image.startsWith('https://'))) ? escapeHtml(row.Image) : '/Project-Web-Programming/backend/uploads/products/' + escapeHtml(row.Image || 'placeholder.png')}" alt="${escapeHtml(row.Name)}" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         </div>
-                        <div class="p-4 flex flex-col flex-grow space-y-2">
-                            <h3 class="font-semibold text-[15px] line-clamp-2 h-11 block text-slate-800 group-hover:text-primary transition-colors">
-                                ${escapeHtml(row.Name)}
-                            </h3>
-                            <div class="text-primary font-bold text-lg">
-                                ${new Intl.NumberFormat('vi-VN').format(row.Price)} đ
+                        <div class="p-4 flex flex-col flex-grow justify-between gap-3">
+                            <div class="space-y-1.5">
+                                <h3 class="font-bold text-[14px] leading-snug line-clamp-2 h-10 text-slate-800 group-hover:text-primary transition-colors">
+                                    ${escapeHtml(row.Name)}
+                                </h3>
+                                <div class="text-primary font-bold text-base">
+                                    ${new Intl.NumberFormat('vi-VN').format(row.Price)} đ
+                                </div>
                             </div>
-                            <div class="text-[13px] text-on-surface-variant">
-                                ${escapeHtml(row.SellerName || 'Người bán ẩn danh')} • ${escapeHtml(row.CategoryName || '')}
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-50">
+                                <span class="flex items-center gap-1 truncate max-w-[100px]">
+                                    <span class="material-symbols-outlined text-[12px] shrink-0 text-slate-400">person</span>
+                                    <span class="truncate">${escapeHtml(row.SellerName || 'Ẩn danh')}</span>
+                                </span>
+                                <span class="bg-slate-50 text-slate-500 px-2 py-0.5 rounded-md text-[10px] font-semibold shrink-0 border border-slate-100">${escapeHtml(row.CategoryName || 'Khác')}</span>
                             </div>
                         </div>
                     </a>
@@ -177,7 +183,7 @@ require_once __DIR__ . '/../../components/session.php';
 
                     container.insertAdjacentHTML('beforeend', productsHtml);
                 } else if (page === 1) {
-                    container.innerHTML = `<div class="col-span-full text-center text-outline py-4">Chưa có sản phẩm nào trong hệ thống.</div>`;
+                    container.innerHTML = `<div class="col-span-full text-center text-outline py-8">Chưa có sản phẩm nào trong hệ thống.</div>`;
                 }
 
                 // Cập nhật ẩn hiện nút Xem thêm
