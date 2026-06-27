@@ -394,9 +394,6 @@ class OrderService
     public function trackOrder(string $codeOrId): array
     {
         $order = $this->orderRepository->findByCode(trim($codeOrId));
-        if ($order === null && is_numeric($codeOrId)) {
-            $order = $this->orderRepository->findById(intval($codeOrId));
-        }
 
         if ($order === null) {
             return [

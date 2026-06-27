@@ -77,7 +77,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
     <script>
         async function adminLogout() {
-            if (!confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) return;
+            if (!await showConfirm("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", "warning")) return;
             try {
                 let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/logout", {
                     method: "POST"
@@ -85,11 +85,11 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                 if (res.ok) {
                     window.location.href = "/Project-Web-Programming/frontend/pages/auth/login.php";
                 } else {
-                    alert("Đăng xuất thất bại.");
+                    showAlert("Thất bại", "Đăng xuất thất bại.", "error");
                 }
             } catch (error) {
                 console.error("Logout error:", error);
-                alert("Lỗi kết nối.");
+                showAlert("Lỗi kết nối", "Lỗi kết nối đến máy chủ.", "error");
             }
         }
     </script>

@@ -151,4 +151,5 @@
             }
         }
     </script>
+    <?php include __DIR__ . '/support-chat.php'; ?>
 </footer>

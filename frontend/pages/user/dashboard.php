@@ -205,7 +205,12 @@ if (!isset($_SESSION['user_id'])) {
                     document.getElementById('sidebar-fullname').textContent = user.Fullname || user.Username;
                     document.getElementById('sidebar-created').textContent = "Thành viên từ: " + new Date(user.created_at).toLocaleDateString('vi-VN');
 
-                    let avatarUrl = user.Avatar || 'https://placehold.co/150x150';
+                    let avatarUrl = 'https://placehold.co/150x150';
+                    if (user && user.Avatar) {
+                        avatarUrl = user.Avatar.startsWith('http') 
+                            ? user.Avatar 
+                            : (user.Avatar.startsWith('/') ? user.Avatar : '/Project-Web-Programming/backend/uploads/avatars/' + user.Avatar);
+                    }
                     document.getElementById('sidebar-avatar').src = avatarUrl;
                     document.getElementById('profile-avatar').src = avatarUrl;
                     document.getElementById('input-avatar').value = '';
@@ -335,7 +340,7 @@ if (!isset($_SESSION['user_id'])) {
 
                             rowsHtml += `
                             <tr>
-                                <td class="py-4 px-4 font-medium text-primary">#${order.ID}</td>
+                                <td class="py-4 px-4 font-medium text-[#0066cc]"><a href="/Project-Web-Programming/frontend/pages/payment/track.php?id=${encodeURIComponent(order.Order_Code)}" class="hover:underline text-[#0066cc]" title="Tra cứu đơn hàng">${order.Order_Code}</a></td>
                                 <td class="py-4 px-4">
                                     <div class="flex items-center gap-2">
                                         ${order.ProductImage ? `<img src="/Project-Web-Programming/backend/uploads/products/${order.ProductImage}" class="w-8 h-8 rounded object-cover">` : ''}

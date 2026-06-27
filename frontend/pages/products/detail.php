@@ -76,7 +76,10 @@
                         </div>
                         <div class="flex items-center gap-1.5">
                             <span class="text-outline">Người bán:</span>
-                            <span id="product-seller" class="font-medium text-on-surface">Đang tải...</span>
+                            <div class="flex items-center gap-2 select-none">
+                                <img id="product-seller-avatar" src="https://placehold.co/100x100" alt="Seller Avatar" class="w-6 h-6 rounded-full object-cover border border-slate-200 hidden">
+                                <span id="product-seller" class="font-medium text-on-surface">Đang tải...</span>
+                            </div>
                         </div>
                         <div class="flex items-center gap-1.5">
                             <span class="text-outline">Liên hệ:</span>
@@ -307,6 +310,15 @@
             document.querySelectorAll('#product-category').forEach(el => el.innerText = category || 'Chưa phân loại');
             document.querySelectorAll('#product-seller').forEach(el => el.innerText = seller || 'Ẩn danh');
 
+            const sellerAvatar = currentProduct.SellerAvatar || currentProduct.seller_avatar || '';
+            const sellerAvatarEl = document.getElementById("product-seller-avatar");
+            if (sellerAvatarEl) {
+                sellerAvatarEl.src = sellerAvatar 
+                    ? (sellerAvatar.startsWith('http') ? sellerAvatar : (sellerAvatar.startsWith('/') ? sellerAvatar : '/Project-Web-Programming/backend/uploads/avatars/' + sellerAvatar))
+                    : 'https://placehold.co/100x100';
+                sellerAvatarEl.classList.remove('hidden');
+            }
+
             // Status
             const stockQty = parseInt(currentProduct.Stock_quantity || currentProduct.stock_quantity || 0);
             let statusText = stockQty === 1 ? "Còn hàng (Độc bản - SL: 1)" : `Còn hàng (Số lượng: ${stockQty})`;
@@ -361,10 +373,6 @@
                 if (status === "sold" || status === "pending" || status === "rejected" || status === "deleted" || stockQty <= 0) {
                     qtySelectorContainer.style.display = 'none';
                     if (shippingContainer) shippingContainer.style.display = 'none';
-                } else if (stockQty === 1) {
-                    // Ẩn chọn số lượng với sản phẩm độc bản (SL: 1)
-                    qtySelectorContainer.style.display = 'none';
-                    if (shippingContainer) shippingContainer.style.display = 'block';
                 } else {
                     qtySelectorContainer.style.display = 'flex';
                     if (shippingContainer) shippingContainer.style.display = 'block';

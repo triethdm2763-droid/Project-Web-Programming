@@ -89,7 +89,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             const confirmMsg = newStatus === 'banned' 
                 ? 'Bạn có chắc chắn muốn khóa tài khoản này? Người dùng sẽ không thể đăng nhập hoặc giao dịch.' 
                 : 'Bạn muốn mở khóa hoạt động cho tài khoản này?';
-            if (!confirm(confirmMsg)) return;
+            if (!await showConfirm("Cập nhật trạng thái tài khoản", confirmMsg)) return;
 
             try {
                 const res = await fetch("/Project-Web-Programming/backend/public/index.php/api/admin/users/update-status", {
