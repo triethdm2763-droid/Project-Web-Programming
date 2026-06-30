@@ -62,5 +62,10 @@
         .material-symbols-outlined {
                 font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
+
+        .favicon-zoom {
+        transform: scale(2.0); /* Phóng to logo lên 2 lần để che khoảng trắng */
+        object-fit: cover;     /* Ép ảnh lấp đầy khung */
+        }
 </style>
 <div id="toast-container" class="fixed top-20 right-6 z-[9999] flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
