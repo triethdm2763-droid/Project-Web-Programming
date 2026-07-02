@@ -110,7 +110,7 @@ require_once __DIR__ . '/../../components/session.php';
     <!-- Nhúng chân trang Footer -->
     <?php include '../../components/footer.php'; ?>
     <!-- Nhúng file JavaScript để xử lý tương tác sản phẩm -->
-    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260626-4"></script>
+    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260702-1"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -151,9 +151,9 @@ require_once __DIR__ . '/../../components/session.php';
                 if (products && products.length > 0) {
                     const productsHtml = products.map(row => {
                         const qty = parseInt(row.Stock_quantity ?? row.stock_quantity ?? 1);
-                        const badgeHtml = qty === 1
-                            ? `<span class="absolute top-3 left-3 bg-[#fd761a] text-white font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-sm">Độc bản</span>`
-                            : `<span class="absolute top-3 left-3 bg-blue-600 text-white font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-sm">Còn ${qty}</span>`;
+                        const badgeHtml = qty === 1 ?
+                            `<span class="absolute top-3 left-3 bg-[#fd761a] text-white font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-sm">Độc bản</span>` :
+                            `<span class="absolute top-3 left-3 bg-blue-600 text-white font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-sm">Còn ${qty}</span>`;
                         return `
                     <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${row.ID}" class="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 flex flex-col group">
                         <div class="aspect-square bg-slate-50 flex items-center justify-center relative overflow-hidden shrink-0">

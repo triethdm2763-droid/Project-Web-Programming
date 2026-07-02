@@ -189,7 +189,7 @@ $conditionOption     = isset($_GET['condition_status']) ? trim($_GET['condition_
             } catch (e) { list.innerHTML = `<li><span class="text-red-500">Lỗi tải danh mục</span></li>`; }
         }
     </script>
-    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260626-4"></script>
+    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260702-1"></script>
     <script>
         function formatCurrencyInput(input) {
             let clean = input.value.replace(/\D/g, "");

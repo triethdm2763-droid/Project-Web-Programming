@@ -114,8 +114,7 @@ function nav_class($pathFragment, $currentPath)
                 </a>
             <?php endif; ?>
 
-            <a id="btn-create-post" data-logged-in="<?php echo $isLoggedIn ? 'true' : 'false'; ?>"
-                href="/Project-Web-Programming/frontend/pages/seller/post-ad.php"
+            <a href="/Project-Web-Programming/frontend/pages/seller/post-ad.php"
                 class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm text-[15px] cursor-pointer inline-block text-center">
                 Đăng tin
             </a>

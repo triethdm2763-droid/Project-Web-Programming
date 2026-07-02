@@ -1,3 +1,12 @@
+<?php
+require_once __DIR__ . '/../../components/session.php';
+
+// Kiểm tra đăng nhập
+if (!isset($_SESSION['user_id'])) {
+    header("Location: /Project-Web-Programming/frontend/pages/auth/login.php");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -592,7 +601,13 @@
                 if (res.ok && !data.error) {
                     showToast(isEditing ? "✅ Đã lưu thay đổi tin đăng!" : "🎉 Đăng tin thanh lý thành công!", "success");
                     setTimeout(() => {
-                        window.location.href = "/Project-Web-Programming/frontend/pages/seller/my-store.php";
+                        const btnCreatePost = document.getElementById('btn-create-post');
+                        const isLoggedIn = btnCreatePost && btnCreatePost.getAttribute('data-logged-in') === 'true';
+                        if (isLoggedIn) {
+                            window.location.href = "/Project-Web-Programming/frontend/pages/seller/my-store.php";
+                        } else {
+                            window.location.href = "/Project-Web-Programming/frontend/pages/home/index.php";
+                        }
                     }, 1200);
                 } else {
                     showAlert(isEditing ? "Lưu thay đổi thất bại" : "Đăng tin thất bại", data.error || "Không thể xử lý yêu cầu", "error");

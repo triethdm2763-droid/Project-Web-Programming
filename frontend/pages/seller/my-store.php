@@ -142,7 +142,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
 
     <?php include '../../components/footer.php'; ?>
 
-    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260626-4"></script>
+    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260702-1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Tải dữ liệu thống kê từ API thực tế của backend

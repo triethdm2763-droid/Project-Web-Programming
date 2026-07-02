@@ -1,18 +1,12 @@
 // frontend/assets/js/products.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Nút Đăng tin
+    // 1. Nút Đăng tin - Cho phép đi thẳng đến trang đăng tin
     const btnCreatePost = document.getElementById('btn-create-post');
     if (btnCreatePost) {
         btnCreatePost.addEventListener('click', function(e) {
             e.preventDefault();
-            const isLoggedIn = this.getAttribute('data-logged-in') === 'true';
-            if (isLoggedIn) {
-                window.location.href = '/Project-Web-Programming/frontend/pages/seller/my-store.php';
-            } else {
-                showToast('Bạn cần phải đăng nhập tài khoản trước khi thực hiện chức năng đăng tin thanh lý đồ cũ!', 'warning');
-                setTimeout(() => { window.location.href = '/Project-Web-Programming/frontend/pages/auth/login.php'; }, 1500);
-            }
+            window.location.href = '/Project-Web-Programming/frontend/pages/seller/post-ad.php';
         });
     }
 

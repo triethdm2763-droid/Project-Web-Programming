@@ -34,7 +34,10 @@ class ProductService
     public function createProduct(array $data): array
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
-        if (empty($_SESSION['user_id'])) return ['status' => 'error', 'code' => 401, 'message' => 'Bạn phải đăng nhập.'];
+        if (empty($_SESSION['user_id'])) {
+            return ['status' => 'error', 'code' => 401, 'message' => 'Bạn phải đăng nhập để đăng tin.'];
+        }
+        $sellerId = intval($_SESSION['user_id']);
 
         $rules = ['name' => 'required|min:3|max:255', 'price' => 'required', 'category_id' => 'required'];
         $errors = Validator::validate($data, $rules);
@@ -48,7 +51,7 @@ class ProductService
             'description'      => $data['description'] ?? '',
             'image'            => $data['image'] ?? '',
             'category_id'      => intval($data['category_id']),
-            'seller_id'        => intval($_SESSION['user_id']),
+            'seller_id'        => $sellerId,
             'price'            => $price,
             'status'           => 'pending',
             'condition_status' => trim($data['condition_status'] ?? ''),

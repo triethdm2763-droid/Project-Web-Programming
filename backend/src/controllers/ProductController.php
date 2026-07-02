@@ -137,8 +137,9 @@ class ProductController extends BaseController
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+
         if (empty($_SESSION['user_id'])) {
-            return $this->json(['error' => 'Bạn phải đăng nhập để tải ảnh lên.'], 401);
+            return $this->json(['error' => 'Bạn phải đăng nhập để thực hiện chức năng này.'], 401);
         }
 
         if (empty($_FILES['image'])) {
