@@ -1,8 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    if (!headers_sent()) {
-        session_start();
-    }
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    session_start();
 }
 
 // Restore session from JWT if session is empty and cookie is present
