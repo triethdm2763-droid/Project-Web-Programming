@@ -53,6 +53,16 @@ class OrderService
 
         $productId = intval($data['product_id']);
         $buyerId = !empty($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
+        if ($buyerId !== null) {
+            $buyerExists = $this->userRepository->findById($buyerId);
+            if (!$buyerExists) {
+                $buyerId = null;
+                $_SESSION = [];
+                if (isset($_COOKIE['token'])) {
+                    setcookie('token', '', time() - 3600, '/');
+                }
+            }
+        }
 
         // Check if product exists
         $product = $this->productRepository->findById($productId);
