@@ -52,6 +52,10 @@ class OrderService
         }
 
         $productId = intval($data['product_id']);
+        $quantity = isset($data['quantity']) ? intval($data['quantity']) : 1;
+        if ($quantity < 1) {
+            $quantity = 1;
+        }
         $buyerId = !empty($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
         if ($buyerId !== null) {
             $buyerExists = $this->userRepository->findById($buyerId);
@@ -75,11 +79,20 @@ class OrderService
         }
 
         // Validate availability and stock count
-        if (!in_array(strtolower($product['Status'] ?? ''), ['active', 'available']) || intval($product['Stock_quantity'] ?? 0) < 1) {
+        $stockQty = intval($product['Stock_quantity'] ?? 0);
+        if (!in_array(strtolower($product['Status'] ?? ''), ['active', 'available']) || $stockQty < 1) {
             return [
                 'status'  => 'error',
                 'code'    => 400,
                 'message' => 'Sản phẩm này đã được bán hoặc không còn khả dụng để đặt mua.'
+            ];
+        }
+
+        if ($stockQty < $quantity) {
+            return [
+                'status'  => 'error',
+                'code'    => 400,
+                'message' => "Số lượng mua vượt quá số lượng tồn kho (chỉ còn $stockQty sản phẩm)."
             ];
         }
 
@@ -112,7 +125,8 @@ class OrderService
             'buyer_id'         => $buyerId,
             'seller_id'        => (int)$product['Seller_ID'],
             'product_id'       => $productId,
-            'total_price'      => floatval($product['Price']),
+            'quantity'         => $quantity,
+            'total_price'      => floatval($product['Price']) * $quantity,
             'shipping_address' => $shippingAddressText,
             'status'           => 'pending'
         ];
@@ -131,7 +145,7 @@ class OrderService
         }
 
         $paymentData = [
-            'amount'         => floatval($product['Price']),
+            'amount'         => floatval($product['Price']) * $quantity,
             'payment_method' => trim($data['payment_method']),
             'status'         => (trim($data['payment_method']) === 'COD') ? 'pending' : 'success' //COD is pending, Bank transfer is instantly simulated success
         ];
@@ -156,7 +170,7 @@ class OrderService
                 $this->notificationService->send(
                     $buyerId,
                     "Đặt mua thành công!",
-                    "Đơn hàng mua '" . $product['Name'] . "' đã được tạo thành công với mã #" . $orderId . ". Tổng số tiền: " . number_format($product['Price'], 0, ',', '.') . " đ."
+                    "Đơn hàng mua '" . $product['Name'] . "' (SL: " . $quantity . ") đã được tạo thành công với mã #" . $orderId . ". Tổng số tiền: " . number_format($orderData['total_price'], 0, ',', '.') . " đ."
                 );
             }
 
@@ -234,8 +248,9 @@ class OrderService
         }
 
         try {
+            $quantityToRestore = isset($order['Quantity']) ? intval($order['Quantity']) : 1;
             // Cancel with database transaction
-            $this->orderRepository->cancelWithTransaction($orderId, intval($order['Product_ID']));
+            $this->orderRepository->cancelWithTransaction($orderId, intval($order['Product_ID']), $quantityToRestore);
 
             // Send notification to seller
             $this->notificationService->send(
@@ -375,11 +390,13 @@ class OrderService
             elseif (strtolower($newStatus) === 'completed') $statusLabel = 'Hoàn thành';
             elseif (strtolower($newStatus) === 'cancelled') $statusLabel = 'Đã hủy';
 
-            $this->notificationService->send(
-                intval($order['Buyer_ID']),
-                "Đơn hàng của bạn " . $statusLabel,
-                "Đơn hàng #" . $orderId . " cho sản phẩm '" . $order['ProductName'] . "' đã được cập nhật trạng thái: " . $statusLabel
-            );
+            if (!empty($order['Buyer_ID'])) {
+                $this->notificationService->send(
+                    intval($order['Buyer_ID']),
+                    "Đơn hàng của bạn " . $statusLabel,
+                    "Đơn hàng #" . $orderId . " cho sản phẩm '" . $order['ProductName'] . "' đã được cập nhật trạng thái: " . $statusLabel
+                );
+            }
 
             return [
                 'status'  => 'success',

@@ -28,13 +28,15 @@ class OrderRepository extends BaseRepository
             $prodStmt->execute(['id' => $orderData['product_id']]);
             $product = $prodStmt->fetch();
 
-            if (!$product || !in_array($product['Status'], ['active', 'available']) || $product['Stock_quantity'] < 1) {
-                throw new Exception("Sản phẩm đã bán hoặc không còn khả dụng.");
+            $quantity = isset($orderData['quantity']) ? intval($orderData['quantity']) : 1;
+
+            if (!$product || !in_array($product['Status'], ['active', 'available']) || $product['Stock_quantity'] < $quantity) {
+                throw new Exception("Sản phẩm đã bán hoặc không đủ số lượng khả dụng.");
             }
 
             // 2. Insert Order
-            $orderSql = "INSERT INTO `orders` (`Order_Code`, `Buyer_ID`, `Seller_ID`, `Product_ID`, `Total_price`, `Shipping_address`, `Status`) 
-                         VALUES (:order_code, :buyer_id, :seller_id, :product_id, :total_price, :shipping_address, :status)";
+            $orderSql = "INSERT INTO `orders` (`Order_Code`, `Buyer_ID`, `Seller_ID`, `Product_ID`, `Quantity`, `Total_price`, `Shipping_address`, `Status`) 
+                         VALUES (:order_code, :buyer_id, :seller_id, :product_id, :quantity, :total_price, :shipping_address, :status)";
 
             $orderStmt = $this->db->prepare($orderSql);
             $orderStmt->execute([
@@ -42,6 +44,7 @@ class OrderRepository extends BaseRepository
                 'buyer_id'         => $orderData['buyer_id'],
                 'seller_id'        => $orderData['seller_id'],
                 'product_id'       => $orderData['product_id'],
+                'quantity'         => $quantity,
                 'total_price'      => $orderData['total_price'],
                 'shipping_address' => $orderData['shipping_address'],
                 'status'           => $orderData['status'] ?? 'pending'
@@ -61,10 +64,17 @@ class OrderRepository extends BaseRepository
                 'status'         => $paymentData['status'] ?? 'pending'
             ]);
 
-            // 4. Update Product status to 'sold' and stock to 0
-            $updateProdSql = "UPDATE `products` SET `Status` = 'sold', `Stock_quantity` = 0 WHERE `ID` = :id";
+            // 4. Update Product stock and status
+            $newStock = $product['Stock_quantity'] - $quantity;
+            $newStatus = $newStock > 0 ? $product['Status'] : 'sold';
+            
+            $updateProdSql = "UPDATE `products` SET `Status` = :status, `Stock_quantity` = :stock WHERE `ID` = :id";
             $updateProdStmt = $this->db->prepare($updateProdSql);
-            $updateProdStmt->execute(['id' => $orderData['product_id']]);
+            $updateProdStmt->execute([
+                'status' => $newStatus,
+                'stock'  => $newStock,
+                'id'     => $orderData['product_id']
+            ]);
 
             $this->db->commit();
             return $orderId;
@@ -81,7 +91,7 @@ class OrderRepository extends BaseRepository
      * @param int $productId
      * @throws Exception
      */
-    public function cancelWithTransaction(int $orderId, int $productId)
+    public function cancelWithTransaction(int $orderId, int $productId, int $quantity = 1)
     {
         $this->db->beginTransaction();
 
@@ -96,10 +106,13 @@ class OrderRepository extends BaseRepository
             $payStmt = $this->db->prepare($paySql);
             $payStmt->execute(['order_id' => $orderId]);
 
-            // 3. Revert product status to 'available' and stock quantity to 1
-            $prodSql = "UPDATE `products` SET `Status` = 'available', `Stock_quantity` = 1 WHERE `ID` = :product_id";
+            // 3. Revert product status to 'available' and increment stock quantity
+            $prodSql = "UPDATE `products` SET `Status` = 'available', `Stock_quantity` = `Stock_quantity` + :qty WHERE `ID` = :product_id";
             $prodStmt = $this->db->prepare($prodSql);
-            $prodStmt->execute(['product_id' => $productId]);
+            $prodStmt->execute([
+                'qty' => $quantity,
+                'product_id' => $productId
+            ]);
 
             $this->db->commit();
         } catch (Exception $e) {

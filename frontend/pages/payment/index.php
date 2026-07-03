@@ -361,6 +361,7 @@ require_once __DIR__ . '/../../components/session.php';
                     const product = currentProducts[i];
                     const payload = {
                         product_id: product.ID ?? product.id,
+                        quantity: parseInt(product.Quantity || 1, 10),
                         shipping_address: address,
                         payment_method: paymentMethod,
                         fullname: fullname,

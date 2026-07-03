@@ -70,6 +70,7 @@ CREATE TABLE `orders` (
     `Buyer_ID` int(11) DEFAULT NULL,
     `Seller_ID` int(11) NOT NULL,
     `Product_ID` int(11) NOT NULL,
+    `Quantity` int(11) NOT NULL DEFAULT 1,
     `Total_price` decimal(15, 2) NOT NULL,
     `Shipping_address` text NOT NULL,
     `Status` varchar(20) NOT NULL DEFAULT 'pending',
