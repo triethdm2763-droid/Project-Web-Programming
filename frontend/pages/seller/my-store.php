@@ -3,7 +3,7 @@ require_once __DIR__ . '/../../components/session.php';
 
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['user_id'])) {
-    header("Location: /Project-Web-Programming/frontend/pages/auth/login.php");
+    header("Location: /frontend/pages/auth/login.php");
     exit();
 }
 
@@ -59,7 +59,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
                         </p>
                     </div>
                 </div>
-                <button onclick="window.location.href='/Project-Web-Programming/frontend/pages/seller/post-ad.php'" 
+                <button onclick="window.location.href='/frontend/pages/seller/post-ad.php'" 
                         class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3.5 rounded-2xl text-sm transition-all duration-300 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 flex items-center gap-2 transform hover:-translate-y-0.5">
                     <span class="material-symbols-outlined text-lg">add</span> Đăng tin mới
                 </button>
@@ -142,7 +142,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
 
     <?php include '../../components/footer.php'; ?>
 
-    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260702-1"></script>
+    <script src="/frontend/assets/js/products.js?v=20260702-1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Tải dữ liệu thống kê từ API thực tế của backend
@@ -151,7 +151,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
 
         function fetchSellerStoreStats() {
             // 1. Tải các số liệu tổng quan (Doanh thu, Đơn hàng đã giao, Tổng tin đăng, Đã bán thành công)
-            fetch('/Project-Web-Programming/backend/public/index.php/api/seller/stats', { credentials: 'same-origin' })
+            fetch('/backend/public/index.php/api/seller/stats', { credentials: 'same-origin' })
                 .then(res => res.json())
                 .then(result => {
                     if (result && result.data) {
@@ -165,7 +165,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
                 .catch(() => {});
 
             // 2. Tải toàn bộ danh sách sản phẩm không lọc để đếm số lượng cho từng Tab
-            fetch('/Project-Web-Programming/backend/public/index.php/api/products/mine', { credentials: 'same-origin' })
+            fetch('/backend/public/index.php/api/products/mine', { credentials: 'same-origin' })
                 .then(res => res.json())
                 .then(products => {
                     const items = Array.isArray(products) ? products : (products.data || []);
@@ -185,7 +185,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
                 .catch(() => {});
 
             // 3. Tải thông tin người bán thực tế (Avatar, Fullname) để cập nhật Store Profile
-            fetch('/Project-Web-Programming/backend/public/index.php/api/auth/me', { credentials: 'same-origin' })
+            fetch('/backend/public/index.php/api/auth/me', { credentials: 'same-origin' })
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.user) {
@@ -238,7 +238,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
                 </div>
             `;
             
-            fetch(`/Project-Web-Programming/backend/public/index.php/api/products/mine?status=${encodeURIComponent(status)}`, { credentials: 'same-origin' })
+            fetch(`/backend/public/index.php/api/products/mine?status=${encodeURIComponent(status)}`, { credentials: 'same-origin' })
                 .then(res => res.json())
                 .then(products => {
                     const items = Array.isArray(products) ? products : (products.data || []);
@@ -257,7 +257,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             ${items.map(p => {
                                 const imgPath = p.Image || p.image;
-                                const imgUrl = imgPath ? (imgPath.startsWith('http') ? imgPath : `/Project-Web-Programming/backend/uploads/products/${imgPath}`) : '/Project-Web-Programming/frontend/assets/images/default-product.png';
+                                const imgUrl = imgPath ? (imgPath.startsWith('http') ? imgPath : `/backend/uploads/products/${imgPath}`) : '/frontend/assets/images/default-product.png';
                                 const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.Price || p.price || 0);
                                 
                                 let statusBadge = '';
@@ -275,7 +275,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
                                 return `
                                     <div class="bg-white rounded-2xl border border-slate-100 p-4 flex gap-4 hover:shadow-md hover:border-blue-500/20 transition-all duration-300 group">
                                         <div class="w-24 h-24 rounded-xl bg-slate-50 overflow-hidden shrink-0 border border-slate-100 relative">
-                                            <img src="${imgUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="${escapeHtml(p.Name || p.name)}" onerror="this.src='/Project-Web-Programming/frontend/assets/images/default-product.png'">
+                                            <img src="${imgUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="${escapeHtml(p.Name || p.name)}" onerror="this.src='/frontend/assets/images/default-product.png'">
                                         </div>
                                         <div class="flex-grow flex flex-col justify-between py-1 min-w-0">
                                             <div class="space-y-1">
@@ -324,7 +324,7 @@ $initials = mb_strtoupper($initials, 'UTF-8');
         const originalDeleteProduct = window.deleteProduct;
         window.deleteProduct = function(id) {
             if (!confirm("Xác nhận xóa tin này?")) return;
-            fetch('/Project-Web-Programming/backend/public/index.php/api/products/delete', {
+            fetch('/backend/public/index.php/api/products/delete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })

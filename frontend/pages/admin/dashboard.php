@@ -89,7 +89,7 @@ $pendingProductsList = $conn->query("
             <section class="bg-white/60 backdrop-blur-md rounded-2xl border border-outline-variant/10 p-6 shadow-sm">
                 <div class="flex items-center justify-between mb-5">
                     <h3 class="font-bold text-lg text-slate-800">Sản phẩm chờ duyệt gần đây</h3>
-                    <a href="/Project-Web-Programming/frontend/pages/admin/products.php?status=pending" class="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
+                    <a href="/frontend/pages/admin/products.php?status=pending" class="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
                         Xem tất cả <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
                     </a>
                 </div>
@@ -114,10 +114,10 @@ $pendingProductsList = $conn->query("
                                     <td class="py-3.5 flex items-center gap-3">
                                         <?php
                                         $imgSrc = $p['Image'] 
-                                            ? (strpos($p['Image'], 'http') === 0 ? $p['Image'] : '/Project-Web-Programming/backend/uploads/products/' . $p['Image'])
-                                            : '/Project-Web-Programming/frontend/assets/images/placeholder.png';
+                                            ? (strpos($p['Image'], 'http') === 0 ? $p['Image'] : '/backend/uploads/products/' . $p['Image'])
+                                            : '/frontend/assets/images/placeholder.png';
                                         ?>
-                                        <img src="<?= $imgSrc ?>" class="w-12 h-12 rounded-lg object-contain border bg-slate-50 flex-shrink-0" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'">
+                                        <img src="<?= $imgSrc ?>" class="w-12 h-12 rounded-lg object-contain border bg-slate-50 flex-shrink-0" onerror="this.src='/frontend/assets/images/placeholder.png'">
                                         <span class="font-medium text-sm text-slate-800 line-clamp-1"><?= htmlspecialchars($p['Name'] ?? '') ?></span>
                                     </td>
                                     <td class="py-3.5 text-sm text-slate-600"><?= htmlspecialchars($p['CategoryName'] ?? '') ?></td>
@@ -140,7 +140,7 @@ $pendingProductsList = $conn->query("
         async function updateProductStatus(id, status) {
             if (!await showConfirm("Phê duyệt sản phẩm", "Xác nhận phê duyệt sản phẩm này?")) return;
             try {
-                const res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/admin/products/update-status`, {
+                const res = await fetch(`/backend/public/index.php/api/admin/products/update-status`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id, status })

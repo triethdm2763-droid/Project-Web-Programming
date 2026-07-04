@@ -39,7 +39,7 @@ try {
 }
 
 // 3) Call products API
-$url = 'http://localhost/Project-Web-Programming/backend/public/index.php/api/products';
+$url = 'http://localhost/backend/public/index.php/api/products';
 $opts = [
 	CURLOPT_URL => $url,
 	CURLOPT_RETURNTRANSFER => true,

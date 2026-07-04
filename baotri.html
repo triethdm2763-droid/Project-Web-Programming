@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đang Bảo Trì | Chợ Thanh Lý</title>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .bounce-slow {
+            animation: bounce 3s infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-lg w-full bg-white rounded-3xl shadow-xl overflow-hidden text-center p-8 border border-slate-100">
+        
+        <!-- Illustration -->
+        <div class="mb-8 relative flex justify-center">
+            <div class="absolute inset-0 bg-blue-100 rounded-full blur-3xl opacity-50 w-48 h-48 left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2"></div>
+            <div class="relative w-32 h-32 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center bounce-slow shadow-sm border border-blue-100">
+                <span class="material-symbols-outlined text-[64px]">
+                    engineering
+                </span>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <h1 class="text-3xl font-extrabold text-slate-800 mb-4 tracking-tight">Hệ Thống Đang Bảo Trì</h1>
+        <p class="text-slate-600 text-base leading-relaxed mb-8">
+            Chúng tôi đang tiến hành nâng cấp hệ thống để mang lại trải nghiệm tốt nhất cho bạn. 
+            Dự kiến quá trình này sẽ sớm hoàn tất. Xin lỗi vì sự bất tiện này!
+        </p>
+
+        <!-- Action -->
+        <button onclick="window.location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg shadow-blue-600/30 hover:shadow-blue-600/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 mx-auto">
+            <span class="material-symbols-outlined text-[20px]">refresh</span>
+            Tải lại trang
+        </button>
+
+        <!-- Footer Note -->
+        <div class="mt-8 pt-6 border-t border-slate-100">
+            <p class="text-sm text-slate-400">
+                Nếu bạn cần hỗ trợ gấp, vui lòng liên hệ: 
+                <a href="mailto:support@chothanhly.vn" class="text-blue-600 hover:underline font-medium">support@chothanhly.vn</a>
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>

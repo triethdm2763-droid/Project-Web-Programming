@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../components/session.php';
 if (!isset($_SESSION['user_id'])) {
-    header("Location: /Project-Web-Programming/frontend/pages/auth/login.php");
+    header("Location: /frontend/pages/auth/login.php");
     exit;
 }
 ?>
@@ -56,7 +56,7 @@ if (!isset($_SESSION['user_id'])) {
                             </button>
                         </li>
                         <li>
-                            <a href="/Project-Web-Programming/frontend/pages/seller/my-store.php" class="w-full block text-left px-4 py-2.5 rounded-xl font-medium text-on-surface-variant hover:bg-outline-variant/10 transition-colors">
+                            <a href="/frontend/pages/seller/my-store.php" class="w-full block text-left px-4 py-2.5 rounded-xl font-medium text-on-surface-variant hover:bg-outline-variant/10 transition-colors">
                                 Quản lí bán hàng
                             </a>
                         </li>
@@ -196,7 +196,7 @@ if (!isset($_SESSION['user_id'])) {
         // Load user profile information
         async function loadUserProfile() {
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/me");
+                let res = await fetch("/backend/public/index.php/api/auth/me");
                 if (res.ok) {
                     let data = await res.json();
                     let user = data.user;
@@ -209,7 +209,7 @@ if (!isset($_SESSION['user_id'])) {
                     if (user && user.Avatar) {
                         avatarUrl = user.Avatar.startsWith('http') 
                             ? user.Avatar 
-                            : (user.Avatar.startsWith('/') ? user.Avatar : '/Project-Web-Programming/backend/uploads/avatars/' + user.Avatar);
+                            : (user.Avatar.startsWith('/') ? user.Avatar : '/backend/uploads/avatars/' + user.Avatar);
                     }
                     document.getElementById('sidebar-avatar').src = avatarUrl;
                     document.getElementById('profile-avatar').src = avatarUrl;
@@ -231,7 +231,7 @@ if (!isset($_SESSION['user_id'])) {
         // Load purchase history
         async function loadPurchaseHistory() {
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/orders/buyer");
+                let res = await fetch("/backend/public/index.php/api/orders/buyer");
                 let rowsHtml = '';
                 if (res.ok) {
                     let orders = await res.json();
@@ -243,10 +243,10 @@ if (!isset($_SESSION['user_id'])) {
 
                             rowsHtml += `
                             <tr>
-                                <td class="py-4 px-4 font-medium text-[#0066cc]"><a href="/Project-Web-Programming/frontend/pages/payment/track.php?id=${encodeURIComponent(order.Order_Code)}" class="hover:underline text-[#0066cc]" title="Tra cứu đơn hàng">${order.Order_Code}</a></td>
+                                <td class="py-4 px-4 font-medium text-[#0066cc]"><a href="/frontend/pages/payment/track.php?id=${encodeURIComponent(order.Order_Code)}" class="hover:underline text-[#0066cc]" title="Tra cứu đơn hàng">${order.Order_Code}</a></td>
                                 <td class="py-4 px-4">
                                     <div class="flex items-center gap-2">
-                                        ${order.ProductImage ? `<img src="${order.ProductImage.split(',')[0].startsWith('http') ? order.ProductImage.split(',')[0] : '/Project-Web-Programming/backend/uploads/products/' + order.ProductImage.split(',')[0]}" class="w-8 h-8 rounded object-cover">` : ''}
+                                        ${order.ProductImage ? `<img src="${order.ProductImage.split(',')[0].startsWith('http') ? order.ProductImage.split(',')[0] : '/backend/uploads/products/' + order.ProductImage.split(',')[0]}" class="w-8 h-8 rounded object-cover">` : ''}
                                         <span class="line-clamp-2">${order.ProductName}</span>
                                     </div>
                                 </td>
@@ -285,7 +285,7 @@ if (!isset($_SESSION['user_id'])) {
             }
 
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/orders/cancel", {
+                let res = await fetch("/backend/public/index.php/api/orders/cancel", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -312,7 +312,7 @@ if (!isset($_SESSION['user_id'])) {
         // Load sales history
         async function loadSalesHistory() {
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/orders/seller");
+                let res = await fetch("/backend/public/index.php/api/orders/seller");
                 let rowsHtml = '';
                 if (res.ok) {
                     let orders = await res.json();
@@ -346,10 +346,10 @@ if (!isset($_SESSION['user_id'])) {
 
                             rowsHtml += `
                             <tr>
-                                <td class="py-4 px-4 font-medium text-[#0066cc]"><a href="/Project-Web-Programming/frontend/pages/payment/track.php?id=${encodeURIComponent(order.Order_Code)}" class="hover:underline text-[#0066cc]" title="Tra cứu đơn hàng">${order.Order_Code}</a></td>
+                                <td class="py-4 px-4 font-medium text-[#0066cc]"><a href="/frontend/pages/payment/track.php?id=${encodeURIComponent(order.Order_Code)}" class="hover:underline text-[#0066cc]" title="Tra cứu đơn hàng">${order.Order_Code}</a></td>
                                 <td class="py-4 px-4">
                                     <div class="flex items-center gap-2">
-                                        ${order.ProductImage ? `<img src="${order.ProductImage.split(',')[0].startsWith('http') ? order.ProductImage.split(',')[0] : '/Project-Web-Programming/backend/uploads/products/' + order.ProductImage.split(',')[0]}" class="w-8 h-8 rounded object-cover">` : ''}
+                                        ${order.ProductImage ? `<img src="${order.ProductImage.split(',')[0].startsWith('http') ? order.ProductImage.split(',')[0] : '/backend/uploads/products/' + order.ProductImage.split(',')[0]}" class="w-8 h-8 rounded object-cover">` : ''}
                                         <span class="line-clamp-2">${order.ProductName}</span>
                                     </div>
                                 </td>
@@ -389,7 +389,7 @@ if (!isset($_SESSION['user_id'])) {
             }
 
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/orders/status", {
+                let res = await fetch("/backend/public/index.php/api/orders/status", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -522,7 +522,7 @@ if (!isset($_SESSION['user_id'])) {
             }
 
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/profile/update", {
+                let res = await fetch("/backend/public/index.php/api/auth/profile/update", {
                     method: "POST",
                     body: formData
                 });
@@ -556,7 +556,7 @@ if (!isset($_SESSION['user_id'])) {
         // Load notifications
         async function loadNotifications() {
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/notifications");
+                let res = await fetch("/backend/public/index.php/api/notifications");
                 if (res.ok) {
                     let notifications = await res.json();
                     notificationsData = notifications || [];
@@ -608,7 +608,7 @@ if (!isset($_SESSION['user_id'])) {
 
         async function markNotificationAsRead(id) {
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/notifications/read", {
+                let res = await fetch("/backend/public/index.php/api/notifications/read", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -631,7 +631,7 @@ if (!isset($_SESSION['user_id'])) {
 
             try {
                 for (let n of unread) {
-                    await fetch("/Project-Web-Programming/backend/public/index.php/api/notifications/read", {
+                    await fetch("/backend/public/index.php/api/notifications/read", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"

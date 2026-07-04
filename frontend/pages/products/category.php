@@ -159,7 +159,7 @@ $conditionOption     = isset($_GET['condition_status']) ? trim($_GET['condition_
         async function loadCategories(onCategoryClick) {
             let list = document.getElementById("categoriesList");
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/categories");
+                let res = await fetch("/backend/public/index.php/api/categories");
                 let categories = await res.json();
                 loadedCategoriesData = categories;
                 
@@ -189,7 +189,7 @@ $conditionOption     = isset($_GET['condition_status']) ? trim($_GET['condition_
             } catch (e) { list.innerHTML = `<li><span class="text-red-500">Lỗi tải danh mục</span></li>`; }
         }
     </script>
-    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260702-1"></script>
+    <script src="/frontend/assets/js/products.js?v=20260702-1"></script>
     <script>
         function formatCurrencyInput(input) {
             let clean = input.value.replace(/\D/g, "");

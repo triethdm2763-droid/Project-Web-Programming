@@ -24,16 +24,16 @@
             <div class="md:border-l border-slate-800 md:pl-8">
                 <h4 class="text-white font-semibold text-[11px] uppercase tracking-wider mb-5">Danh mục chính</h4>
                 <ul id="footer-categories-list" class="space-y-3 text-[13px]">
-                    <li><a href="/Project-Web-Programming/frontend/pages/products/category.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
+                    <li><a href="/frontend/pages/products/category.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
                             <span class="material-symbols-outlined text-[16px] text-blue-500">laptop_mac</span> Đồ điện tử
                         </a></li>
-                    <li><a href="/Project-Web-Programming/frontend/pages/products/category.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
+                    <li><a href="/frontend/pages/products/category.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
                             <span class="material-symbols-outlined text-[16px] text-blue-500">smartphone</span> Điện thoại
                         </a></li>
-                    <li><a href="/Project-Web-Programming/frontend/pages/products/category.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
+                    <li><a href="/frontend/pages/products/category.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
                             <span class="material-symbols-outlined text-[16px] text-blue-500">chair</span> Nội thất
                         </a></li>
-                    <li><a href="/Project-Web-Programming/frontend/pages/products/category.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
+                    <li><a href="/frontend/pages/products/category.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
                             <span class="material-symbols-outlined text-[16px] text-blue-500">checkroom</span> Thời trang
                         </a></li>
                 </ul>
@@ -42,16 +42,16 @@
             <div class="md:border-l border-slate-800 md:pl-8">
                 <h4 class="text-white font-semibold text-[11px] uppercase tracking-wider mb-5">Hỗ trợ & Dịch vụ</h4>
                 <ul class="space-y-3 text-[13px]">
-                    <li><a href="/Project-Web-Programming/frontend/pages/home/index.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
+                    <li><a href="/frontend/pages/home/index.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
                             <span class="material-symbols-outlined text-[16px] text-blue-500">home</span> Trang chủ Chợ Thanh Lý
                         </a></li>
-                    <li><a href="/Project-Web-Programming/frontend/pages/seller/post-ad.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
+                    <li><a href="/frontend/pages/seller/post-ad.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
                             <span class="material-symbols-outlined text-[16px] text-blue-500">post_add</span> Đăng tin thanh lý
                         </a></li>
-                    <li><a href="/Project-Web-Programming/frontend/pages/seller/my-store.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
+                    <li><a href="/frontend/pages/seller/my-store.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
                             <span class="material-symbols-outlined text-[16px] text-blue-500">storefront</span> Cửa hàng của tôi
                         </a></li>
-                    <li><a href="/Project-Web-Programming/frontend/pages/user/dashboard.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
+                    <li><a href="/frontend/pages/user/dashboard.php" class="hover:text-blue-400 transition-colors flex items-center gap-2">
                             <span class="material-symbols-outlined text-[16px] text-blue-500">history</span> Lịch sử đơn hàng
                         </a></li>
                 </ul>
@@ -79,9 +79,9 @@
         <div class="mt-12 pt-6 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center text-[11px] text-slate-600 gap-4">
             <p>© 2026 Dự án Web Programming.</p>
             <div class="flex gap-6">
-                <a href="/Project-Web-Programming/frontend/pages/home/index.php" class="hover:text-white transition-colors">Bảo mật</a>
-                <a href="/Project-Web-Programming/frontend/pages/home/index.php" class="hover:text-white transition-colors">Cookie</a>
-                <a href="/Project-Web-Programming/frontend/pages/home/index.php" class="hover:text-white transition-colors">Hỗ trợ</a>
+                <a href="/frontend/pages/home/index.php" class="hover:text-white transition-colors">Bảo mật</a>
+                <a href="/frontend/pages/home/index.php" class="hover:text-white transition-colors">Cookie</a>
+                <a href="/frontend/pages/home/index.php" class="hover:text-white transition-colors">Hỗ trợ</a>
             </div>
         </div>
     </div>
@@ -121,7 +121,7 @@
             const footerListEl = document.getElementById("footer-categories-list");
             if (!footerListEl) return;
             try {
-                const res = await fetch("/Project-Web-Programming/backend/public/index.php/api/categories");
+                const res = await fetch("/backend/public/index.php/api/categories");
                 if (res.ok) {
                     const categories = await res.json();
                     const items = Array.isArray(categories) ? categories : (categories.data || []);
@@ -138,7 +138,7 @@
                             
                             return `
                                 <li>
-                                    <a href="/Project-Web-Programming/frontend/pages/products/category.php?category=${cat.ID || cat.id}" class="hover:text-blue-400 transition-colors flex items-center gap-2">
+                                    <a href="/frontend/pages/products/category.php?category=${cat.ID || cat.id}" class="hover:text-blue-400 transition-colors flex items-center gap-2">
                                         <span class="material-symbols-outlined text-[16px] text-blue-500">${icon}</span> ${cat.Name}
                                     </a>
                                 </li>

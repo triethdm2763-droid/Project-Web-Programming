@@ -221,7 +221,7 @@ class AuthController extends BaseController {
                 
                 if (move_uploaded_file($file['tmp_name'], $targetFile)) {
                     // Relative path to be stored in DB and returned
-                    $data['avatar'] = '/Project-Web-Programming/backend/uploads/avatars/' . $newFilename;
+                    $data['avatar'] = '/backend/uploads/avatars/' . $newFilename;
                 } else {
                     return $this->json(['error' => 'Không thể lưu file ảnh vào thư mục backend/uploads/avatars.'], 500);
                 }

@@ -269,7 +269,7 @@ async function logout() {
   if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
     try {
       let res = await fetch(
-        "/Project-Web-Programming/backend/public/index.php/api/auth/logout",
+        "/backend/public/index.php/api/auth/logout",
         {
           method: "POST",
         },
@@ -278,7 +278,7 @@ async function logout() {
         showToast("Đăng xuất thành công!", "success");
         setTimeout(() => {
           window.location.href =
-            "/Project-Web-Programming/frontend/pages/home/index.php";
+            "/frontend/pages/home/index.php";
         }, 1000);
       } else {
         showToast("Đăng xuất thất bại.", "error");

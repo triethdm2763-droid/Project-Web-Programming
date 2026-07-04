@@ -124,8 +124,8 @@ require_once __DIR__ . '/../../components/session.php';
         let currentQRImage = "";
         let isLoggedIn = false;
 
-        const PRODUCT_IMAGE_BASE = '/Project-Web-Programming/backend/uploads/products/';
-        const PRODUCTS_API_URL = '/Project-Web-Programming/backend/public/index.php/api/products';
+        const PRODUCT_IMAGE_BASE = '/backend/uploads/products/';
+        const PRODUCTS_API_URL = '/backend/public/index.php/api/products';
 
         function resolveImageUrl(imageValue) {
             const value = (imageValue || '').toString().trim();
@@ -227,7 +227,7 @@ require_once __DIR__ . '/../../components/session.php';
 
         async function loadUserInfo() {
             try {
-                const res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/me");
+                const res = await fetch("/backend/public/index.php/api/auth/me");
                 if (res.ok) {
                     const data = await res.json();
                     const user = data.user;
@@ -368,7 +368,7 @@ require_once __DIR__ . '/../../components/session.php';
                         phone: phone
                     };
 
-                    const response = await fetch("/Project-Web-Programming/backend/public/index.php/api/orders", {
+                    const response = await fetch("/backend/public/index.php/api/orders", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"

@@ -75,7 +75,7 @@
             btn.innerHTML = "ĐANG XỬ LÝ...";
             btn.classList.add("opacity-70");
 
-            let res = await fetch("/Project-Web-Programming/backend/public/api/auth/forgot-password", {
+            let res = await fetch("/backend/public/api/auth/forgot-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email })
@@ -127,7 +127,7 @@
             btn.innerHTML = "ĐANG ĐỔI MẬT KHẨU...";
             btn.classList.add("opacity-70");
 
-            let res = await fetch("/Project-Web-Programming/backend/public/api/auth/reset-password", {
+            let res = await fetch("/backend/public/api/auth/reset-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ otp, password })

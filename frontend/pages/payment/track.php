@@ -3,10 +3,12 @@ require_once __DIR__ . '/../../components/session.php';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <title>Theo dõi đơn hàng | Chợ Cũ</title>
     <?php include '../../components/header.php'; ?>
 </head>
+
 <body class="bg-[#f5f5f5] font-body-md text-on-surface min-h-screen flex flex-col" onload="initTrackPage()">
     <?php include '../../components/navbar.php'; ?>
 
@@ -33,7 +35,7 @@ require_once __DIR__ . '/../../components/session.php';
             <!-- Stepper Progress -->
             <div class="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
                 <h3 class="font-bold text-slate-800 text-lg mb-8">Trạng thái đơn hàng #<span id="txt-order-id"></span></h3>
-                
+
                 <div class="relative flex flex-col md:flex-row justify-between items-center gap-8 md:gap-0">
                     <!-- Progress Line (desktop) -->
                     <div class="absolute top-[21px] left-[10%] right-[10%] h-[2px] bg-slate-100 hidden md:block z-0">
@@ -141,8 +143,8 @@ require_once __DIR__ . '/../../components/session.php';
     <?php include '../../components/footer.php'; ?>
 
     <script>
-        const TRACK_API_URL = '/Project-Web-Programming/backend/public/index.php/api/orders/track';
-        const PRODUCT_IMAGE_BASE = '/Project-Web-Programming/backend/uploads/products/';
+        const TRACK_API_URL = '/backend/public/index.php/api/orders/track';
+        const PRODUCT_IMAGE_BASE = '/backend/uploads/products/';
 
         function getQueryParam(name) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -150,7 +152,10 @@ require_once __DIR__ . '/../../components/session.php';
         }
 
         function formatCurrency(amount) {
-            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount || 0);
         }
 
         async function initTrackPage() {
@@ -169,7 +174,9 @@ require_once __DIR__ . '/../../components/session.php';
             }
             // Update URL without reloading page
             const newUrl = `${window.location.pathname}?id=${encodeURIComponent(orderId)}`;
-            window.history.pushState({ path: newUrl }, '', newUrl);
+            window.history.pushState({
+                path: newUrl
+            }, '', newUrl);
             await fetchOrderDetails(orderId);
         }
 
@@ -200,7 +207,7 @@ require_once __DIR__ . '/../../components/session.php';
                 document.getElementById('product-price').textContent = formatCurrency(data.total_price);
                 document.getElementById('txt-shipping-address').textContent = data.shipping_address;
                 document.getElementById('txt-created-at').textContent = new Date(data.created_at).toLocaleString('vi-VN');
-                
+
                 // Image Url
                 const imgEl = document.getElementById('product-img');
                 const imageVal = (data.product_image || '').trim();
@@ -216,7 +223,7 @@ require_once __DIR__ . '/../../components/session.php';
                     'transfer': 'Chuyển khoản ngân hàng'
                 };
                 document.getElementById('txt-payment-method').textContent = payMethodMap[data.payment_method] || data.payment_method;
-                
+
                 const payStatusEl = document.getElementById('txt-payment-status');
                 if (data.payment_status === 'success' || data.payment_status === 'completed') {
                     payStatusEl.textContent = 'Đã thanh toán';
@@ -283,4 +290,5 @@ require_once __DIR__ . '/../../components/session.php';
         }
     </script>
 </body>
+
 </html>

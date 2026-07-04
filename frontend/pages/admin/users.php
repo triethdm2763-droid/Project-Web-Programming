@@ -51,7 +51,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         let allUsers = [];
         async function loadUsers() {
             try {
-                const res = await fetch("/Project-Web-Programming/backend/public/index.php/api/admin/users", { credentials: 'same-origin' });
+                const res = await fetch("/backend/public/index.php/api/admin/users", { credentials: 'same-origin' });
                 allUsers = await res.json();
                 renderUsers(allUsers);
             } catch (e) { 
@@ -92,7 +92,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             if (!await showConfirm("Cập nhật trạng thái tài khoản", confirmMsg)) return;
 
             try {
-                const res = await fetch("/Project-Web-Programming/backend/public/index.php/api/admin/users/update-status", {
+                const res = await fetch("/backend/public/index.php/api/admin/users/update-status", {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ id, status: newStatus })

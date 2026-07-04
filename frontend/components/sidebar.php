@@ -12,7 +12,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
     <nav class="space-y-1 flex-1">
 
-        <a href="/Project-Web-Programming/frontend/pages/admin/dashboard.php"
+        <a href="/frontend/pages/admin/dashboard.php"
             class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all
            <?= $currentPage == 'dashboard.php'
                 ? 'bg-blue-600 text-white shadow-md'
@@ -21,7 +21,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             Tổng quan
         </a>
 
-        <a href="/Project-Web-Programming/frontend/pages/admin/products.php"
+        <a href="/frontend/pages/admin/products.php"
             class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all
            <?= $currentPage == 'products.php'
                 ? 'bg-blue-600 text-white shadow-md'
@@ -30,7 +30,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             Sản phẩm
         </a>
 
-        <a href="/Project-Web-Programming/frontend/pages/admin/orders.php"
+        <a href="/frontend/pages/admin/orders.php"
             class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all
            <?= $currentPage == 'orders.php'
                 ? 'bg-blue-600 text-white shadow-md'
@@ -39,7 +39,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             Đơn hàng
         </a>
 
-        <a href="/Project-Web-Programming/frontend/pages/admin/users.php"
+        <a href="/frontend/pages/admin/users.php"
             class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all
            <?= $currentPage == 'users.php'
                 ? 'bg-blue-600 text-white shadow-md'
@@ -48,7 +48,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             Người dùng
         </a>
 
-        <a href="/Project-Web-Programming/frontend/pages/admin/wallets.php"
+        <a href="/frontend/pages/admin/wallets.php"
             class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all
            <?= $currentPage == 'wallets.php'
                 ? 'bg-blue-600 text-white shadow-md'
@@ -57,7 +57,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             Ví tiền
         </a>
 
-        <a href="/Project-Web-Programming/frontend/pages/admin/reports.php"
+        <a href="/frontend/pages/admin/reports.php"
             class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all
            <?= $currentPage == 'reports.php'
                 ? 'bg-blue-600 text-white shadow-md'
@@ -79,11 +79,11 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         async function adminLogout() {
             if (!await showConfirm("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", "warning")) return;
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/logout", {
+                let res = await fetch("/backend/public/index.php/api/auth/logout", {
                     method: "POST"
                 });
                 if (res.ok) {
-                    window.location.href = "/Project-Web-Programming/frontend/pages/auth/login.php";
+                    window.location.href = "/frontend/pages/auth/login.php";
                 } else {
                     showAlert("Thất bại", "Đăng xuất thất bại.", "error");
                 }

@@ -84,7 +84,7 @@
                 <div class="text-slate-500 mt-2">
                     Hãy thêm sản phẩm để tiếp tục mua sắm
                 </div>
-                <a href="/Project-Web-Programming/frontend/pages/products/category.php"
+                <a href="/frontend/pages/products/category.php"
                     class="mt-6 bg-[#0066cc] hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition">
                     Tiếp tục mua sắm
                 </a>

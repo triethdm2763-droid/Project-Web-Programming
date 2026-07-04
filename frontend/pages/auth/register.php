@@ -72,7 +72,7 @@
                 btn.classList.add("opacity-70");
 
                 // Gọi API Đăng ký của BE
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/register", {
+                let res = await fetch("/backend/public/index.php/api/auth/register", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"

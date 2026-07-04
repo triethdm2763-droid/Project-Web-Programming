@@ -161,7 +161,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         async function loadWallets() {
             try {
                 const res = await fetch(
-                    "/Project-Web-Programming/backend/public/index.php/api/admin/wallets"
+                    "/backend/public/index.php/api/admin/wallets"
                 );
 
                 allWallets = await res.json();

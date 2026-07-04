@@ -3,7 +3,7 @@ require_once __DIR__ . '/../../components/session.php';
 
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['user_id'])) {
-    header("Location: /Project-Web-Programming/frontend/pages/auth/login.php");
+    header("Location: /frontend/pages/auth/login.php");
     exit();
 }
 ?>
@@ -298,7 +298,7 @@ if (!isset($_SESSION['user_id'])) {
             // Tải danh mục từ API
             let categories = [];
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/categories");
+                let res = await fetch("/backend/public/index.php/api/categories");
                 let data = await res.json();
                 categories = data.data || data || [];
                 let select = document.getElementById("category_id");
@@ -320,7 +320,7 @@ if (!isset($_SESSION['user_id'])) {
             document.getElementById('submitBtn').innerText = 'LƯU THAY ĐỔI';
 
             try {
-                const res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products/detail?id=${encodeURIComponent(id)}`);
+                const res = await fetch(`/backend/public/index.php/api/products/detail?id=${encodeURIComponent(id)}`);
                 const data = await res.json();
                 const product = data.data || data;
                 if (!res.ok || !product || (!product.ID && !product.id)) {
@@ -370,7 +370,7 @@ if (!isset($_SESSION['user_id'])) {
                     previewDiv.className = "relative rounded-xl overflow-hidden aspect-square border border-outline-variant/40 group";
                     const imgSrc = (product.Image.startsWith('http://') || product.Image.startsWith('https://'))
                         ? product.Image
-                        : `/Project-Web-Programming/backend/uploads/products/${product.Image}`;
+                        : `/backend/uploads/products/${product.Image}`;
                     previewDiv.innerHTML = `
                         <img src="${imgSrc}" class="w-full h-full object-cover">
                         <button type="button" onclick="removeUploadedImage(this)" class="absolute top-1.5 right-1.5 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition-colors flex items-center justify-center">
@@ -466,7 +466,7 @@ if (!isset($_SESSION['user_id'])) {
                 const formData = new FormData();
                 formData.append('image', file);
 
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/products/upload", {
+                let res = await fetch("/backend/public/index.php/api/products/upload", {
                     method: "POST",
                     body: formData
                 });
@@ -483,7 +483,7 @@ if (!isset($_SESSION['user_id'])) {
                     const previewDiv = document.createElement('div');
                     previewDiv.className = "relative rounded-xl overflow-hidden aspect-square border border-outline-variant/40 group";
                     previewDiv.innerHTML = `
-                        <img src="/Project-Web-Programming/backend/uploads/products/${filename}" class="w-full h-full object-cover">
+                        <img src="/backend/uploads/products/${filename}" class="w-full h-full object-cover">
                         <button type="button" onclick="removeUploadedImage(this)" class="absolute top-1.5 right-1.5 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition-colors flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -586,8 +586,8 @@ if (!isset($_SESSION['user_id'])) {
 
                 let res = await fetch(
                     isEditing
-                        ? "/Project-Web-Programming/backend/public/index.php/api/products/update"
-                        : "/Project-Web-Programming/backend/public/index.php/api/products",
+                        ? "/backend/public/index.php/api/products/update"
+                        : "/backend/public/index.php/api/products",
                     {
                         method: "POST",
                         headers: {
@@ -604,9 +604,9 @@ if (!isset($_SESSION['user_id'])) {
                         const btnCreatePost = document.getElementById('btn-create-post');
                         const isLoggedIn = btnCreatePost && btnCreatePost.getAttribute('data-logged-in') === 'true';
                         if (isLoggedIn) {
-                            window.location.href = "/Project-Web-Programming/frontend/pages/seller/my-store.php";
+                            window.location.href = "/frontend/pages/seller/my-store.php";
                         } else {
-                            window.location.href = "/Project-Web-Programming/frontend/pages/home/index.php";
+                            window.location.href = "/frontend/pages/home/index.php";
                         }
                     }, 1200);
                 } else {

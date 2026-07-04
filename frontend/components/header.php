@@ -1,14 +1,14 @@
 <meta charset="utf-8" />
 <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-<link rel="icon" type="image/png" href="/Project-Web-Programming/frontend/assets/images/favicon.png?v=<?= time() ?>">
+<link rel="icon" type="image/png" href="/frontend/assets/images/favicon.png?v=<?= time() ?>">
 
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
-<link rel="stylesheet" href="/Project-Web-Programming/frontend/assets/css/style.css">
-<script src="/Project-Web-Programming/frontend/assets/js/ui-helpers.js?v=20260618-2"></script>
+<link rel="stylesheet" href="/frontend/assets/css/style.css">
+<script src="/frontend/assets/js/ui-helpers.js?v=20260618-2"></script>
 
 <script id="tailwind-config">
         tailwind.config = {

@@ -43,7 +43,7 @@
             btn.innerText = "ĐANG ĐĂNG NHẬP...";
             btn.classList.add("opacity-70");
 
-            let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/login", {
+            let res = await fetch("/backend/public/index.php/api/auth/login", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ username, password })

@@ -141,7 +141,7 @@ $activeProducts = $conn->query("SELECT COUNT(*) FROM products WHERE Status IN ('
 
         async function loadProducts() {
             try {
-                const res = await fetch("/Project-Web-Programming/backend/public/index.php/api/admin/products", { credentials: 'same-origin' });
+                const res = await fetch("/backend/public/index.php/api/admin/products", { credentials: 'same-origin' });
                 allProducts = await res.json();
                 filterProducts();
             } catch (e) { 
@@ -210,11 +210,11 @@ $activeProducts = $conn->query("SELECT COUNT(*) FROM products WHERE Status IN ('
                 }
 
                 const imgSrc = p.Image 
-                    ? (p.Image.startsWith('http') ? p.Image : '/Project-Web-Programming/backend/uploads/products/' + p.Image)
-                    : '/Project-Web-Programming/frontend/assets/images/placeholder.png';
+                    ? (p.Image.startsWith('http') ? p.Image : '/backend/uploads/products/' + p.Image)
+                    : '/frontend/assets/images/placeholder.png';
 
                 return `<tr class="hover:bg-slate-50/50 transition-colors">
-                    <td class="p-4"><img src="${imgSrc}" class="w-12 h-12 rounded-lg object-contain border bg-slate-50 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'" onclick="showProductDetailModal(${p.ID})"></td>
+                    <td class="p-4"><img src="${imgSrc}" class="w-12 h-12 rounded-lg object-contain border bg-slate-50 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onerror="this.src='/frontend/assets/images/placeholder.png'" onclick="showProductDetailModal(${p.ID})"></td>
                     <td class="p-4 font-medium text-sm text-slate-800"><span class="cursor-pointer text-slate-800 hover:text-primary hover:underline font-semibold" onclick="showProductDetailModal(${p.ID})">${escapeHtml(p.Name)}</span></td>
                     <td class="p-4 text-sm text-slate-600">${escapeHtml(p.CategoryName)}</td>
                     <td class="p-4 text-sm text-slate-600">${escapeHtml(p.SellerName)}</td>
@@ -229,7 +229,7 @@ $activeProducts = $conn->query("SELECT COUNT(*) FROM products WHERE Status IN ('
             const confirmMsg = newStatus === 'active' ? "Xác nhận duyệt cho phép hiển thị sản phẩm này?" : "Xác nhận gỡ/từ chối sản phẩm này?";
             if (!await showConfirm("Cập nhật sản phẩm", confirmMsg)) return;
             try {
-                const res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/admin/products/update-status`, {
+                const res = await fetch(`/backend/public/index.php/api/admin/products/update-status`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ id, status: newStatus })
@@ -254,8 +254,8 @@ $activeProducts = $conn->query("SELECT COUNT(*) FROM products WHERE Status IN ('
 
             // Map image
             const imgSrc = product.Image 
-                ? (product.Image.startsWith('http') ? product.Image : '/Project-Web-Programming/backend/uploads/products/' + product.Image)
-                : '/Project-Web-Programming/frontend/assets/images/placeholder.png';
+                ? (product.Image.startsWith('http') ? product.Image : '/backend/uploads/products/' + product.Image)
+                : '/frontend/assets/images/placeholder.png';
             document.getElementById('modal-product-image').src = imgSrc;
 
             // Map status badge

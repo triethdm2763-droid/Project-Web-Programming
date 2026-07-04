@@ -6,7 +6,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
 
 function nav_class($pathFragment, $currentPath)
 {
-    if ($pathFragment === '/' && ($currentPath === '/' || $currentPath === '/Project-Web-Programming' || $currentPath === '/Project-Web-Programming/')) {
+    if ($pathFragment === '/' && ($currentPath === '/' || $currentPath === '/Project-Web-Programming' || $currentPath === '/')) {
         return 'text-primary border-b-2 border-primary pb-1';
     }
     return (strpos($currentPath, $pathFragment) !== false) ? 'text-primary border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary transition-colors duration-200';
@@ -29,16 +29,16 @@ function nav_class($pathFragment, $currentPath)
     <div class="flex justify-between items-center px-gutter py-3 max-w-container-max mx-auto w-full">
 
         <div class="flex items-center gap-8">
-            <a href="/Project-Web-Programming/frontend/pages/home/index.php"
+            <a href="/frontend/pages/home/index.php"
             class="flex items-center">
-                <img src="/Project-Web-Programming/frontend/assets/images/logo.png"
+                <img src="/frontend/assets/images/logo.png"
                     alt="Chợ Thanh Lý"
                     class="h-[70px] w-auto object-contain relative top-[4px]">
             </a>
             <nav class="hidden md:flex gap-6 font-medium text-[16px] items-center">
-                <a class="<?php echo nav_class('/frontend/pages/home/index.php', $currentPath); ?>" href="/Project-Web-Programming/frontend/pages/home/index.php">Trang chủ</a>
+                <a class="<?php echo nav_class('/frontend/pages/home/index.php', $currentPath); ?>" href="/frontend/pages/home/index.php">Trang chủ</a>
                 <div class="relative group py-2">
-                    <a class="flex items-center gap-0.5 cursor-pointer <?php echo nav_class('/frontend/pages/products/category.php', $currentPath); ?>" href="/Project-Web-Programming/frontend/pages/products/category.php">
+                    <a class="flex items-center gap-0.5 cursor-pointer <?php echo nav_class('/frontend/pages/products/category.php', $currentPath); ?>" href="/frontend/pages/products/category.php">
                         <span>Danh mục</span>
                         <span class="material-symbols-outlined text-[18px] transition-transform duration-250 group-hover:rotate-180 select-none">keyboard_arrow_down</span>
                     </a>
@@ -47,7 +47,7 @@ function nav_class($pathFragment, $currentPath)
                         <div class="text-center py-4 text-xs text-slate-400">Đang tải...</div>
                     </div>
                 </div>
-                <a class="<?php echo nav_class('/frontend/pages/payment/track.php', $currentPath); ?>" href="/Project-Web-Programming/frontend/pages/payment/track.php">Tra cứu đơn hàng</a>
+                <a class="<?php echo nav_class('/frontend/pages/payment/track.php', $currentPath); ?>" href="/frontend/pages/payment/track.php">Tra cứu đơn hàng</a>
             </nav>
         </div>
 
@@ -63,7 +63,7 @@ function nav_class($pathFragment, $currentPath)
         </div>
 
         <div class="flex items-center gap-4">
-            <a href="/Project-Web-Programming/frontend/pages/cart/index.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative block">
+            <a href="/frontend/pages/cart/index.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative block">
                 shopping_cart
                 <span id="nav-cart-badge" class="absolute -top-0.5 -right-0.5 bg-[#fd761a] text-white text-[9px] font-bold rounded-full px-1 min-w-[16px] h-4 flex items-center justify-center ring-2 ring-white shadow-sm hidden">0</span>
             </a>
@@ -95,7 +95,7 @@ function nav_class($pathFragment, $currentPath)
 
                     <!-- Nhóm tài khoản & Đăng xuất Hover Dropdown (Glassmorphism) -->
                     <div class="relative group py-2 flex items-center">
-                        <a href="<?php echo ($_SESSION['role'] === 'admin') ? '/Project-Web-Programming/frontend/pages/admin/dashboard.php' : '/Project-Web-Programming/frontend/pages/user/dashboard.php'; ?>" class="flex items-center gap-1.5 p-1.5 hover:bg-surface-container rounded-full transition-colors text-on-surface-variant hover:text-primary">
+                        <a href="<?php echo ($_SESSION['role'] === 'admin') ? '/frontend/pages/admin/dashboard.php' : '/frontend/pages/user/dashboard.php'; ?>" class="flex items-center gap-1.5 p-1.5 hover:bg-surface-container rounded-full transition-colors text-on-surface-variant hover:text-primary">
                             <span class="material-symbols-outlined">account_circle</span>
                             <span class="text-sm font-semibold max-w-[100px] truncate"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
                         </a>
@@ -109,12 +109,12 @@ function nav_class($pathFragment, $currentPath)
                     </div>
                 </div>
             <?php else: ?>
-                <a href="/Project-Web-Programming/frontend/pages/auth/login.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors block" title="Đăng nhập">
+                <a href="/frontend/pages/auth/login.php" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors block" title="Đăng nhập">
                     account_circle
                 </a>
             <?php endif; ?>
 
-            <a href="/Project-Web-Programming/frontend/pages/seller/post-ad.php"
+            <a href="/frontend/pages/seller/post-ad.php"
                 class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm text-[15px] cursor-pointer inline-block text-center">
                 Đăng tin
             </a>
@@ -129,7 +129,7 @@ function nav_class($pathFragment, $currentPath)
 
     async function loadNavNotifications() {
         try {
-            let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/notifications");
+            let res = await fetch("/backend/public/index.php/api/notifications");
             if (res.ok) {
                 let notifications = await res.json();
                 navNotificationsData = notifications || [];
@@ -220,7 +220,7 @@ function nav_class($pathFragment, $currentPath)
             if (keyword) {
                 const params = new URLSearchParams(window.location.search);
                 const category = params.get('category');
-                let redirectUrl = "/Project-Web-Programming/frontend/pages/products/category.php?search=" + encodeURIComponent(keyword);
+                let redirectUrl = "/frontend/pages/products/category.php?search=" + encodeURIComponent(keyword);
                 if (category) {
                     redirectUrl += "&category=" + encodeURIComponent(category);
                 }
@@ -243,7 +243,7 @@ function nav_class($pathFragment, $currentPath)
     async function markNavNotificationAsRead(event, id) {
         event.stopPropagation();
         try {
-            let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/notifications/read", {
+            let res = await fetch("/backend/public/index.php/api/notifications/read", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -270,7 +270,7 @@ function nav_class($pathFragment, $currentPath)
 
         try {
             for (let n of unread) {
-                await fetch("/Project-Web-Programming/backend/public/index.php/api/notifications/read", {
+                await fetch("/backend/public/index.php/api/notifications/read", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -295,13 +295,13 @@ function nav_class($pathFragment, $currentPath)
     async function logout() {
         if (await showConfirm("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", "warning")) {
             try {
-                let res = await fetch("/Project-Web-Programming/backend/public/index.php/api/auth/logout", {
+                let res = await fetch("/backend/public/index.php/api/auth/logout", {
                     method: "POST"
                 });
                 if (res.ok) {
                     showToast("Đăng xuất thành công!", "success");
                     setTimeout(() => {
-                        window.location.href = "/Project-Web-Programming/frontend/pages/home/index.php";
+                        window.location.href = "/frontend/pages/home/index.php";
                     }, 1200);
                 } else {
                     showAlert("Thất bại", "Đăng xuất thất bại.", "error");
@@ -317,7 +317,7 @@ function nav_class($pathFragment, $currentPath)
         const dropdownList = document.getElementById("nav-categories-dropdown-list");
         if (!dropdownList) return;
         try {
-            const res = await fetch("/Project-Web-Programming/backend/public/index.php/api/categories");
+            const res = await fetch("/backend/public/index.php/api/categories");
             if (res.ok) {
                 const categories = await res.json();
                 const items = Array.isArray(categories) ? categories : (categories.data || []);
@@ -326,7 +326,7 @@ function nav_class($pathFragment, $currentPath)
                     return;
                 }
                 dropdownList.innerHTML = items.map(cat => `
-                    <a href="/Project-Web-Programming/frontend/pages/products/category.php?category=${cat.ID || cat.id}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors font-medium text-left">
+                    <a href="/frontend/pages/products/category.php?category=${cat.ID || cat.id}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors font-medium text-left">
                         <span class="material-symbols-outlined text-[18px] text-slate-400">${getNavbarCategoryIcon(cat.Name)}</span>
                         <span>${escapeHtmlNav(cat.Name)}</span>
                     </a>
@@ -433,7 +433,7 @@ function nav_class($pathFragment, $currentPath)
             }
 
             try {
-                const res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products?search=${encodeURIComponent(keyword)}&limit=5`);
+                const res = await fetch(`/backend/public/index.php/api/products?search=${encodeURIComponent(keyword)}&limit=5`);
                 const result = await res.json();
                 const products = result.data || result || [];
 
@@ -447,7 +447,7 @@ function nav_class($pathFragment, $currentPath)
                 suggestionItems = [];
 
                 products.forEach(p => {
-                    const img = p.Image ? (p.Image.startsWith('http') ? p.Image : `/Project-Web-Programming/backend/uploads/products/${p.Image}`) : '/Project-Web-Programming/frontend/assets/images/placeholder.png';
+                    const img = p.Image ? (p.Image.startsWith('http') ? p.Image : `/backend/uploads/products/${p.Image}`) : '/frontend/assets/images/placeholder.png';
                     const cleanName = escapeHtml(p.Name || p.name || '');
                     
                     const regex = new RegExp(`(${escapeRegExp(keyword)})`, 'gi');
@@ -456,8 +456,8 @@ function nav_class($pathFragment, $currentPath)
                     const priceFormatted = new Intl.NumberFormat('vi-VN', {style:'currency', currency:'VND'}).format(p.Price || p.price || 0);
 
                     const itemHtml = `
-                        <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${p.ID || p.id}" class="suggestion-item flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer text-left">
-                            <img src="${img}" class="w-10 h-10 object-contain rounded-lg bg-slate-50 border border-slate-100 flex-shrink-0" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'">
+                        <a href="/frontend/pages/products/detail.php?id=${p.ID || p.id}" class="suggestion-item flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer text-left">
+                            <img src="${img}" class="w-10 h-10 object-contain rounded-lg bg-slate-50 border border-slate-100 flex-shrink-0" onerror="this.src='/frontend/assets/images/placeholder.png'">
                             <div class="flex-grow min-w-0">
                                 <h4 class="text-sm text-slate-800 font-medium truncate">${highlightedName}</h4>
                                 <p class="text-xs text-slate-500 font-semibold mt-0.5">${priceFormatted}</p>
@@ -472,7 +472,7 @@ function nav_class($pathFragment, $currentPath)
                 const categoryParam = category ? `&category=${encodeURIComponent(category)}` : '';
 
                 const seeAllHtml = `
-                    <a href="/Project-Web-Programming/frontend/pages/products/category.php?search=${encodeURIComponent(keyword)}${categoryParam}" class="suggestion-item block text-center py-2.5 text-xs text-primary font-semibold border-t border-slate-100/50 hover:bg-slate-50 transition-colors mt-1">
+                    <a href="/frontend/pages/products/category.php?search=${encodeURIComponent(keyword)}${categoryParam}" class="suggestion-item block text-center py-2.5 text-xs text-primary font-semibold border-t border-slate-100/50 hover:bg-slate-50 transition-colors mt-1">
                         Xem tất cả kết quả cho "${escapeHtml(keyword)}"
                     </a>
                 `;

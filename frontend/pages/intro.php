@@ -93,7 +93,7 @@ require_once __DIR__ . '/../components/session.php';
         <div class="bg-white/40 backdrop-blur-xl border border-white/50 rounded-[32px] p-10 md:p-14 max-w-lg w-full text-center shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] transform hover:scale-[1.02] transition-transform duration-500">
             
             <div class="w-20 h-20 bg-white/50 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-white/60 p-2 overflow-hidden">
-                <img src="/Project-Web-Programming/frontend/assets/images/favicon.png?v=<?= time() ?>" alt="Logo" class="w-full h-full object-contain drop-shadow-sm">
+                <img src="/frontend/assets/images/favicon.png?v=<?= time() ?>" alt="Logo" class="w-full h-full object-contain drop-shadow-sm">
             </div>
             
             <h1 class="text-3xl font-black text-slate-800 mb-3 tracking-tight">Chợ Thanh Lý</h1>
@@ -101,7 +101,7 @@ require_once __DIR__ . '/../components/session.php';
                 Nền tảng mua bán đồ cũ độc bản.<br>Trải nghiệm săn sale thần tốc và an toàn.
             </p>
 
-            <a href="/Project-Web-Programming/frontend/pages/home/index.php" id="enter-btn" class="inline-block w-full bg-[#0066cc] hover:bg-[#0052a3] text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-1 active:translate-y-0 relative overflow-hidden group">
+            <a href="/frontend/pages/home/index.php" id="enter-btn" class="inline-block w-full bg-[#0066cc] hover:bg-[#0052a3] text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-1 active:translate-y-0 relative overflow-hidden group">
                 <span class="relative z-10">Khám Phá Ngay</span>
                 <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
             </a>
@@ -120,7 +120,7 @@ require_once __DIR__ . '/../components/session.php';
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 // Fetch at least 30 products to fill the rows nicely
-                const response = await fetch('/Project-Web-Programming/backend/public/index.php/api/products?limit=30');
+                const response = await fetch('/backend/public/index.php/api/products?limit=30');
                 const result = await response.json();
                 
                 let products = [];
@@ -158,10 +158,10 @@ require_once __DIR__ . '/../components/session.php';
                     let itemsHtml = chunk.map(product => {
                         const imgUrl = (product.Image && (product.Image.startsWith('http://') || product.Image.startsWith('https://'))) 
                             ? product.Image 
-                            : '/Project-Web-Programming/backend/uploads/products/' + (product.Image || 'placeholder.png');
+                            : '/backend/uploads/products/' + (product.Image || 'placeholder.png');
                         return `
                             <div class="marquee-item">
-                                <img src="${imgUrl}" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'" alt="">
+                                <img src="${imgUrl}" onerror="this.src='/frontend/assets/images/placeholder.png'" alt="">
                             </div>
                         `;
                     }).join('');
@@ -196,14 +196,14 @@ require_once __DIR__ . '/../components/session.php';
 
                 if (elapsedTime >= totalTime) {
                     clearInterval(timer);
-                    window.location.href = '/Project-Web-Programming/frontend/pages/home/index.php';
+                    window.location.href = '/frontend/pages/home/index.php';
                 }
             }, interval);
 
             document.getElementById('enter-btn').addEventListener('click', (e) => {
                 e.preventDefault();
                 clearInterval(timer);
-                window.location.href = '/Project-Web-Programming/frontend/pages/home/index.php';
+                window.location.href = '/frontend/pages/home/index.php';
             });
         });
     </script>
