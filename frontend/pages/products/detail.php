@@ -646,7 +646,7 @@
         }
         if (typeof updateNavbarCartBadge === 'function') updateNavbarCartBadge();
 
-        window.location.href = `../cart/index.php`;
+        window.location.href = `../payment/index.php?id=${currentId}&qty=${quantityToAdd}`;
 
     }
 

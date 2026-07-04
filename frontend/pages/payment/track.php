@@ -31,106 +31,8 @@ require_once __DIR__ . '/../../components/session.php';
         </div>
 
         <!-- Order Information Section -->
-        <div id="order-details-container" class="hidden space-y-6">
-            <!-- Stepper Progress -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-                <h3 class="font-bold text-slate-800 text-lg mb-8">Trạng thái đơn hàng #<span id="txt-order-id"></span></h3>
-
-                <div class="relative flex flex-col md:flex-row justify-between items-center gap-8 md:gap-0">
-                    <!-- Progress Line (desktop) -->
-                    <div class="absolute top-[21px] left-[10%] right-[10%] h-[2px] bg-slate-100 hidden md:block z-0">
-                        <div id="progress-bar-line" class="h-full bg-green-500 transition-all duration-500" style="width: 0%"></div>
-                    </div>
-
-                    <!-- Step 1: Pending -->
-                    <div class="flex md:flex-col items-center gap-4 md:gap-2 z-10 w-full md:w-auto">
-                        <div id="step-pending" class="w-11 h-11 rounded-full flex items-center justify-center border-2 border-slate-200 bg-white text-slate-400 font-bold transition-all">
-                            <span class="material-symbols-outlined text-[20px]">shopping_cart</span>
-                        </div>
-                        <div class="text-left md:text-center">
-                            <div class="font-bold text-sm text-slate-800">Đặt hàng</div>
-                            <div class="text-xs text-slate-400 mt-0.5">Chờ xử lý</div>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: Confirmed -->
-                    <div class="flex md:flex-col items-center gap-4 md:gap-2 z-10 w-full md:w-auto">
-                        <div id="step-confirmed" class="w-11 h-11 rounded-full flex items-center justify-center border-2 border-slate-200 bg-white text-slate-400 font-bold transition-all">
-                            <span class="material-symbols-outlined text-[20px]">thumb_up</span>
-                        </div>
-                        <div class="text-left md:text-center">
-                            <div class="font-bold text-sm text-slate-800">Xác nhận</div>
-                            <div class="text-xs text-slate-400 mt-0.5">Người bán xác nhận</div>
-                        </div>
-                    </div>
-
-                    <!-- Step 3: Completed / Success -->
-                    <div class="flex md:flex-col items-center gap-4 md:gap-2 z-10 w-full md:w-auto">
-                        <div id="step-completed" class="w-11 h-11 rounded-full flex items-center justify-center border-2 border-slate-200 bg-white text-slate-400 font-bold transition-all">
-                            <span class="material-symbols-outlined text-[20px]">check_circle</span>
-                        </div>
-                        <div class="text-left md:text-center">
-                            <div class="font-bold text-sm text-slate-800">Thành công</div>
-                            <div class="text-xs text-slate-400 mt-0.5">Đơn hàng hoàn tất</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cancelled Banner -->
-                <div id="cancelled-banner" class="hidden mt-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-3">
-                    <span class="material-symbols-outlined">cancel</span>
-                    <span class="font-semibold text-sm">Đơn hàng này đã bị hủy bỏ.</span>
-                </div>
-            </div>
-
-            <!-- Product and Details Cards -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                <h3 class="font-bold text-slate-800 text-lg mb-6">Thông tin sản phẩm</h3>
-                <div class="flex gap-4">
-                    <img id="product-img" src="" onerror="this.src='https://placehold.co/200x200?text=No+Image'" class="w-24 h-24 object-cover rounded-xl border border-slate-200 shrink-0">
-                    <div class="flex-grow min-w-0 flex flex-col justify-between py-1">
-                        <div>
-                            <h4 id="product-name" class="font-bold text-slate-900 truncate text-base"></h4>
-                            <p class="text-xs text-slate-400 mt-1">Đơn hàng được khởi tạo: <span id="txt-created-at" class="font-medium text-slate-600"></span></p>
-                        </div>
-                        <div class="flex items-baseline justify-between mt-2">
-                            <span class="text-sm text-slate-500">Đơn giá:</span>
-                            <span id="product-price" class="font-black text-xl text-[#0066cc]"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Shipping & Payment Info -->
-            <div class="grid md:grid-cols-2 gap-6">
-                <!-- Shipping details -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                    <h4 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[#0066cc]">local_shipping</span>
-                        Thông tin giao hàng
-                    </h4>
-                    <p id="txt-shipping-address" class="text-sm text-slate-600 leading-relaxed font-medium whitespace-pre-wrap"></p>
-                </div>
-
-                <!-- Payment details -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                    <h4 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[#0066cc]">payment</span>
-                        Thanh toán
-                    </h4>
-                    <div class="space-y-3 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Phương thức:</span>
-                            <span id="txt-payment-method" class="font-bold text-slate-700"></span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Trạng thái:</span>
-                            <span id="txt-payment-status" class="px-2.5 py-0.5 rounded-full text-xs font-semibold"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Order Information Section -->
+        <div id="orders-wrapper" class="hidden flex flex-col gap-10"></div>
 
         <!-- Empty State / Loading State / Error State -->
         <div id="state-placeholder" class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
@@ -180,8 +82,8 @@ require_once __DIR__ . '/../../components/session.php';
             await fetchOrderDetails(orderId);
         }
 
-        async function fetchOrderDetails(orderId) {
-            const container = document.getElementById('order-details-container');
+        async function fetchOrderDetails(orderIdsStr) {
+            const wrapper = document.getElementById('orders-wrapper');
             const placeholder = document.getElementById('state-placeholder');
 
             placeholder.innerHTML = `
@@ -191,102 +93,135 @@ require_once __DIR__ . '/../../components/session.php';
                 </div>
             `;
             placeholder.classList.remove('hidden');
-            container.classList.add('hidden');
+            wrapper.classList.add('hidden');
+            wrapper.innerHTML = '';
 
             try {
-                const res = await fetch(`${TRACK_API_URL}?code=${encodeURIComponent(orderId)}`);
-                const data = await res.json();
+                const orderIds = orderIdsStr.split(',').map(id => id.trim()).filter(Boolean);
+                if(orderIds.length === 0) throw new Error("Mã đơn hàng không hợp lệ.");
 
-                if (!res.ok) {
-                    throw new Error(data.error || "Không thể tìm thấy thông tin đơn hàng.");
+                let htmlContent = '';
+
+                for(const orderId of orderIds) {
+                    const res = await fetch(`${TRACK_API_URL}?code=${encodeURIComponent(orderId)}`);
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        htmlContent += `<div class="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 mb-6">Không tìm thấy thông tin cho mã đơn hàng: ${escapeHtml(orderId)}</div>`;
+                        continue;
+                    }
+
+                    // Render for this order
+                    const imgUrl = (data.product_image || '').trim() ? (data.product_image.startsWith('http') ? data.product_image : PRODUCT_IMAGE_BASE + data.product_image) : 'https://placehold.co/200x200?text=No+Image';
+                    
+                    const payMethodMap = { 'COD': 'Thanh toán COD (Nhận hàng trả tiền)', 'transfer': 'Chuyển khoản ngân hàng' };
+                    const paymentMethod = payMethodMap[data.payment_method] || data.payment_method;
+                    
+                    let payStatusClass = 'bg-amber-50 text-amber-700 border border-amber-200';
+                    let payStatusText = 'Chưa thanh toán';
+                    if (data.payment_status === 'success' || data.payment_status === 'completed') {
+                        payStatusClass = 'bg-green-50 text-green-700 border border-green-200';
+                        payStatusText = 'Đã thanh toán';
+                    }
+
+                    // Status stepper
+                    const statusLower = (data.status || '').toLowerCase();
+                    let pWidth = '0%';
+                    let s1 = 'border-2 border-slate-200 bg-white text-slate-400 font-bold',
+                        s2 = 'border-2 border-slate-200 bg-white text-slate-400 font-bold',
+                        s3 = 'border-2 border-slate-200 bg-white text-slate-400 font-bold';
+                    
+                    let cancelBanner = '';
+
+                    const activeClass = 'border-2 border-green-500 bg-green-500 text-white font-bold shadow-md shadow-green-500/20';
+                    const pastClass = 'border-2 border-green-500 bg-green-500 text-white font-bold';
+
+                    if (statusLower === 'pending') {
+                        s1 = activeClass;
+                    } else if (statusLower === 'confirmed') {
+                        s1 = pastClass; s2 = activeClass; pWidth = '50%';
+                    } else if (statusLower === 'completed' || statusLower === 'success') {
+                        s1 = pastClass; s2 = pastClass; s3 = activeClass; pWidth = '100%';
+                    } else if (statusLower === 'cancelled') {
+                        s1 = 'border-2 border-red-500 bg-red-500 text-white font-bold';
+                        cancelBanner = `<div class="mt-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-3"><span class="material-symbols-outlined">cancel</span><span class="font-semibold text-sm">Đơn hàng này đã bị hủy bỏ.</span></div>`;
+                    }
+
+                    htmlContent += `
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+                            <h3 class="font-bold text-slate-800 text-lg mb-8">Trạng thái đơn hàng #<span>${escapeHtml(data.order_code || data.id)}</span></h3>
+                            <div class="relative flex flex-col md:flex-row justify-between items-center gap-8 md:gap-0">
+                                <div class="absolute top-[21px] left-[10%] right-[10%] h-[2px] bg-slate-100 hidden md:block z-0">
+                                    <div class="h-full bg-green-500 transition-all duration-500" style="width: ${pWidth}"></div>
+                                </div>
+                                <div class="flex md:flex-col items-center gap-4 md:gap-2 z-10 w-full md:w-auto">
+                                    <div class="w-11 h-11 rounded-full flex items-center justify-center transition-all ${s1}"><span class="material-symbols-outlined text-[20px]">shopping_cart</span></div>
+                                    <div class="text-left md:text-center"><div class="font-bold text-sm text-slate-800">Đặt hàng</div><div class="text-xs text-slate-400 mt-0.5">Chờ xử lý</div></div>
+                                </div>
+                                <div class="flex md:flex-col items-center gap-4 md:gap-2 z-10 w-full md:w-auto">
+                                    <div class="w-11 h-11 rounded-full flex items-center justify-center transition-all ${s2}"><span class="material-symbols-outlined text-[20px]">thumb_up</span></div>
+                                    <div class="text-left md:text-center"><div class="font-bold text-sm text-slate-800">Xác nhận</div><div class="text-xs text-slate-400 mt-0.5">Người bán xác nhận</div></div>
+                                </div>
+                                <div class="flex md:flex-col items-center gap-4 md:gap-2 z-10 w-full md:w-auto">
+                                    <div class="w-11 h-11 rounded-full flex items-center justify-center transition-all ${s3}"><span class="material-symbols-outlined text-[20px]">check_circle</span></div>
+                                    <div class="text-left md:text-center"><div class="font-bold text-sm text-slate-800">Thành công</div><div class="text-xs text-slate-400 mt-0.5">Đơn hàng hoàn tất</div></div>
+                                </div>
+                            </div>
+                            ${cancelBanner}
+                        </div>
+                        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                            <h3 class="font-bold text-slate-800 text-lg mb-6">Thông tin sản phẩm</h3>
+                            <div class="flex gap-4">
+                                <img src="${imgUrl}" class="w-24 h-24 object-cover rounded-xl border border-slate-200 shrink-0">
+                                <div class="flex-grow min-w-0 flex flex-col justify-between py-1">
+                                    <div>
+                                        <h4 class="font-bold text-slate-900 truncate text-base">${escapeHtml(data.product_name)}</h4>
+                                        <p class="text-xs text-slate-400 mt-1">Đơn hàng được khởi tạo: <span class="font-medium text-slate-600">${new Date(data.created_at).toLocaleString('vi-VN')}</span></p>
+                                    </div>
+                                    <div class="flex items-baseline justify-between mt-2">
+                                        <span class="text-sm text-slate-500">Thành tiền:</span>
+                                        <span class="font-black text-xl text-[#0066cc]">${formatCurrency(data.total_price)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                                <h4 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-[#0066cc]">local_shipping</span>Thông tin giao hàng</h4>
+                                <p class="text-sm text-slate-600 leading-relaxed font-medium whitespace-pre-wrap">${escapeHtml(data.shipping_address)}</p>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                                <h4 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-[#0066cc]">payment</span>Thanh toán</h4>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex justify-between"><span class="text-slate-400">Phương thức:</span><span class="font-bold text-slate-700">${escapeHtml(paymentMethod)}</span></div>
+                                    <div class="flex justify-between"><span class="text-slate-400">Trạng thái:</span><span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${payStatusClass}">${escapeHtml(payStatusText)}</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="border-slate-200 border-2 my-8 last:hidden" />
+                    `;
                 }
 
-                // Render Details
-                document.getElementById('txt-order-id').textContent = data.order_code || data.id;
-                document.getElementById('product-name').textContent = data.product_name;
-                document.getElementById('product-price').textContent = formatCurrency(data.total_price);
-                document.getElementById('txt-shipping-address').textContent = data.shipping_address;
-                document.getElementById('txt-created-at').textContent = new Date(data.created_at).toLocaleString('vi-VN');
-
-                // Image Url
-                const imgEl = document.getElementById('product-img');
-                const imageVal = (data.product_image || '').trim();
-                if (imageVal) {
-                    imgEl.src = imageVal.startsWith('http') ? imageVal : PRODUCT_IMAGE_BASE + imageVal;
-                } else {
-                    imgEl.src = 'https://placehold.co/200x200?text=No+Image';
-                }
-
-                // Payment details
-                const payMethodMap = {
-                    'COD': 'Thanh toán COD (Nhận hàng trả tiền)',
-                    'transfer': 'Chuyển khoản ngân hàng'
-                };
-                document.getElementById('txt-payment-method').textContent = payMethodMap[data.payment_method] || data.payment_method;
-
-                const payStatusEl = document.getElementById('txt-payment-status');
-                if (data.payment_status === 'success' || data.payment_status === 'completed') {
-                    payStatusEl.textContent = 'Đã thanh toán';
-                    payStatusEl.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200';
-                } else {
-                    payStatusEl.textContent = 'Chưa thanh toán';
-                    payStatusEl.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200';
-                }
-
-                // Update Stepper progress
-                updateProgressStepper(data.status);
-
+                wrapper.innerHTML = htmlContent;
                 placeholder.classList.add('hidden');
-                container.classList.remove('hidden');
+                wrapper.classList.remove('hidden');
 
             } catch (error) {
                 console.error(error);
                 placeholder.innerHTML = `
                     <span class="material-symbols-outlined text-red-400 text-6xl">error</span>
-                    <h3 class="font-bold text-slate-700 mt-4 text-lg">Không tìm thấy đơn hàng</h3>
+                    <h3 class="font-bold text-slate-700 mt-4 text-lg">Lỗi tra cứu đơn hàng</h3>
                     <p class="text-red-500 text-sm mt-2">${error.message || "Vui lòng kiểm tra lại mã đơn hàng."}</p>
                 `;
             }
         }
 
-        function updateProgressStepper(status) {
-            const stepPending = document.getElementById('step-pending');
-            const stepConfirmed = document.getElementById('step-confirmed');
-            const stepCompleted = document.getElementById('step-completed');
-            const progressBar = document.getElementById('progress-bar-line');
-            const cancelledBanner = document.getElementById('cancelled-banner');
-
-            // Reset classes
-            const allSteps = [stepPending, stepConfirmed, stepCompleted];
-            allSteps.forEach(step => {
-                step.className = 'w-11 h-11 rounded-full flex items-center justify-center border-2 border-slate-200 bg-white text-slate-400 font-bold transition-all';
-            });
-            cancelledBanner.classList.add('hidden');
-            progressBar.style.width = '0%';
-
-            const activeClass = 'w-11 h-11 rounded-full flex items-center justify-center border-2 border-green-500 bg-green-500 text-white font-bold transition-all shadow-md shadow-green-500/20';
-            const pastClass = 'w-11 h-11 rounded-full flex items-center justify-center border-2 border-green-500 bg-green-500 text-white font-bold transition-all';
-
-            const statusLower = status.toLowerCase();
-
-            if (statusLower === 'pending') {
-                stepPending.className = activeClass;
-                progressBar.style.width = '0%';
-            } else if (statusLower === 'confirmed') {
-                stepPending.className = pastClass;
-                stepConfirmed.className = activeClass;
-                progressBar.style.width = '50%';
-            } else if (statusLower === 'completed' || statusLower === 'success') {
-                stepPending.className = pastClass;
-                stepConfirmed.className = pastClass;
-                stepCompleted.className = activeClass;
-                progressBar.style.width = '100%';
-            } else if (statusLower === 'cancelled') {
-                // If cancelled, color stepPending red/gray and show cancelled banner
-                stepPending.className = 'w-11 h-11 rounded-full flex items-center justify-center border-2 border-red-500 bg-red-500 text-white font-bold transition-all';
-                cancelledBanner.classList.remove('hidden');
-                progressBar.style.width = '0%';
-            }
+        function escapeHtml(text) {
+            return (text === null || text === undefined) ? '' : String(text)
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
     </script>
 </body>

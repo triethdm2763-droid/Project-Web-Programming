@@ -179,8 +179,9 @@ require_once __DIR__ . '/../../components/session.php';
                         throw new Error(product.error);
                     }
 
-                    // For single product buy now, default quantity is 1
-                    product.Quantity = 1;
+                    // For single product buy now, read quantity from URL or default to 1
+                    const urlQty = getQueryParam('qty');
+                    product.Quantity = urlQty ? parseInt(urlQty, 10) : 1;
                     currentProducts = [product];
                 } else if (multipleIds) {
                     // Multiple products checkout flow
@@ -404,7 +405,7 @@ require_once __DIR__ . '/../../components/session.php';
                 showAlert("Thành công", "Đơn hàng đã được tạo thành công!", "success");
                 
                 setTimeout(() => {
-                    const targetId = createdOrderIds.length > 0 ? createdOrderIds[0] : '';
+                    const targetId = createdOrderIds.join(',');
                     window.location.href = "./track.php?id=" + encodeURIComponent(targetId);
                 }, 2000);
 
