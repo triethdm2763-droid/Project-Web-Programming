@@ -73,8 +73,8 @@ $activeProducts = $conn->query("SELECT COUNT(*) FROM products WHERE Status IN ('
                                 <th class="p-4 font-semibold">Danh mục</th>
                                 <th class="p-4 font-semibold">Người bán</th>
                                 <th class="p-4 font-semibold">Giá</th>
-                                <th class="p-4 text-center font-semibold">Trạng thái</th>
-                                <th class="p-4 text-center font-semibold">Thao tác</th>
+                                <th class="p-4 text-center font-semibold whitespace-nowrap">Trạng thái</th>
+                                <th class="p-4 text-center font-semibold whitespace-nowrap">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="productTable" class="divide-y divide-slate-100/50">
@@ -219,8 +219,8 @@ $activeProducts = $conn->query("SELECT COUNT(*) FROM products WHERE Status IN ('
                     <td class="p-4 text-sm text-slate-600">${escapeHtml(p.CategoryName)}</td>
                     <td class="p-4 text-sm text-slate-600">${escapeHtml(p.SellerName)}</td>
                     <td class="p-4 text-sm font-bold text-slate-800">${Number(p.Price).toLocaleString('vi-VN')} đ</td>
-                    <td class="p-4 text-center">${statusLabel}</td>
-                    <td class="p-4 text-center">${actions}</td>
+                    <td class="p-4 text-center whitespace-nowrap">${statusLabel}</td>
+                    <td class="p-4 text-center whitespace-nowrap">${actions}</td>
                 </tr>`;
             }).join('');
         }
