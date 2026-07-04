@@ -246,8 +246,8 @@ if (!isset($_SESSION['user_id'])) {
                                 <td class="py-4 px-4 font-medium text-[#0066cc]"><a href="/Project-Web-Programming/frontend/pages/payment/track.php?id=${encodeURIComponent(order.Order_Code)}" class="hover:underline text-[#0066cc]" title="Tra cứu đơn hàng">${order.Order_Code}</a></td>
                                 <td class="py-4 px-4">
                                     <div class="flex items-center gap-2">
-                                        ${order.ProductImage ? `<img src="/Project-Web-Programming/backend/uploads/products/${order.ProductImage}" class="w-8 h-8 rounded object-cover">` : ''}
-                                        <span>${order.ProductName}</span>
+                                        ${order.ProductImage ? `<img src="${order.ProductImage.split(',')[0].startsWith('http') ? order.ProductImage.split(',')[0] : '/Project-Web-Programming/backend/uploads/products/' + order.ProductImage.split(',')[0]}" class="w-8 h-8 rounded object-cover">` : ''}
+                                        <span class="line-clamp-2">${order.ProductName}</span>
                                     </div>
                                 </td>
                                 <td class="py-4 px-4">${order.SellerName}</td>
@@ -329,11 +329,17 @@ if (!isset($_SESSION['user_id'])) {
                                     <button onclick="updateOrderStatus(${order.ID}, 'confirmed')" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 text-xs font-semibold rounded-lg transition-colors border border-blue-200/50">
                                         Xác nhận
                                     </button>
+                                    <button onclick="updateOrderStatus(${order.ID}, 'cancelled')" class="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 text-xs font-semibold rounded-lg transition-colors border border-red-200/50">
+                                        Từ chối
+                                    </button>
                                 `;
                             } else if (statusLower === 'confirmed') {
                                 actionButton = `
                                     <button onclick="updateOrderStatus(${order.ID}, 'completed')" class="px-2.5 py-1 bg-green-50 hover:bg-green-100 text-green-600 hover:text-green-700 text-xs font-semibold rounded-lg transition-colors border border-green-200/50">
                                         Hoàn thành
+                                    </button>
+                                    <button onclick="updateOrderStatus(${order.ID}, 'cancelled')" class="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 text-xs font-semibold rounded-lg transition-colors border border-red-200/50">
+                                        Hủy đơn
                                     </button>
                                 `;
                             }
@@ -343,8 +349,8 @@ if (!isset($_SESSION['user_id'])) {
                                 <td class="py-4 px-4 font-medium text-[#0066cc]"><a href="/Project-Web-Programming/frontend/pages/payment/track.php?id=${encodeURIComponent(order.Order_Code)}" class="hover:underline text-[#0066cc]" title="Tra cứu đơn hàng">${order.Order_Code}</a></td>
                                 <td class="py-4 px-4">
                                     <div class="flex items-center gap-2">
-                                        ${order.ProductImage ? `<img src="/Project-Web-Programming/backend/uploads/products/${order.ProductImage}" class="w-8 h-8 rounded object-cover">` : ''}
-                                        <span>${order.ProductName}</span>
+                                        ${order.ProductImage ? `<img src="${order.ProductImage.split(',')[0].startsWith('http') ? order.ProductImage.split(',')[0] : '/Project-Web-Programming/backend/uploads/products/' + order.ProductImage.split(',')[0]}" class="w-8 h-8 rounded object-cover">` : ''}
+                                        <span class="line-clamp-2">${order.ProductName}</span>
                                     </div>
                                 </td>
                                 <td class="py-4 px-4">${order.BuyerName}</td>
@@ -375,8 +381,10 @@ if (!isset($_SESSION['user_id'])) {
             let confirmMsg = "Bạn có chắc chắn muốn xác nhận đơn hàng này không?";
             if (newStatus === 'completed') {
                 confirmMsg = "Xác nhận đơn hàng đã giao thành công và hoàn thành?";
+            } else if (newStatus === 'cancelled') {
+                confirmMsg = "Bạn có chắc chắn muốn hủy/từ chối đơn hàng này không?";
             }
-            if (!await showConfirm("Cập nhật đơn hàng", confirmMsg, newStatus === 'completed' ? 'success' : 'info')) {
+            if (!await showConfirm("Cập nhật đơn hàng", confirmMsg, newStatus === 'completed' ? 'success' : (newStatus === 'cancelled' ? 'warning' : 'info'))) {
                 return;
             }
 

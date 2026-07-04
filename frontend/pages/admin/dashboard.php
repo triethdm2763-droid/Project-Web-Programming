@@ -118,10 +118,10 @@ $pendingProductsList = $conn->query("
                                             : '/Project-Web-Programming/frontend/assets/images/placeholder.png';
                                         ?>
                                         <img src="<?= $imgSrc ?>" class="w-12 h-12 rounded-lg object-contain border bg-slate-50 flex-shrink-0" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'">
-                                        <span class="font-medium text-sm text-slate-800 line-clamp-1"><?= htmlspecialchars($p['Name']) ?></span>
+                                        <span class="font-medium text-sm text-slate-800 line-clamp-1"><?= htmlspecialchars($p['Name'] ?? '') ?></span>
                                     </td>
-                                    <td class="py-3.5 text-sm text-slate-600"><?= htmlspecialchars($p['CategoryName']) ?></td>
-                                    <td class="py-3.5 text-sm text-slate-600"><?= htmlspecialchars($p['SellerName']) ?></td>
+                                    <td class="py-3.5 text-sm text-slate-600"><?= htmlspecialchars($p['CategoryName'] ?? '') ?></td>
+                                    <td class="py-3.5 text-sm text-slate-600"><?= htmlspecialchars($p['SellerName'] ?? '') ?></td>
                                     <td class="py-3.5 text-sm font-bold text-slate-800"><?= number_format($p['Price']) ?> đ</td>
                                     <td class="py-3.5 text-right">
                                         <button onclick="updateProductStatus(<?= $p['ID'] ?>, 'active')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm shadow-emerald-600/10 hover:scale-[1.02] active:scale-95 transition-all">Duyệt</button>
