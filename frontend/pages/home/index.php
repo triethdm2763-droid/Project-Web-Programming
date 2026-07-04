@@ -158,7 +158,7 @@ require_once __DIR__ . '/../../components/session.php';
                     <a href="/frontend/pages/products/detail.php?id=${row.ID}" class="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 flex flex-col group">
                         <div class="aspect-square bg-slate-50 flex items-center justify-center relative overflow-hidden shrink-0">
                             ${badgeHtml}
-                            <img src="${(row.Image && (row.Image.startsWith('http://') || row.Image.startsWith('https://'))) ? escapeHtml(row.Image) : '/backend/uploads/products/' + escapeHtml(row.Image || 'placeholder.png')}" alt="${escapeHtml(row.Name)}" onerror="this.src='/frontend/assets/images/placeholder.png'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <img src="${(row.Image && (row.Image.startsWith('http://') || row.Image.startsWith('https://'))) ? escapeHtml(row.Image) : '/backend/uploads/products/' + escapeHtml(row.Image || 'placeholder.png')}" alt="${escapeHtml(row.Name)}" onerror="this.src='/frontend/assets/images/placeholder.png'" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500">
                         </div>
                         <div class="p-4 flex flex-col flex-grow justify-between gap-3">
                             <div class="space-y-1.5">

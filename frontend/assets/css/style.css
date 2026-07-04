@@ -38,3 +38,10 @@
 .active-thumb {
   border: 2px solid var(--color-primary);
 }
+
+/* Định dạng toàn cục cho hình ảnh (tránh tràn viền, vỡ tỷ lệ) */
+img {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+}
