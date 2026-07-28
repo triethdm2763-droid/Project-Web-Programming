@@ -8,131 +8,162 @@ use App\Repositories\ProductRepository;
 
 class AdminController
 {
+    private UserRepository $userRepo;
+    private OrderRepository $orderRepo;
+    private ProductRepository $productRepo;
+
     /**
-     * Guard every Admin endpoint: must be logged in AND have Role = 'admin'.
-     * Stops execution with a 401/403 JSON response otherwise.
+     * 1. Dependency Injection: Cho phép truyền Repository giả (Mock) khi Test,
+     * nếu không truyền (khi chạy Web thật) sẽ tự tạo Repository mặc định.
      */
-    private function requireAdmin()
+    public function __construct(
+        ?UserRepository $userRepo = null,
+        ?OrderRepository $orderRepo = null,
+        ?ProductRepository $productRepo = null
+    ) {
+        $this->userRepo = $userRepo ?? new UserRepository();
+        $this->orderRepo = $orderRepo ?? new OrderRepository();
+        $this->productRepo = $productRepo ?? new ProductRepository();
+    }
+
+    /**
+     * 2. Phân quyền Admin: Trả về Response Array thay vì dùng exit;
+     */
+    public function checkAdminAuth(): ?array
     {
         if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+            @session_start();
         }
 
         if (empty($_SESSION['user_id'])) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'message' => 'Bạn cần đăng nhập để truy cập trang quản trị.']);
-            exit;
+            return $this->jsonResponse(['success' => false, 'message' => 'Bạn cần đăng nhập để truy cập trang quản trị.'], 401);
         }
 
         if (($_SESSION['role'] ?? '') !== 'admin') {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'Bạn không có quyền truy cập chức năng quản trị này.']);
-            exit;
+            return $this->jsonResponse(['success' => false, 'message' => 'Bạn không có quyền truy cập chức năng quản trị này.'], 403);
         }
+
+        return null; // Phân quyền hợp lệ
     }
 
-    public function users()
+    /**
+     * Helper hỗ trợ trả về Response vừa gõ echo (cho Web) vừa return array (cho Unit Test)
+     */
+    private function jsonResponse(array $data, int $statusCode = 200): array
     {
-        $this->requireAdmin();
-        $repo = new UserRepository();
-        echo json_encode($repo->findAll());
+        http_response_code($statusCode);
+        return [
+            'status_code' => $statusCode,
+            'body' => $data
+        ];
     }
 
-    public function updateUserStatus()
+    public function users(): array
     {
-        $this->requireAdmin();
+        if ($authError = $this->checkAdminAuth()) {
+            return $authError;
+        }
 
-        $data = json_decode(file_get_contents('php://input'), true);
+        return $this->jsonResponse($this->userRepo->findAll());
+    }
+
+    public function updateUserStatus(?array $inputData = null): array
+    {
+        if ($authError = $this->checkAdminAuth()) {
+            return $authError;
+        }
+
+        // Cho phép truyền $inputData trực tiếp từ bài Test, hoặc lấy từ php://input nếu chạy Web
+        $data = $inputData ?? json_decode(file_get_contents('php://input'), true) ?? [];
         $id = $data['id'] ?? null;
         $status = $data['status'] ?? null;
 
         if (!$id || !$status) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Thiếu tham số id hoặc status.']);
-            return;
+            return $this->jsonResponse(['success' => false, 'message' => 'Thiếu tham số id hoặc status.'], 400);
         }
 
         if (!in_array($status, ['active', 'banned'], true)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Trạng thái không hợp lệ.']);
-            return;
+            return $this->jsonResponse(['success' => false, 'message' => 'Trạng thái không hợp lệ.'], 400);
         }
 
         // Prevent an admin from accidentally locking their own account
-        if ((int)$id === (int)$_SESSION['user_id'] && $status === 'banned') {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Không thể tự khóa tài khoản của chính mình.']);
-            return;
+        if ((int)$id === (int)($_SESSION['user_id'] ?? 0) && $status === 'banned') {
+            return $this->jsonResponse(['success' => false, 'message' => 'Không thể tự khóa tài khoản của chính mình.'], 400);
         }
 
-        $repo = new UserRepository();
-        $success = $repo->updateStatus((int)$id, $status);
+        $success = $this->userRepo->updateStatus((int)$id, $status);
 
-        echo json_encode(['success' => $success]);
+        return $this->jsonResponse(['success' => (bool)$success]);
     }
 
-    public function orders()
+    public function orders(): array
     {
-        $this->requireAdmin();
-        $repo = new OrderRepository();
-        echo json_encode($repo->findAll());
+        if ($authError = $this->checkAdminAuth()) {
+            return $authError;
+        }
+
+        return $this->jsonResponse($this->orderRepo->findAll());
     }
 
-    public function wallets()
+    public function wallets(): array
     {
-        $this->requireAdmin();
-        $repo = new UserRepository();
-        echo json_encode($repo->getWallets());
+        if ($authError = $this->checkAdminAuth()) {
+            return $authError;
+        }
+
+        return $this->jsonResponse($this->userRepo->getWallets());
     }
 
-    public function reports()
+    public function reports(): array
     {
-        $this->requireAdmin();
-        $productRepo = new ProductRepository();
-        $userRepo = new UserRepository();
-        $orderRepo = new OrderRepository();
+        if ($authError = $this->checkAdminAuth()) {
+            return $authError;
+        }
 
-        echo json_encode([
-            'products' => count($productRepo->findAllActive()),
-            'users' => count($userRepo->findAll()),
-            'orders' => count($orderRepo->findAll())
-        ]);
+        $data = [
+            'products' => count($this->productRepo->findAllActive() ?? []),
+            'users' => count($this->userRepo->findAll() ?? []),
+            'orders' => count($this->orderRepo->findAll() ?? [])
+        ];
+
+        return $this->jsonResponse($data);
     }
 
-    public function products()
+    public function products(?array $queryParams = null): array
     {
-        $this->requireAdmin();
+        if ($authError = $this->checkAdminAuth()) {
+            return $authError;
+        }
 
+        $params = $queryParams ?? $_GET;
         $filters = [];
-        if (!empty($_GET['search'])) {
-            $filters['search'] = $_GET['search'];
+        if (!empty($params['search'])) {
+            $filters['search'] = $params['search'];
         }
-        if (!empty($_GET['status'])) {
-            $filters['status'] = $_GET['status'];
+        if (!empty($params['status'])) {
+            $filters['status'] = $params['status'];
         }
 
-        $repo = new ProductRepository();
-        echo json_encode($repo->findAllForAdmin($filters));
+        return $this->jsonResponse($this->productRepo->findAllForAdmin($filters));
     }
 
-    public function updateProductStatus()
+    public function updateProductStatus(?array $inputData = null): array
     {
-        $this->requireAdmin();
+        if ($authError = $this->checkAdminAuth()) {
+            return $authError;
+        }
 
-        $data = json_decode(file_get_contents('php://input'), true);
+        $data = $inputData ?? json_decode(file_get_contents('php://input'), true) ?? [];
 
         $id = $data['id'] ?? null;
         $status = $data['status'] ?? null;
 
         if (!$id || !$status) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Thiếu tham số id hoặc status.']);
-            return;
+            return $this->jsonResponse(['success' => false, 'message' => 'Thiếu tham số id hoặc status.'], 400);
         }
 
-        $repo = new ProductRepository();
-        $success = $repo->updateStatus((int)$id, $status);
+        $success = $this->productRepo->updateStatus((int)$id, $status);
 
-        echo json_encode(['success' => $success]);
+        return $this->jsonResponse(['success' => (bool)$success]);
     }
 }
