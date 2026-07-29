@@ -7,26 +7,53 @@ use App\Services\CategoryService;
 class CategoryController extends BaseController {
     private $service;
 
-    public function __construct() {
-        $this->service = new CategoryService();
+    public function __construct(CategoryService $service = null) {
+        $this->service = $service ?? new CategoryService();
     }
 
     // GET /api/categories
-    public function list() {
-        $result = $this->service->listCategories();
-        return $this->json($result['data'], $result['code']);
+    public function index() {
+        $result = $this->service->getAllCategories();
+        return $this->json(['success' => true, 'data' => $result]);
     }
 
-    // GET /api/categories/detail?id=1
-    public function detail() {
-        if (!isset($_GET['id'])) {
-            return $this->json(['error' => 'Missing id parameter'], 400);
+    // Hàm kiểm tra quyền Admin (Trả về boolean, KHÔNG dùng exit)
+    private function isAdmin(): bool {
+        return isset($_SESSION['user']) && $_SESSION['user']['role'] === 'admin';
+    }
+
+    // POST /api/categories
+    public function store($data = []) {
+        if (!$this->isAdmin()) {
+            http_response_code(403);
+            return $this->json(['success' => false, 'message' => 'Bạn không có quyền thực hiện thao tác này'], 403);
         }
-        $id = intval($_GET['id']);
-        $result = $this->service->getCategory($id);
-        if ($result['status'] === 'success') {
-            return $this->json($result['data'], $result['code']);
+
+        $payload = empty($data) ? $_POST : $data;
+        $result = $this->service->createCategory($payload);
+        http_response_code(201);
+        return $this->json(['success' => true, 'data' => $result], 201);
+    }
+
+    // PUT /api/categories/{id}
+    public function update($id, $data = []) {
+        if (!$this->isAdmin()) {
+            http_response_code(403);
+            return $this->json(['success' => false, 'message' => 'Bạn không có quyền thực hiện thao tác này'], 403);
         }
-        return $this->json(['error' => $result['message']], $result['code']);
+
+        $result = $this->service->updateCategory($id, $data);
+        return $this->json(['success' => $result]);
+    }
+
+    // DELETE /api/categories/{id}
+    public function destroy($id) {
+        if (!$this->isAdmin()) {
+            http_response_code(403);
+            return $this->json(['success' => false, 'message' => 'Bạn không có quyền thực hiện thao tác này'], 403);
+        }
+
+        $result = $this->service->deleteCategory($id);
+        return $this->json(['success' => $result]);
     }
 }

@@ -1,42 +1,52 @@
 <?php
-
 namespace App\Services;
 
 use App\Repositories\CategoryRepository;
+use InvalidArgumentException;
+use Exception;
 
 class CategoryService
 {
     private $categoryRepository;
 
-    public function __construct()
+    // Hỗ trợ truyền Mock vào từ Unit Test
+    public function __construct(CategoryRepository $categoryRepository = null)
     {
-        $this->categoryRepository = new CategoryRepository();
+        $this->categoryRepository = $categoryRepository ?? new CategoryRepository();
     }
 
-    public function listCategories(): array
+    public function getAllCategories(): array
     {
-        $rows = $this->categoryRepository->findAll();
-        return [
-            'status' => 'success',
-            'code' => 200,
-            'data' => $rows
-        ];
+        return $this->categoryRepository->findAll();
     }
 
     public function getCategory(int $id): array
     {
         $cat = $this->categoryRepository->findById($id);
         if ($cat === null) {
-            return [
-                'status' => 'error',
-                'code' => 404,
-                'message' => 'Category not found'
-            ];
+            throw new Exception("Danh mục không tồn tại");
         }
-        return [
-            'status' => 'success',
-            'code' => 200,
-            'data' => $cat
-        ];
+        return $cat;
+    }
+
+    public function createCategory(array $data): array
+    {
+        if (empty($data['name'])) {
+            throw new InvalidArgumentException("Tên danh mục không được để trống");
+        }
+        $id = $this->categoryRepository->create($data);
+        return array_merge(['id' => $id], $data);
+    }
+
+    public function updateCategory(int $id, array $data): bool
+    {
+        $this->getCategory($id); // Throw exception nếu không tồn tại
+        return $this->categoryRepository->update($id, $data);
+    }
+
+    public function deleteCategory(int $id): bool
+    {
+        $this->getCategory($id);
+        return $this->categoryRepository->delete($id);
     }
 }
