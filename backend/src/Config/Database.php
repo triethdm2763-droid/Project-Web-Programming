@@ -9,7 +9,7 @@ class Database {
     private $conn;
 
     // Database connection parameters
-    private $host = 'localhost';
+    private $host = '127.0.0.1';
     private $db_name = 'c2c_used_marketplace';
     private $username = 'root';
     private $password = ''; // XAMPP default is empty string
