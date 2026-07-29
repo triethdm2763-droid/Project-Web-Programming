@@ -22,12 +22,12 @@
         <div id="product-detail-container" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
             <div class="lg:col-span-5">
-                <div id="product-image-container" class="bg-white/60 backdrop-blur-md rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
+                <div id="product-image-container" class="bg-white/60 backdrop-blur-md rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden flex justify-center items-center p-4">
                     <img
                         id="product-image"
                         src="https://placehold.co/600x600"
                         alt="Ảnh sản phẩm"
-                        class="w-full aspect-square object-cover"
+                        class="w-full aspect-square object-contain"
                     >
                 </div>
             </div>
