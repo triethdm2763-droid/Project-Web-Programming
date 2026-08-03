@@ -1,0 +1,32 @@
+name: Continuous Integration - PHPUnit Tests
+
+on:
+  push:
+    branches: [ "**" ] # Chạy trên TẤT CẢ các branch (mọi branch feature/...)
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  phpunit-job:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP Environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, pdo_mysql
+          tools: composer
+
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run PHPUnit Tests
+        run: ./vendor/bin/phpunit
