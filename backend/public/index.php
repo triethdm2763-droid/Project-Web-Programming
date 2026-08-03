@@ -1,6 +1,10 @@
 <?php
 // Start session for login state tracking
 if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    $sessionPath = __DIR__ . '/../storage/sessions';
+    if (is_dir($sessionPath) && is_writable($sessionPath)) {
+        session_save_path($sessionPath);
+    }
     session_start();
 }
 

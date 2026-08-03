@@ -1,12 +1,14 @@
 // frontend/assets/js/products.js
 
+const productAppUrl = window.appUrl || ((path) => path);
+
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Nút Đăng tin - Cho phép đi thẳng đến trang đăng tin
     const btnCreatePost = document.getElementById('btn-create-post');
     if (btnCreatePost) {
         btnCreatePost.addEventListener('click', function(e) {
             e.preventDefault();
-            window.location.href = '/frontend/pages/seller/post-ad.php';
+            window.location.href = productAppUrl('/frontend/pages/seller/post-ad.php');
         });
     }
 
@@ -60,7 +62,7 @@ function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false, 
     lastCategoryId = categoryId;
     lastFilters = { ...filters };
 
-    let url = `/backend/public/index.php/api/products?search=${encodeURIComponent(searchQuery)}&category_id=${categoryId !== null && categoryId !== undefined ? categoryId : ''}`;
+    let url = productAppUrl(`/backend/public/index.php/api/products?search=${encodeURIComponent(searchQuery)}&category_id=${categoryId !== null && categoryId !== undefined ? categoryId : ''}`);
     
     if (filters.sort) {
         url += `&sort=${encodeURIComponent(filters.sort)}`;
@@ -103,14 +105,14 @@ function fetchProducts(searchQuery = '', categoryId = '', forceRefresh = false, 
             }
             
             products.forEach(p => {
-                const img = p.Image ? (p.Image.startsWith('http') ? p.Image : `/backend/uploads/products/${p.Image}`) : '';
+                const img = p.Image ? (p.Image.startsWith('http') ? p.Image : productAppUrl(`/backend/uploads/products/${p.Image}`)) : '';
                 const qty = p.Stock_quantity ?? p.stock_quantity ?? 1;
                 const qtyBadge = parseInt(qty) === 1 
                     ? `<span class="bg-orange-50 text-orange-600 text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded border border-orange-100 whitespace-nowrap">Độc bản</span>` 
                     : `<span class="bg-blue-50 text-blue-600 text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-100 whitespace-nowrap">Còn ${qty}</span>`;
 
                 productGrid.insertAdjacentHTML('beforeend', `
-                    <a href="/frontend/pages/products/detail.php?id=${p.ID || p.id}" class="bg-white/60 backdrop-blur-md p-2.5 sm:p-3.5 rounded-2xl shadow-sm border border-outline-variant/10 hover:bg-white/90 hover:shadow-md hover:border-primary/30 transition-all flex flex-col justify-between group">
+                    <a href="${productAppUrl(`/frontend/pages/products/detail.php?id=${p.ID || p.id}`)}" class="bg-white/60 backdrop-blur-md p-2.5 sm:p-3.5 rounded-2xl shadow-sm border border-outline-variant/10 hover:bg-white/90 hover:shadow-md hover:border-primary/30 transition-all flex flex-col justify-between group">
                         <div>
                             <div class="aspect-square bg-slate-100 rounded-xl overflow-hidden mb-2.5">
                                 <img src="${img}" class="w-full h-full object-contain group-hover:scale-[1.03] transition-transform" alt="${escapeHtml(p.Name || p.name)}">
@@ -149,13 +151,13 @@ function switchSellerTab(status) {
     const container = document.getElementById('seller-products-list');
     container.innerHTML = '<div class="text-center py-12">Đang tải...</div>';
     
-    fetch(`/backend/public/index.php/api/products/mine?status=${encodeURIComponent(status)}`, { credentials: 'same-origin' })
+    fetch(productAppUrl(`/backend/public/index.php/api/products/mine?status=${encodeURIComponent(status)}`), { credentials: 'same-origin' })
         .then(res => res.json())
         .then(products => {
             container.innerHTML = products.length ? products.map(p => `
                 <div class="flex items-center justify-between p-4 border-b">
                     <div class="flex items-center gap-4">
-                        <img src="/backend/uploads/products/${p.Image || p.image}" class="w-12 h-12 rounded">
+                        <img src="${productAppUrl(`/backend/uploads/products/${p.Image || p.image}`)}" class="w-12 h-12 rounded">
                         <span class="font-bold">${p.Name || p.name}</span>
                     </div>
                     <div class="flex gap-2">
@@ -169,7 +171,7 @@ function switchSellerTab(status) {
 
 function deleteProduct(id) {
     if (!confirm("Xác nhận xóa tin này?")) return;
-    fetch('/backend/public/index.php/api/products/delete', {
+    fetch(productAppUrl('/backend/public/index.php/api/products/delete'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
@@ -179,6 +181,6 @@ function deleteProduct(id) {
     });
 }
 
-function editProduct(id) { window.location.href = `/frontend/pages/seller/post-ad.php?id=${id}`; }
+function editProduct(id) { window.location.href = productAppUrl(`/frontend/pages/seller/post-ad.php?id=${id}`); }
 
 function escapeHtml(text) { return text ? String(text).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[m])) : ''; }

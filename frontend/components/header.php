@@ -1,14 +1,27 @@
+<?php require_once __DIR__ . '/session.php'; ?>
 <meta charset="utf-8" />
 <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-<link rel="icon" type="image/png" href="/frontend/assets/images/favicon.png?v=<?= time() ?>">
+<link rel="icon" type="image/png" href="<?= app_url('/frontend/assets/images/favicon.png') ?>?v=<?= time() ?>">
 
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
-<link rel="stylesheet" href="/frontend/assets/css/style.css">
-<script src="/frontend/assets/js/ui-helpers.js?v=20260618-2"></script>
+<link rel="stylesheet" href="<?= app_url('/frontend/assets/css/style.css') ?>">
+<script>
+        window.APP_BASE_URL = <?= json_encode(app_base_url()) ?>;
+        window.appUrl = function(path) {
+                if (!path) return window.APP_BASE_URL || '';
+                if (/^(https?:)?\/\//.test(path) || path.startsWith('data:') || path.startsWith('blob:')) {
+                        return path;
+                }
+                const base = (window.APP_BASE_URL || '').replace(/\/$/, '');
+                const cleanPath = path.startsWith('/') ? path : '/' + path;
+                return base + cleanPath;
+        };
+</script>
+<script src="<?= app_url('/frontend/assets/js/ui-helpers.js') ?>?v=20260618-2"></script>
 
 <script id="tailwind-config">
         tailwind.config = {

@@ -1,6 +1,59 @@
 <?php
 if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    $sessionPath = __DIR__ . '/../../backend/storage/sessions';
+    if (is_dir($sessionPath) && is_writable($sessionPath)) {
+        session_save_path($sessionPath);
+    }
+}
+
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
+}
+
+function app_base_url()
+{
+    static $baseUrl = null;
+
+    if ($baseUrl !== null) {
+        return $baseUrl;
+    }
+
+    $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+    $markers = ['/frontend/', '/backend/', '/index.php'];
+
+    foreach ($markers as $marker) {
+        $position = strpos($scriptName, $marker);
+        if ($position !== false) {
+            $baseUrl = rtrim(substr($scriptName, 0, $position), '/');
+            return $baseUrl;
+        }
+    }
+
+    $directory = str_replace('\\', '/', dirname($scriptName));
+    $baseUrl = ($directory === '/' || $directory === '.') ? '' : rtrim($directory, '/');
+    return $baseUrl;
+}
+
+function app_url($path = '')
+{
+    $path = '/' . ltrim($path, '/');
+    return app_base_url() . $path;
+}
+
+if (!defined('APP_INTERNAL_URL_REWRITE_STARTED') && PHP_SAPI !== 'cli') {
+    define('APP_INTERNAL_URL_REWRITE_STARTED', true);
+    ob_start(function ($html) {
+        $baseUrl = app_base_url();
+        if ($baseUrl === '') {
+            return $html;
+        }
+
+        return str_replace(
+            ['"/frontend/', "'/frontend/", '"/backend/', "'/backend/"],
+            ['"' . $baseUrl . '/frontend/', "'" . $baseUrl . '/frontend/', '"' . $baseUrl . '/backend/', "'" . $baseUrl . '/backend/'],
+            $html
+        );
+    });
 }
 
 // Restore session from JWT if session is empty and cookie is present

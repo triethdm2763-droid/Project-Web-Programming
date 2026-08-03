@@ -3,6 +3,8 @@
  * Replaces native browser alert() and confirm() with beautiful, responsive, and animated components.
  */
 
+const appUrl = window.appUrl || ((path) => path);
+
 // Initialize styling & containers
 (function () {
   const style = document.createElement("style");
@@ -269,7 +271,7 @@ async function logout() {
   if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
     try {
       let res = await fetch(
-        "/backend/public/index.php/api/auth/logout",
+        appUrl("/backend/public/index.php/api/auth/logout"),
         {
           method: "POST",
         },
@@ -278,7 +280,7 @@ async function logout() {
         showToast("Đăng xuất thành công!", "success");
         setTimeout(() => {
           window.location.href =
-            "/frontend/pages/home/index.php";
+            appUrl("/frontend/pages/home/index.php");
         }, 1000);
       } else {
         showToast("Đăng xuất thất bại.", "error");

@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../components/session.php';
 if (!isset($_SESSION['user_id'])) {
-    header("Location: /frontend/pages/auth/login.php");
+    header("Location: " . app_url('/frontend/pages/auth/login.php'));
     exit;
 }
 ?>
