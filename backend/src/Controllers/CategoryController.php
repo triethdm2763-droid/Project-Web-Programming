@@ -74,3 +74,5 @@ class CategoryController extends BaseController {
         return $this->json(['success' => $result]);
     }
 }
+}
+

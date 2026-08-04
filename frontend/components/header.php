@@ -1,13 +1,20 @@
+<<<<<<< HEAD
 <?php require_once __DIR__ . '/session.php'; ?>
 <meta charset="utf-8" />
 <meta content="width=device-width, initial-scale=1.0" name="viewport" />
 <link rel="icon" type="image/png" href="<?= app_url('/frontend/assets/images/favicon.png') ?>?v=<?= time() ?>">
+=======
+<meta charset="utf-8" />
+<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+<link rel="icon" type="image/png" href="/frontend/assets/images/favicon.png?v=<?= time() ?>">
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
 
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
+<<<<<<< HEAD
 <link rel="stylesheet" href="<?= app_url('/frontend/assets/css/style.css') ?>">
 <script>
         window.APP_BASE_URL = <?= json_encode(app_base_url()) ?>;
@@ -22,6 +29,10 @@
         };
 </script>
 <script src="<?= app_url('/frontend/assets/js/ui-helpers.js') ?>?v=20260618-2"></script>
+=======
+<link rel="stylesheet" href="/frontend/assets/css/style.css">
+<script src="/frontend/assets/js/ui-helpers.js?v=20260618-2"></script>
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
 
 <script id="tailwind-config">
         tailwind.config = {
@@ -81,4 +92,8 @@
         object-fit: cover;     /* Ép ảnh lấp đầy khung */
         }
 </style>
+<<<<<<< HEAD
 <div id="toast-container" class="fixed top-20 right-6 z-[9999] flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
+=======
+<div id="toast-container" class="fixed top-20 right-6 z-[9999] flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2

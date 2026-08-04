@@ -1,5 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+<<<<<<< HEAD
     $sessionPath = __DIR__ . '/../../backend/storage/sessions';
     if (is_dir($sessionPath) && is_writable($sessionPath)) {
         session_save_path($sessionPath);
@@ -56,6 +57,11 @@ if (!defined('APP_INTERNAL_URL_REWRITE_STARTED') && PHP_SAPI !== 'cli') {
     });
 }
 
+=======
+    session_start();
+}
+
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
 // Restore session from JWT if session is empty and cookie is present
 if (empty($_SESSION['user_id']) && !empty($_COOKIE['token'])) {
     $jwtPath = __DIR__ . '/../../backend/src/utils/JWT.php';

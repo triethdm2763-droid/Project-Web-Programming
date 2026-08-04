@@ -43,7 +43,11 @@
             btn.innerText = "ĐANG ĐĂNG NHẬP...";
             btn.classList.add("opacity-70");
 
+<<<<<<< HEAD
             let res = await fetch("../../../backend/public/index.php/api/auth/login", {
+=======
+            let res = await fetch("/backend/public/index.php/api/auth/login", {
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ username, password })
@@ -55,9 +59,15 @@
                 showToast("Đăng nhập thành công!", "success");
                 setTimeout(() => {
                     if (data.user && (data.user.Role === 'admin' || data.user.role === 'admin')) {
+<<<<<<< HEAD
                         window.location.href = "../../../frontend/pages/admin/dashboard.php";
                     } else {
                         window.location.href = "../../../frontend/pages/home/index.php";
+=======
+                        window.location.href = "../admin/dashboard.php";
+                    } else {
+                        window.location.href = "../home/index.php";
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
                     }
                 }, 1200);
             } else {
