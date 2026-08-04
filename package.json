@@ -1,0 +1,20 @@
+{
+  "name": "project-web-programming-main",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Nền tảng thương mại điện tử C2C giúp trao đổi và thanh lý đồ cũ dành cho cộng đồng",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "codeceptjs run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "codeceptjs": "^4.1.0",
+    "playwright": "^1.62.1"
+  }
+}
