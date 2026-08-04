@@ -1,0 +1,16 @@
+.git
+.github
+.agents
+.codex
+node_modules
+output
+e2e
+docs
+database
+backend/tests
+backend/vendor
+backend/.phpunit.result.cache
+*.log
+.env
+.DS_Store
+Thumbs.db

@@ -1,0 +1,9 @@
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteRule ^(backend/src|backend/storage|backend/tests|database|docs|e2e|output|node_modules|vendor)(/|$) - [F,L]
+    RewriteRule ^backend/(composer\.(json|lock)|phpunit\.xml(\.bak)?|\.phpunit\.result\.cache)$ - [F,L]
+    RewriteRule ^(package(-lock)?\.json|codecept\.conf\.js|steps_file\.js|sonar-project\.properties|README\.md)$ - [F,L]
+</IfModule>

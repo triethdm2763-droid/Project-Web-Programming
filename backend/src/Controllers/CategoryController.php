@@ -18,7 +18,6 @@ class CategoryController extends BaseController {
     }
 
     // Hàm kiểm tra quyền Admin (Trả về boolean, KHÔNG dùng exit)
-<<<<<<< HEAD
     public function list() {
         return $this->json($this->service->getAllCategories());
     }
@@ -36,8 +35,6 @@ class CategoryController extends BaseController {
         }
     }
 
-=======
->>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
     private function isAdmin(): bool {
         return isset($_SESSION['user']) && $_SESSION['user']['role'] === 'admin';
     }
@@ -76,8 +73,6 @@ class CategoryController extends BaseController {
         $result = $this->service->deleteCategory($id);
         return $this->json(['success' => $result]);
     }
-<<<<<<< HEAD
 }
-=======
 }
->>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
+

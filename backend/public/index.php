@@ -11,12 +11,35 @@ if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
 
-// Hydrate session from JWT cookie or Authorization header
-$token = $_COOKIE['token'] ?? null;
-if (empty($token) && !empty($_SERVER['HTTP_AUTHORIZATION'])) {
-    if (preg_match('/Bearer\s(\S+)/i', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
-        $token = $matches[1];
+function getAuthorizationHeader(): string
+{
+    $headers = function_exists('getallheaders') ? getallheaders() : [];
+    $candidates = [
+        $_SERVER['HTTP_AUTHORIZATION'] ?? '',
+        $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '',
+        $_SERVER['Authorization'] ?? '',
+        $headers['Authorization'] ?? '',
+        $headers['authorization'] ?? ''
+    ];
+
+    foreach ($candidates as $candidate) {
+        if (!empty($candidate)) {
+            return $candidate;
+        }
     }
+
+    return '';
+}
+
+// Hydrate session from JWT Authorization header or cookie
+$token = null;
+$authorizationHeader = getAuthorizationHeader();
+if (!empty($authorizationHeader) && preg_match('/Bearer\s+(\S+)/i', $authorizationHeader, $matches)) {
+    $token = $matches[1];
+}
+
+if (empty($token)) {
+    $token = $_COOKIE['token'] ?? null;
 }
 
 if (!empty($token)) {
@@ -148,7 +171,20 @@ try {
     }
     
     // Call the action
-    $controllerInstance->$action();
+    $response = $controllerInstance->$action();
+
+    if (is_array($response)) {
+        if (!headers_sent()) {
+            header('Content-Type: application/json; charset=utf-8');
+        }
+
+        if (array_key_exists('status_code', $response) && array_key_exists('body', $response)) {
+            http_response_code((int)$response['status_code']);
+            echo json_encode($response['body'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        } else {
+            echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        }
+    }
     
 } catch (Exception $e) {
     sendJsonError("Internal Server Error: " . $e->getMessage(), 500);
