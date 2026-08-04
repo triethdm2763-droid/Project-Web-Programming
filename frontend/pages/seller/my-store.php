@@ -3,7 +3,11 @@ require_once __DIR__ . '/../../components/session.php';
 
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['user_id'])) {
+<<<<<<< HEAD
+    header("Location: " . app_url('/frontend/pages/auth/login.php'));
+=======
     header("Location: /frontend/pages/auth/login.php");
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
     exit();
 }
 
@@ -353,4 +357,8 @@ $initials = mb_strtoupper($initials, 'UTF-8');
         };
     </script>
 </body>
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2

@@ -3,13 +3,24 @@
 // ==========================================================================
 
 // --- 1. TIỆN ÍCH ---
+<<<<<<< HEAD
+const cartAppUrl = window.appUrl || ((path) => path);
+
+=======
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
 };
 
+<<<<<<< HEAD
+const PRODUCT_IMAGE_BASE = cartAppUrl('/backend/uploads/products/');
+const PRODUCTS_API_URL = cartAppUrl('/backend/public/index.php/api/products');
+const CATEGORIES_API_URL = cartAppUrl('/backend/public/index.php/api/categories');
+=======
 const PRODUCT_IMAGE_BASE = '/backend/uploads/products/';
 const PRODUCTS_API_URL = '/backend/public/index.php/api/products';
 const CATEGORIES_API_URL = '/backend/public/index.php/api/categories';
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
 
 function resolveImageUrl(imageValue) {
     const value = (imageValue || '').toString().trim();
@@ -110,7 +121,11 @@ function renderCart() {
         // Tải trạng thái thực tế của tất cả sản phẩm trong giỏ hàng theo thời gian thực
         const detailPromises = cart.map(item => {
             const id = item.ID ?? item.id;
+<<<<<<< HEAD
+            return fetch(cartAppUrl(`/backend/public/index.php/api/products/detail?id=${id}`))
+=======
             return fetch(`/backend/public/index.php/api/products/detail?id=${id}`)
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
                 .then(res => res.json())
                 .then(result => {
                     let payload = null;
@@ -262,7 +277,11 @@ function renderCartItemRow(item, index) {
             </div>
 
             <!-- ảnh -->
+<<<<<<< HEAD
+            <a href="${cartAppUrl(`/frontend/pages/products/detail.php?id=${encodeURIComponent(item.ID ?? item.id)}`)}" class="shrink-0 ${isInvalid ? 'opacity-55 pointer-events-none' : ''}">
+=======
             <a href="/frontend/pages/products/detail.php?id=${encodeURIComponent(item.ID ?? item.id)}" class="shrink-0 ${isInvalid ? 'opacity-55 pointer-events-none' : ''}">
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
                 <img
                     src="${imgUrl}"
                     onerror="this.onerror=null;this.src='https://placehold.co/200x200?text=No+Image';"
@@ -274,7 +293,11 @@ function renderCartItemRow(item, index) {
             <div class="flex-grow flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 flex min-w-0 w-full">
 
                 <div class="flex-1 min-w-0">
+<<<<<<< HEAD
+                    <a href="${cartAppUrl(`/frontend/pages/products/detail.php?id=${encodeURIComponent(item.ID ?? item.id)}`)}"
+=======
                     <a href="/frontend/pages/products/detail.php?id=${encodeURIComponent(item.ID ?? item.id)}"
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
                        class="font-semibold line-clamp-2 transition-colors ${nameClass} ${isInvalid ? 'pointer-events-none' : ''}" ${strikeStyle}>
                         ${name}
                     </a>
@@ -517,7 +540,11 @@ function renderRecommendationCard(product) {
     const imgUrl = resolveImageUrl(product.Image || product.image);
     const productId = product.ID ?? product.id;
     return `
+<<<<<<< HEAD
+        <a href="${cartAppUrl(`/frontend/pages/products/detail.php?id=${encodeURIComponent(productId)}`)}"
+=======
         <a href="/frontend/pages/products/detail.php?id=${encodeURIComponent(productId)}"
+>>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2
            class="group bg-slate-50 rounded-2xl border border-slate-200 p-3 flex flex-col gap-3 hover:shadow-md hover:border-[#0066cc]/40 transition-all">
             <div class="aspect-square overflow-hidden rounded-xl bg-white border border-slate-100">
                 <img src="${imgUrl}"
