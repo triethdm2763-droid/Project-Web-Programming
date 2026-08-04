@@ -5,7 +5,7 @@ export const config = {
   helpers: {
     Playwright: {
       browser: 'chromium',
-      url: 'http://localhost/Project-Web-Programming-main',
+      url: 'http://localhost/Project-Web-Programming',
       show: true
     }
   },
@@ -14,5 +14,5 @@ export const config = {
   },
   noGlobals: true,
   plugins: {},
-  name: 'Project-Web-Programming-main'
+  name: 'Project-Web-Programming'
 }

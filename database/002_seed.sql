@@ -2,13 +2,12 @@ USE `c2c_used_marketplace`;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
-TRUNCATE TABLE `notifications`;
-TRUNCATE TABLE `payments`;
-TRUNCATE TABLE `orders`;
-TRUNCATE TABLE `products`;
-TRUNCATE TABLE `categories`;
-TRUNCATE TABLE `users`;
-
+DELETE FROM notifications;
+DELETE FROM payments;
+DELETE FROM orders;
+DELETE FROM products;
+DELETE FROM categories;
+DELETE FROM users;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- 1. SEED DỮ LIỆU BẢNG TÀI KHOẢN NGƯỜI DÙNG (USERS)

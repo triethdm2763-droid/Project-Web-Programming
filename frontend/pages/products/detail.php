@@ -22,12 +22,12 @@
         <div id="product-detail-container" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
             <div class="lg:col-span-5">
-                <div id="product-image-container" class="bg-white/60 backdrop-blur-md rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden flex justify-center items-center p-4">
+                <div id="product-image-container" class="bg-white/60 backdrop-blur-md rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
                     <img
                         id="product-image"
                         src="https://placehold.co/600x600"
                         alt="Ảnh sản phẩm"
-                        class="w-full aspect-square object-contain"
+                        class="w-full aspect-square object-cover"
                     >
                 </div>
             </div>
@@ -218,7 +218,7 @@
             }
 
             // Call backend public router with query param id
-            const response = await fetch(`/backend/public/index.php/api/products/detail?id=${productId}`, { headers: { Accept: 'application/json' } });
+            const response = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products/detail?id=${productId}`, { headers: { Accept: 'application/json' } });
             const data = await response.json();
 
             // Nếu API trả lỗi (404, sản phẩm đã bị xóa...) thì KHÔNG gán object lỗi vào currentProduct,
@@ -255,7 +255,7 @@
             const imgEl = document.getElementById("product-image");
             if (imgEl) {
                 imgEl.src = imageField ? 
-                    (imageField.startsWith('http://') || imageField.startsWith('https://') ? imageField : `/backend/uploads/products/${imageField}`) 
+                    (imageField.startsWith('http://') || imageField.startsWith('https://') ? imageField : `/Project-Web-Programming/backend/uploads/products/${imageField}`) 
                     : 'https://placehold.co/600x600';
             }
 
@@ -314,7 +314,7 @@
             const sellerAvatarEl = document.getElementById("product-seller-avatar");
             if (sellerAvatarEl) {
                 sellerAvatarEl.src = sellerAvatar 
-                    ? (sellerAvatar.startsWith('http') ? sellerAvatar : (sellerAvatar.startsWith('/') ? sellerAvatar : '/backend/uploads/avatars/' + sellerAvatar))
+                    ? (sellerAvatar.startsWith('http') ? sellerAvatar : (sellerAvatar.startsWith('/') ? sellerAvatar : '/Project-Web-Programming/backend/uploads/avatars/' + sellerAvatar))
                     : 'https://placehold.co/100x100';
                 sellerAvatarEl.classList.remove('hidden');
             }
@@ -456,7 +456,7 @@
         if (!section || !grid || !categoryId) return;
 
         try {
-            const res = await fetch(`/backend/public/index.php/api/products?category_id=${categoryId}&limit=12`);
+            const res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products?category_id=${categoryId}&limit=12`);
             if (!res.ok) return;
             const result = await res.json();
             const products = result.data || result || [];
@@ -479,7 +479,7 @@
 
             section.classList.remove("hidden");
             grid.innerHTML = similar.map(p => {
-                const img = p.Image ? (p.Image.startsWith('http') ? p.Image : `/backend/uploads/products/${p.Image}`) : 'https://placehold.co/300x300';
+                const img = p.Image ? (p.Image.startsWith('http') ? p.Image : `/Project-Web-Programming/backend/uploads/products/${p.Image}`) : 'https://placehold.co/300x300';
                 const priceFormatted = new Intl.NumberFormat('vi-VN').format(p.Price || p.price) + ' đ';
                 const name = p.Name || p.name || 'Sản phẩm';
                 const qty = p.Stock_quantity ?? p.stock_quantity ?? 1;
@@ -488,7 +488,7 @@
                     : `<span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-100 whitespace-nowrap">SL: ${qty}</span>`;
 
                 return `
-                <a href="/frontend/pages/products/detail.php?id=${p.ID || p.id}" class="bg-white/80 p-3 rounded-2xl border border-outline-variant/10 hover:border-primary/30 transition-all flex flex-col justify-between group shadow-sm hover:shadow">
+                <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${p.ID || p.id}" class="bg-white/80 p-3 rounded-2xl border border-outline-variant/10 hover:border-primary/30 transition-all flex flex-col justify-between group shadow-sm hover:shadow">
                     <div>
                         <div class="aspect-square bg-slate-50 rounded-xl overflow-hidden mb-3">
                             <img src="${img}" class="w-full h-full object-contain group-hover:scale-[1.03] transition-transform" alt="${escapeHtml(name)}">
@@ -646,7 +646,7 @@
         }
         if (typeof updateNavbarCartBadge === 'function') updateNavbarCartBadge();
 
-        window.location.href = `../payment/index.php?id=${currentId}&qty=${quantityToAdd}`;
+        window.location.href = `../cart/index.php`;
 
     }
 

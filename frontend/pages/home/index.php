@@ -25,12 +25,12 @@ require_once __DIR__ . '/../../components/session.php';
 
             <div class="absolute inset-0 w-full h-full">
 
-                <img src="/backend/uploads/products/banner1.jpg"
+                <img src="/Project-Web-Programming/backend/uploads/products/banner1.jpg"
                     class="banner-slide absolute inset-0 w-full h-full object-cover object-[center_66%] transition-opacity duration-1000 ease-in-out opacity-100">
-                <img src="/backend/uploads/products/banner2.jpg"
+                <img src="/Project-Web-Programming/backend/uploads/products/banner2.jpg"
                     class="banner-slide absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ease-in-out opacity-0">
 
-                <img src="/backend/uploads/products/banner3.jpg"
+                <img src="/Project-Web-Programming/backend/uploads/products/banner3.jpg"
                     class="banner-slide absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ease-in-out opacity-0">
 
                 <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent z-10"></div>
@@ -46,7 +46,7 @@ require_once __DIR__ . '/../../components/session.php';
                 <p class="text-xs md:text-sm text-gray-200 leading-relaxed font-light">
                     Trải nghiệm luồng chốt đơn siêu tốc với mô hình <strong class="text-orange-400">"Mua Ngay"</strong> dành riêng cho các mặt hàng độc bản, số lượng chỉ có một. Ai đến trước, mua trước!
                 </p>
-                <a href="/frontend/pages/products/category.php" class="bg-white text-primary font-semibold px-6 py-2.5 rounded-full text-[14px] w-max hover:bg-opacity-90 active:scale-95 transition-all text-center shadow">
+                <a href="/Project-Web-Programming/frontend/pages/products/category.php" class="bg-white text-primary font-semibold px-6 py-2.5 rounded-full text-[14px] w-max hover:bg-opacity-90 active:scale-95 transition-all text-center shadow">
                     Khám Phá Ngay
                 </a>
             </div>
@@ -110,7 +110,7 @@ require_once __DIR__ . '/../../components/session.php';
     <!-- Nhúng chân trang Footer -->
     <?php include '../../components/footer.php'; ?>
     <!-- Nhúng file JavaScript để xử lý tương tác sản phẩm -->
-    <script src="/frontend/assets/js/products.js?v=20260702-1"></script>
+    <script src="/Project-Web-Programming/frontend/assets/js/products.js?v=20260626-4"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -139,7 +139,7 @@ require_once __DIR__ . '/../../components/session.php';
             }
 
             try {
-                let res = await fetch(`/backend/public/index.php/api/products?limit=${homeLimit}&page=${page}`);
+                let res = await fetch(`/Project-Web-Programming/backend/public/index.php/api/products?limit=${homeLimit}&page=${page}`);
                 let result = await res.json();
                 let products = result.data || [];
                 homeTotalProducts = result.total || 0;
@@ -151,14 +151,14 @@ require_once __DIR__ . '/../../components/session.php';
                 if (products && products.length > 0) {
                     const productsHtml = products.map(row => {
                         const qty = parseInt(row.Stock_quantity ?? row.stock_quantity ?? 1);
-                        const badgeHtml = qty === 1 ?
-                            `<span class="absolute top-3 left-3 bg-[#fd761a] text-white font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-sm">Độc bản</span>` :
-                            `<span class="absolute top-3 left-3 bg-blue-600 text-white font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-sm">Còn ${qty}</span>`;
+                        const badgeHtml = qty === 1
+                            ? `<span class="absolute top-3 left-3 bg-[#fd761a] text-white font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-sm">Độc bản</span>`
+                            : `<span class="absolute top-3 left-3 bg-blue-600 text-white font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-sm">Còn ${qty}</span>`;
                         return `
-                    <a href="/frontend/pages/products/detail.php?id=${row.ID}" class="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 flex flex-col group">
+                    <a href="/Project-Web-Programming/frontend/pages/products/detail.php?id=${row.ID}" class="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 flex flex-col group">
                         <div class="aspect-square bg-slate-50 flex items-center justify-center relative overflow-hidden shrink-0">
                             ${badgeHtml}
-                            <img src="${(row.Image && (row.Image.startsWith('http://') || row.Image.startsWith('https://'))) ? escapeHtml(row.Image) : '/backend/uploads/products/' + escapeHtml(row.Image || 'placeholder.png')}" alt="${escapeHtml(row.Name)}" onerror="this.src='/frontend/assets/images/placeholder.png'" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500">
+                            <img src="${(row.Image && (row.Image.startsWith('http://') || row.Image.startsWith('https://'))) ? escapeHtml(row.Image) : '/Project-Web-Programming/backend/uploads/products/' + escapeHtml(row.Image || 'placeholder.png')}" alt="${escapeHtml(row.Name)}" onerror="this.src='/Project-Web-Programming/frontend/assets/images/placeholder.png'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         </div>
                         <div class="p-4 flex flex-col flex-grow justify-between gap-3">
                             <div class="space-y-1.5">
