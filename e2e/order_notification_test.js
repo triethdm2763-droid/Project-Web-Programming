@@ -16,13 +16,18 @@ Scenario('Seller receives notification after buyer places an order', async ({ I 
     // Đợi chuyển trang
     I.wait(3);
 
-    // Mở trang Dashboard
-    I.amOnPage('/frontend/pages/user/dashboard.php');
-
     // Kiểm tra chuông thông báo có hiển thị thông báo mới
-    I.click('#notification-bell');
-    I.wait(2);
+    I.waitForElement('#nav-btn-notifications', 5);
+    I.click('#nav-btn-notifications');  
 
-    I.see('Bạn có đơn hàng mới');
+    const badge = await I.grabTextFrom('#nav-notification-badge');
+    console.log(badge);
+
+    I.waitForElement('#nav-btn-notifications', 5);
+    I.click('#nav-btn-notifications');
+
+    I.waitForElement('#nav-notifications-dropdown', 5);
+
+    I.see('Đặt mua thành công!', '#nav-notifications-dropdown');
 
 });

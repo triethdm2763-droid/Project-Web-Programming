@@ -157,6 +157,38 @@ require_once __DIR__ . '/../../components/session.php';
             // 1. Load user profile details first
             await loadUserInfo();
 
+            const buyNowData = localStorage.getItem("buy_now_product");
+
+            if (buyNowData) {
+
+                currentProducts = [JSON.parse(buyNowData)];
+
+                renderProductList();
+                calculateTotal();
+
+                return;
+            }
+
+            // Kiểm tra nếu đi từ nút MUA NGAY
+            const buyNow = getQueryParam("buyNow");
+
+            if (buyNow === "true") {
+
+                const product = JSON.parse(localStorage.getItem("buy_now_product"));
+
+                if (!product) {
+                    showToast("Không tìm thấy sản phẩm.", "error");
+                    return;
+                }
+
+                currentProducts = [product];
+
+                renderProductList();
+                calculateTotal();
+
+                return;
+            }
+
             const singleId = getQueryParam('id');
             const multipleIds = getQueryParam('ids');
 

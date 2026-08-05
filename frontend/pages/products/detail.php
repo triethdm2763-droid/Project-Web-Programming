@@ -618,6 +618,41 @@
         if (!currentProduct) return;
 
         const currentId = currentProduct.ID || currentProduct.id;
+
+        if (!currentId) {
+            showToast("Dữ liệu sản phẩm không hợp lệ!", "error");
+            return;
+        }
+
+        const sellerId = parseInt(
+            currentProduct.SellerID ||
+            currentProduct.Seller_ID ||
+            currentProduct.seller_id || 0
+        );
+
+        if (currentUserId && sellerId === currentUserId) {
+            showToast("Bạn không thể mua sản phẩm của chính mình!", "warning");
+            return;
+        }
+
+        const qty =
+            parseInt(document.getElementById("detail-qty-input").value) || 1;
+
+        // Chỉ lưu sản phẩm đang mua
+        localStorage.setItem("buy_now_product", JSON.stringify({
+            ...currentProduct,
+            Quantity: qty
+        }));
+
+        // Đi thẳng sang thanh toán
+        window.location.href = "../payment/index.php?buyNow=true";
+    }
+
+    /*function buyNow() {
+
+        if (!currentProduct) return;
+
+        const currentId = currentProduct.ID || currentProduct.id;
         if (!currentId) {
             showToast("Dữ liệu sản phẩm không hợp lệ, không thể mua ngay.", "error");
             return;
@@ -648,7 +683,7 @@
 
         window.location.href = `../cart/index.php`;
 
-    }
+    } */
 
     document.addEventListener("DOMContentLoaded", function(){
         const btnBuy = document.getElementById("btn-buy-now");
