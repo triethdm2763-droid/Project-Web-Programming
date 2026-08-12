@@ -37,7 +37,13 @@ function app_base_url()
 function app_url($path = '')
 {
     $path = '/' . ltrim($path, '/');
-    return app_base_url() . $path;
+    $baseUrl = app_base_url();
+
+    if ($baseUrl !== '' && ($path === $baseUrl || str_starts_with($path, $baseUrl . '/'))) {
+        return $path;
+    }
+
+    return $baseUrl . $path;
 }
 
 if (!defined('APP_INTERNAL_URL_REWRITE_STARTED') && PHP_SAPI !== 'cli') {
