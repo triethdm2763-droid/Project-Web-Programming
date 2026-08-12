@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\NotificationRepository;
+use App\Core\Session;
 
 class NotificationService
 {
@@ -20,9 +21,7 @@ class NotificationService
      */
     public function getMyNotifications(): array
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
         if (empty($_SESSION['user_id'])) {
             return [
                 'status'  => 'error',
@@ -61,9 +60,7 @@ class NotificationService
      */
     public function markAsRead(int $notificationId): array
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
         if (empty($_SESSION['user_id'])) {
             return [
                 'status'  => 'error',

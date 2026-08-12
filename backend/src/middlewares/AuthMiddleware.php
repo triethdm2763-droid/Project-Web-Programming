@@ -2,6 +2,8 @@
 
 namespace App\Middlewares;
 
+use App\Core\Session;
+
 class AuthMiddleware
 {
 
@@ -13,9 +15,7 @@ class AuthMiddleware
     public static function handle()
     {
         // Double check session start status
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
 
         // Check if user session key is active
         if (!isset($_SESSION['user_id'])) {

@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\BaseController;
+use App\Core\Session;
 use App\Services\ProductService;
 
 class ProductController extends BaseController
@@ -20,16 +21,6 @@ class ProductController extends BaseController
      */
     public function list()
     {
-        // If status filter is passed, it is the seller dashboard listing
-        if (isset($_GET['status'])) {
-            $status = $_GET['status'];
-            $result = $this->productService->getSellerProducts($status);
-            if ($result['status'] === 'success') {
-                return $this->json($result['data'], 200);
-            }
-            return $this->json(['error' => $result['message']], $result['code']);
-        }
-
         $filters = [];
         if (isset($_GET['category_id'])) {
             $filters['category_id'] = $_GET['category_id'];
@@ -52,6 +43,9 @@ class ProductController extends BaseController
         if (isset($_GET['condition_status'])) {
             $filters['condition_status'] = $_GET['condition_status'];
         }
+        if (isset($_GET['status'])) {
+            $filters['status'] = $_GET['status'];
+        }
         if (isset($_GET['limit'])) {
             $filters['limit'] = intval($_GET['limit']);
             $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
@@ -66,7 +60,7 @@ class ProductController extends BaseController
                 'data' => $result['data']
             ], $result['code']);
         }
-        return $this->json($result['data'], $result['code']);
+        return $this->json(['data' => $result['data']], $result['code']);
     }
 
     /**
@@ -134,9 +128,7 @@ class ProductController extends BaseController
      */
     public function uploadImage()
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
 
         if (empty($_SESSION['user_id'])) {
             return $this->json(['error' => 'Bạn phải đăng nhập để thực hiện chức năng này.'], 401);

@@ -85,6 +85,33 @@ function sendJsonError($message, $code = 404)
     exit;
 }
 
+function applyCorsHeaders(): void
+{
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    if ($origin === '') {
+        return;
+    }
+
+    $configuredOrigins = getenv('CORS_ALLOWED_ORIGINS') ?: '';
+    $allowedOrigins = array_filter(array_map('trim', explode(',', $configuredOrigins)));
+
+    if (empty($allowedOrigins)) {
+        $allowedOrigins = [
+            'http://localhost',
+            'http://127.0.0.1',
+            'http://localhost:8080',
+            'http://localhost:8888',
+            'http://127.0.0.1:8080',
+            'http://127.0.0.1:8888',
+        ];
+    }
+
+    if (in_array($origin, $allowedOrigins, true)) {
+        header('Access-Control-Allow-Origin: ' . $origin);
+        header('Vary: Origin');
+    }
+}
+
 // 2. EXTRACT CLEAN ROUTE PATH
 $requestUri = $_SERVER['REQUEST_URI'];
 if (($pos = strpos($requestUri, '?')) !== false) {
@@ -97,10 +124,10 @@ if (preg_match('/(\/api\/.*)$/', $requestUri, $matches)) {
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
+applyCorsHeaders();
 
 // Handle CORS Preflight request
 if ($method === 'OPTIONS') {
-    header("Access-Control-Allow-Origin: *");
     header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
     header("Access-Control-Allow-Headers: Content-Type, Authorization");
     http_response_code(204);
@@ -133,7 +160,7 @@ $routes = [
         '/api/products/detail'    => ['App\Controllers\ProductController', 'detail'],
         '/api/products/mine'      => ['App\Controllers\ProductController', 'mine'],
         // Categories endpoints
-        '/api/categories'         => ['App\Controllers\CategoryController', 'list'],
+        '/api/categories'         => ['App\Controllers\CategoryController', 'index'],
         '/api/categories/detail'  => ['App\Controllers\CategoryController', 'detail'],
         '/api/orders/buyer'       => ['App\Controllers\OrderController', 'buyerOrders'],
         '/api/orders/seller'      => ['App\Controllers\OrderController', 'sellerOrders'],

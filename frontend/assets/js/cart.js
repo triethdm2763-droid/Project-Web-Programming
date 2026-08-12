@@ -538,10 +538,23 @@ function renderRecommendationCard(product) {
 function shuffleArray(arr) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = secureRandomIndex(i + 1);
         [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
+}
+
+function secureRandomIndex(maxExclusive) {
+    const randomValues = new Uint32Array(1);
+    const limit = Math.floor(0x100000000 / maxExclusive) * maxExclusive;
+    let value;
+
+    do {
+        crypto.getRandomValues(randomValues);
+        value = randomValues[0];
+    } while (value >= limit);
+
+    return value % maxExclusive;
 }
 
 // --- 5. XỬ LÝ DỮ LIỆU GIỎ HÀNG ---

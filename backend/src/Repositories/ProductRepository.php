@@ -113,6 +113,10 @@ class ProductRepository extends BaseRepository
         return $stmt->fetchAll();
     }
 
+    public function getActiveProducts(array $filters = []): array {
+        return $this->findAllActive($filters);
+    }
+
     public function create(array $data): int {
         $sql = "INSERT INTO `products` (`Name`, `Description`, `Image`, `Category_ID`, `Seller_ID`, `Price`, `Stock_quantity`, `Status`, `Condition_status`, `Accessories`, `Warranty`, `Used_duration`) 
                 VALUES (:name, :description, :image, :category_id, :seller_id, :price, :stock_quantity, :status, :condition_status, :accessories, :warranty, :used_duration)";

@@ -6,6 +6,7 @@ use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use App\Services\NotificationService;
+use App\Core\Session;
 use App\Validators\Validator;
 use Exception;
 
@@ -32,9 +33,7 @@ class OrderService
      */
     public function checkout(array $data): array
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
 
         $rules = [
             'product_id'       => 'required',
@@ -197,9 +196,7 @@ class OrderService
      */
     public function cancelOrder(array $data): array
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
         if (empty($_SESSION['user_id'])) {
             return [
                 'status'  => 'error',
@@ -263,7 +260,7 @@ class OrderService
             $this->notificationService->send(
                 $buyerId,
                 "Hủy đơn hàng thành công!",
-                "Bạn đã hủy đơn hàng cho sản phẩm '" . $order['ProductName'] . "' (Mã đơn #${orderId}) thành công."
+                "Bạn đã hủy đơn hàng cho sản phẩm '" . $order['ProductName'] . "' (Mã đơn #{$orderId}) thành công."
             );
 
             return [
@@ -286,9 +283,7 @@ class OrderService
      */
     public function getBuyerHistory(): array
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
         if (empty($_SESSION['user_id'])) {
             return [
                 'status'  => 'error',
@@ -312,9 +307,7 @@ class OrderService
      */
     public function getSellerOrders(): array
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
         if (empty($_SESSION['user_id'])) {
             return [
                 'status'  => 'error',
@@ -339,9 +332,7 @@ class OrderService
      */
     public function updateStatus(array $data): array
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
         if (empty($_SESSION['user_id'])) {
             return [
                 'status'  => 'error',

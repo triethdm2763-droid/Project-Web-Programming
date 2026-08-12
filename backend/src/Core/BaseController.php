@@ -34,6 +34,10 @@ class BaseController
     {
         $raw = file_get_contents('php://input');
         $decoded = json_decode($raw, true);
-        return is_array($decoded) ? $decoded : [];
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        return !empty($_POST) ? $_POST : [];
     }
 }
