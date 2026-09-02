@@ -1,6 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ProductStateTransitionTest extends TestCase
 {
@@ -10,7 +11,6 @@ class ProductStateTransitionTest extends TestCase
         if ($currentState === 'pending' && $event === 'REJECT') return 'rejected';
         if ($currentState === 'active' && $event === 'PURCHASE') return 'sold';
 
-        // Invalid: Seller update/delete khi đã sold -> Giữ nguyên sold và chặn
         if ($currentState === 'sold' && ($event === 'UPDATE' || $event === 'DELETE')) {
             return 'sold';
         }
@@ -18,9 +18,7 @@ class ProductStateTransitionTest extends TestCase
         return 'ERROR';
     }
 
-    /**
-     * @dataProvider stateTransitionProvider
-     */
+    #[DataProvider('stateTransitionProvider')]
     public function testProductStateTransitions($testId, $startState, $event, $expectedEndState)
     {
         $actualEndState = $this->processStateTransition($startState, $event);
