@@ -38,7 +38,9 @@ class OrderService
         $rules = [
             'product_id'       => 'required',
             'shipping_address' => 'required|min:10',
-            'payment_method'   => 'required'
+            'payment_method'   => 'required',
+            'fullname'         => 'required',
+            'phone'            => 'required'
         ];
 
         $errors = Validator::validate($data, $rules);
