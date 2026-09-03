@@ -2,82 +2,77 @@
 
 namespace Tests;
 
-use App\Services\OrderService;
 use PHPUnit\Framework\TestCase;
+use App\Services\OrderService;
 
 class CheckoutBoundaryValueAnalysisTest extends TestCase
 {
-    private OrderService $service;
-
-    private int $validProductId = 3;
+    private OrderService $orderService;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        $_SESSION = [];
-
-        $this->service = new OrderService();
+        $this->orderService = new OrderService();
     }
 
-    private function validData(): array
+    /**
+     * BVA-01: shipping_address = Min - 1
+     * 9 ký tự -> phải bị reject
+     */
+    public function testBVA01ShippingAddressMinMinusOne(): void
     {
-        return [
-            'product_id'       => $this->validProductId,
-            'shipping_address' => '12345678901234567890',
+        $data = [
+            'product_id'       => 3,
+            'shipping_address' => '123456789',
             'payment_method'   => 'COD',
-            'quantity'         => 1,
             'fullname'         => 'Nguyen Van A',
             'phone'            => '0901234567',
         ];
+
+        $result = $this->orderService->checkout($data);
+
+        $this->assertSame(400, $result['code']);
+        $this->assertSame('error', $result['status']);
     }
 
-    // =========================================================
-    // BVA-01: shipping_address - Min = 10
-    // Expected: 201
-    // =========================================================
-    public function testBVA01_Address_Min(): void
+    /**
+     * BVA-02: shipping_address = Min
+     * 10 ký tự -> hợp lệ
+     */
+    public function testBVA02ShippingAddressMin(): void
     {
-        $data = $this->validData();
+        $data = [
+            'product_id'       => 3,
+            'shipping_address' => '1234567890',
+            'payment_method'   => 'COD',
+            'fullname'         => 'Nguyen Van A',
+            'phone'            => '0901234567',
+        ];
 
-        $data['shipping_address'] = '1234567890';
-
-        $result = $this->service->checkout($data);
+        $result = $this->orderService->checkout($data);
 
         $this->assertSame(201, $result['code']);
+        $this->assertSame('success', $result['status']);
     }
 
-    // =========================================================
-    // BVA-02: shipping_address - Min + 1 = 11
-    // Expected: 201
-    // =========================================================
-    public function testBVA02_Address_MinPlusOne(): void
+    /**
+     * BVA-03: shipping_address = Min + 1
+     * 11 ký tự -> hợp lệ
+     */
+    public function testBVA03ShippingAddressMinPlusOne(): void
     {
-        $data = $this->validData();
+        $data = [
+            'product_id'       => 3,
+            'shipping_address' => '12345678901',
+            'payment_method'   => 'COD',
+            'fullname'         => 'Nguyen Van A',
+            'phone'            => '0901234567',
+        ];
 
-        $data['shipping_address'] = '12345678901';
-
-        $result = $this->service->checkout($data);
+        $result = $this->orderService->checkout($data);
 
         $this->assertSame(201, $result['code']);
-    }
-
-    // =========================================================
-    // BVA-03: shipping_address - Nominal = 20
-    // Expected: 201
-    // =========================================================
-    public function testBVA03_Address_Nominal(): void
-    {
-        $data = $this->validData();
-
-        $data['shipping_address'] = '12345678901234567890';
-
-        $result = $this->service->checkout($data);
-
-        $this->assertSame(201, $result['code']);
+        $this->assertSame('success', $result['status']);
     }
 }
