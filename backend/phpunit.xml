@@ -3,12 +3,21 @@
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true">
+
     <php>
         <ini name="session.save_path" value="storage/sessions"/>
     </php>
+
     <testsuites>
         <testsuite name="Project Test Suite">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
+
+    <source>
+    <include>
+        <file>src/services/OrderService.php</file>
+    </include>
+    </source>
+
 </phpunit>
