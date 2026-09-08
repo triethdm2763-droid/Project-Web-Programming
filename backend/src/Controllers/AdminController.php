@@ -5,7 +5,6 @@ namespace App\Controllers;
 use App\Repositories\UserRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
-use App\Core\Session;
 
 class AdminController
 {
@@ -32,7 +31,9 @@ class AdminController
      */
     public function checkAdminAuth(): ?array
     {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
 
         if (empty($_SESSION['user_id'])) {
             return $this->jsonResponse(['success' => false, 'message' => 'Bạn cần đăng nhập để truy cập trang quản trị.'], 401);

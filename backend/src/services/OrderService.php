@@ -6,7 +6,6 @@ use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use App\Services\NotificationService;
-use App\Core\Session;
 use App\Validators\Validator;
 use Exception;
 
@@ -33,14 +32,14 @@ class OrderService
      */
     public function checkout(array $data): array
     {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         $rules = [
             'product_id'       => 'required',
             'shipping_address' => 'required|min:10',
-            'payment_method'   => 'required',
-            'fullname'         => 'required',
-            'phone'            => 'required'
+            'payment_method'   => 'required'
         ];
 
         $errors = Validator::validate($data, $rules);
@@ -198,7 +197,9 @@ class OrderService
      */
     public function cancelOrder(array $data): array
     {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         if (empty($_SESSION['user_id'])) {
             return [
                 'status'  => 'error',
@@ -285,7 +286,9 @@ class OrderService
      */
     public function getBuyerHistory(): array
     {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         if (empty($_SESSION['user_id'])) {
             return [
                 'status'  => 'error',
@@ -309,7 +312,9 @@ class OrderService
      */
     public function getSellerOrders(): array
     {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         if (empty($_SESSION['user_id'])) {
             return [
                 'status'  => 'error',
@@ -334,7 +339,9 @@ class OrderService
      */
     public function updateStatus(array $data): array
     {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         if (empty($_SESSION['user_id'])) {
             return [
                 'status'  => 'error',

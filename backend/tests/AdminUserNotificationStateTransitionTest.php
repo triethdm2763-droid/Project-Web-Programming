@@ -17,12 +17,28 @@ final class AdminUserNotificationStateTransitionTest extends TestCase
 {
     protected function setUp(): void
     {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_save_path(sys_get_temp_dir());
+            session_id('phpunit-state-' . getmypid());
+            if (!session_start(['use_cookies' => false, 'cache_limiter' => ''])) {
+                self::fail('Không thể khởi tạo session dành cho kiểm thử.');
+            }
+        }
+
+        $_SESSION = [];
+        http_response_code(200);
+    }
+
+    protected function tearDown(): void
+    {
         $_SESSION = [];
         http_response_code(200);
     }
 
     private function userController(string $startState, int $userId = 7): array
     {
+        // Controller chỉ gửi trạng thái đích xuống repository. Trạng thái đầu được
+        // giữ trong test double để quan sát kết quả trước và sau lời gọi thật.
         $userRepo = new class($startState, $userId) extends UserRepository {
             public string $state;
             public int $id;
@@ -80,24 +96,30 @@ final class AdminUserNotificationStateTransitionTest extends TestCase
     {
         $_SESSION = ['user_id' => 1, 'role' => 'admin'];
         [$controller, $repo] = $this->userController('banned');
-        $controller->updateUserStatus(['id' => 7, 'status' => 'active']);
+        $response = $controller->updateUserStatus(['id' => 7, 'status' => 'active']);
+        self::assertSame(200, $response['status_code']);
         self::assertSame('active', $repo->state);
+        self::assertSame(1, $repo->updateCalls);
     }
 
     public function test_UST03_active_to_active_is_allowed(): void
     {
         $_SESSION = ['user_id' => 1, 'role' => 'admin'];
         [$controller, $repo] = $this->userController('active');
-        $controller->updateUserStatus(['id' => 7, 'status' => 'active']);
+        $response = $controller->updateUserStatus(['id' => 7, 'status' => 'active']);
+        self::assertSame(200, $response['status_code']);
         self::assertSame('active', $repo->state);
+        self::assertSame(1, $repo->updateCalls);
     }
 
     public function test_UST04_banned_to_banned_is_allowed(): void
     {
         $_SESSION = ['user_id' => 1, 'role' => 'admin'];
         [$controller, $repo] = $this->userController('banned');
-        $controller->updateUserStatus(['id' => 7, 'status' => 'banned']);
+        $response = $controller->updateUserStatus(['id' => 7, 'status' => 'banned']);
+        self::assertSame(200, $response['status_code']);
         self::assertSame('banned', $repo->state);
+        self::assertSame(1, $repo->updateCalls);
     }
 
     public function test_UST05_invalid_status_does_not_change_state(): void

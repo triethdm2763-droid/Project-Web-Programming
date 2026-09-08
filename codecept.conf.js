@@ -1,10 +1,7 @@
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectFolder = path.basename(__dirname);
-const baseUrl = process.env.CODECEPT_BASE_URL || `http://localhost/${projectFolder}`;
-const showBrowser = process.env.CODECEPT_SHOW !== 'false';
+const projectDirectory = encodeURIComponent(path.basename(process.cwd()));
+const baseUrl = process.env.E2E_BASE_URL || `http://localhost/${projectDirectory}`;
 
 /** @type {CodeceptJS.MainConfig} */
 export const config = {
@@ -14,7 +11,7 @@ export const config = {
     Playwright: {
       browser: 'chromium',
       url: baseUrl,
-      show: showBrowser
+      show: true
     }
   },
   include: {

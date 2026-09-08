@@ -17,15 +17,39 @@ final class NotificationWhiteBoxTest extends TestCase
 {
     protected function setUp(): void
     {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_save_path(sys_get_temp_dir());
+            session_id('phpunit-notification-' . getmypid());
+            if (!session_start(['use_cookies' => false, 'cache_limiter' => ''])) {
+                self::fail('Không thể khởi tạo session dành cho kiểm thử.');
+            }
+        }
+
         $_SESSION = [];
+        http_response_code(200);
     }
 
-    private function serviceWithResult(bool $markResult): NotificationService
+    protected function tearDown(): void
+    {
+        $_SESSION = [];
+        http_response_code(200);
+    }
+
+    private function serviceWithResult(bool $markResult): array
     {
         $repo = new class($markResult) extends NotificationRepository {
             public bool $markResult;
+            public int $calls = 0;
+            public ?int $lastNotificationId = null;
+            public ?int $lastUserId = null;
             public function __construct(bool $markResult) { $this->markResult = $markResult; }
-            public function markAsRead(int $notificationId, int $userId): bool { return $this->markResult; }
+            public function markAsRead(int $notificationId, int $userId): bool
+            {
+                $this->calls++;
+                $this->lastNotificationId = $notificationId;
+                $this->lastUserId = $userId;
+                return $this->markResult;
+            }
         };
 
         $ref = new ReflectionClass(NotificationService::class);
@@ -34,33 +58,59 @@ final class NotificationWhiteBoxTest extends TestCase
         $prop = $ref->getProperty('notificationRepository');
         $prop->setAccessible(true);
         $prop->setValue($service, $repo);
-        return $service;
+        return [$service, $repo];
     }
 
-    // D1=True: empty($_SESSION['user_id'])
-    public function test_WB01_D1_true_not_logged_in_returns_401(): void
+    // D0=True, D1=True: service tự khởi tạo session rồi trả 401 vì chưa đăng nhập.
+    public function test_WB00_D0_true_starts_session_then_D1_true_returns_401(): void
     {
-        $result = $this->serviceWithResult(true)->markAsRead(10);
+        $_SESSION = [];
+        session_write_close();
+        session_id('phpunit-wb00-' . getmypid());
+
+        [$service, $repo] = $this->serviceWithResult(true);
+        $result = $service->markAsRead(10);
+
+        self::assertSame(PHP_SESSION_ACTIVE, session_status());
         self::assertSame('error', $result['status']);
         self::assertSame(401, $result['code']);
+        self::assertSame(0, $repo->calls);
+    }
+
+    // D0=False, D1=True: session đã hoạt động nhưng chưa có user_id.
+    public function test_WB01_D1_true_not_logged_in_returns_401(): void
+    {
+        [$service, $repo] = $this->serviceWithResult(true);
+        $result = $service->markAsRead(10);
+        self::assertSame('error', $result['status']);
+        self::assertSame(401, $result['code']);
+        self::assertSame(0, $repo->calls);
     }
 
     // D1=False, D2=True: repository update succeeds
     public function test_WB02_D1_false_D2_true_returns_200(): void
     {
         $_SESSION['user_id'] = 7;
-        $result = $this->serviceWithResult(true)->markAsRead(10);
+        [$service, $repo] = $this->serviceWithResult(true);
+        $result = $service->markAsRead(10);
         self::assertSame('success', $result['status']);
         self::assertSame(200, $result['code']);
+        self::assertSame(1, $repo->calls);
+        self::assertSame(10, $repo->lastNotificationId);
+        self::assertSame(7, $repo->lastUserId);
     }
 
     // D1=False, D2=False: repository update fails
     public function test_WB03_D1_false_D2_false_returns_400(): void
     {
         $_SESSION['user_id'] = 7;
-        $result = $this->serviceWithResult(false)->markAsRead(10);
+        [$service, $repo] = $this->serviceWithResult(false);
+        $result = $service->markAsRead(10);
         self::assertSame('error', $result['status']);
         self::assertSame(400, $result['code']);
+        self::assertSame(1, $repo->calls);
+        self::assertSame(10, $repo->lastNotificationId);
+        self::assertSame(7, $repo->lastUserId);
     }
 
     // DEF-NOTI-01: execute() can succeed while UPDATE affects zero rows.

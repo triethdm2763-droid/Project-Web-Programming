@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Repositories\ProductRepository;
-use App\Core\Session;
 use App\Validators\Validator;
 
 class ProductService
@@ -34,7 +33,7 @@ class ProductService
 
     public function createProduct(array $data): array
     {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) session_start();
         if (empty($_SESSION['user_id'])) {
             return ['status' => 'error', 'code' => 401, 'message' => 'Bạn phải đăng nhập để đăng tin.'];
         }
@@ -67,7 +66,7 @@ class ProductService
 
     public function updateProduct(int $id, array $data): array
     {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) session_start();
         if (empty($_SESSION['user_id'])) return ['status' => 'error', 'code' => 401, 'message' => 'Bạn phải đăng nhập.'];
 
         $product = $this->productRepository->findById($id);
@@ -106,7 +105,7 @@ class ProductService
 
     public function deleteProduct(int $id): array
     {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) session_start();
         if (empty($_SESSION['user_id'])) return ['status' => 'error', 'code' => 401, 'message' => 'Bạn phải đăng nhập.'];
 
         $product = $this->productRepository->findById($id);
@@ -123,7 +122,7 @@ class ProductService
 
     public function getSellerProducts(?string $status = null): array
     {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) session_start();
         if (empty($_SESSION['user_id'])) return ['status' => 'error', 'code' => 401, 'message' => 'Bạn phải đăng nhập.'];
         $sellerId = (int)$_SESSION['user_id'];
         $products = $this->productRepository->findSellerProducts($sellerId, $status);
@@ -137,7 +136,7 @@ class ProductService
 
     public function getSellerStats(): array
     {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) session_start();
         if (empty($_SESSION['user_id'])) return ['status' => 'error', 'code' => 401, 'message' => 'Bạn phải đăng nhập.'];
         
         $sellerId = (int)$_SESSION['user_id'];
@@ -153,26 +152,5 @@ class ProductService
         $stats['sold_products'] = $soldProducts;
         
         return ['status' => 'success', 'code' => 200, 'data' => $stats];
-    }
-
-    public function validateImage(array $file): bool
-    {
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-        $maxSize = 5 * 1024 * 1024;
-
-        $size = (int)($file['size'] ?? 0);
-        $type = strtolower((string)($file['type'] ?? ''));
-        $extension = strtolower(pathinfo((string)($file['name'] ?? ''), PATHINFO_EXTENSION));
-
-        if ($size <= 0 || $size > $maxSize) {
-            return false;
-        }
-
-        if ($type !== '' && !in_array($type, $allowedTypes, true)) {
-            return false;
-        }
-
-        return $extension === '' || in_array($extension, $allowedExtensions, true);
     }
 }

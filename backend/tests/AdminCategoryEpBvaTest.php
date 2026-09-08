@@ -16,6 +16,31 @@ use PHPUnit\Framework\TestCase;
 
 final class AdminCategoryEpBvaTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        $this->startTestSession();
+        http_response_code(200);
+    }
+
+    protected function tearDown(): void
+    {
+        $_SESSION = [];
+        http_response_code(200);
+    }
+
+    private function startTestSession(): void
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_save_path(sys_get_temp_dir());
+            session_id('phpunit-admin-' . getmypid());
+            if (!session_start(['use_cookies' => false, 'cache_limiter' => ''])) {
+                self::fail('Không thể khởi tạo session dành cho kiểm thử.');
+            }
+        }
+
+        $_SESSION = [];
+    }
+
     private function repository(): CategoryRepository
     {
         return new class extends CategoryRepository {
@@ -109,7 +134,7 @@ final class AdminCategoryEpBvaTest extends TestCase
     {
         return [
             'B1 min=1'       => [1],
-            'B2 min+=2'      => [2],
+            'B2 min+1=2'     => [2],
             'B3 nominal=50'  => [50],
             'B4 max-=99'     => [99],
             'B5 max=100'     => [100],

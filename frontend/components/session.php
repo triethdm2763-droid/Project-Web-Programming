@@ -37,13 +37,7 @@ function app_base_url()
 function app_url($path = '')
 {
     $path = '/' . ltrim($path, '/');
-    $baseUrl = app_base_url();
-
-    if ($baseUrl !== '' && ($path === $baseUrl || str_starts_with($path, $baseUrl . '/'))) {
-        return $path;
-    }
-
-    return $baseUrl . $path;
+    return app_base_url() . $path;
 }
 
 if (!defined('APP_INTERNAL_URL_REWRITE_STARTED') && PHP_SAPI !== 'cli') {
@@ -52,6 +46,15 @@ if (!defined('APP_INTERNAL_URL_REWRITE_STARTED') && PHP_SAPI !== 'cli') {
         $baseUrl = app_base_url();
         if ($baseUrl === '') {
             return $html;
+        }
+
+        $legacyBaseUrl = '/Project-Web-Programming';
+        if ($baseUrl !== $legacyBaseUrl) {
+            $html = str_replace(
+                ['"' . $legacyBaseUrl . '/', "'" . $legacyBaseUrl . '/', '`' . $legacyBaseUrl . '/'],
+                ['"' . $baseUrl . '/', "'" . $baseUrl . '/', '`' . $baseUrl . '/'],
+                $html
+            );
         }
 
         return str_replace(
