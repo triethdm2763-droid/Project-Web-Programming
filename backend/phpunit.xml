@@ -15,9 +15,8 @@
     </testsuites>
 
     <source>
-    <include>
-        <file>src/services/OrderService.php</file>
-    </include>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
     </source>
-
 </phpunit>
