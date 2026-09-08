@@ -201,7 +201,7 @@ INSERT INTO `orders` (
 ('DH2606260003', 8, 2, 3, 9800000, 'Can Tho', 'pending'),
 ('DH2606260004', 9, 2, 4, 7500000, 'Long An', 'confirmed'),
 ('DH2606260005', 10, 5, 5, 280000, 'Hoi An, Quang Nam', 'completed'),
-('DH2606260006', 6, 5, 6, 1200000, 'TP.HCM', 'pending'),
+('DH2606260006', 6, 5, 6, 1200000, 'TP.HCM', 'confirmed'),
 ('DH2606260007', 7, 4, 7, 120000, 'Vung Tau', 'completed'),
 ('DH2606260008', 8, 2, 8, 65000, 'Nha Trang, Khanh Hoa', 'confirmed'),
 ('DH2606260009', 9, 3, 9, 350000, 'Ben Tre', 'pending'),
