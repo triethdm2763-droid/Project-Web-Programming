@@ -3,16 +3,15 @@
 namespace App\Services;
 
 use App\Repositories\UserRepository;
-use App\Core\Session;
 use App\Validators\Validator;
 
 class AuthService
 {
     private $userRepository;
 
-    public function __construct()
+    public function __construct($userRepository = null)
     {
-        $this->userRepository = new UserRepository();
+        $this->userRepository = $userRepository ?? new UserRepository();
     }
 
     /**
@@ -154,7 +153,9 @@ class AuthService
      */
     public function getCurrentUser(): array
     {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         if (empty($_SESSION['user_id'])) {
             return [
                 'status'  => 'error',
@@ -254,7 +255,9 @@ class AuthService
         // Generate 6 digit OTP code
         $otp = (string)mt_rand(100000, 999999);
 
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         $_SESSION['reset_email'] = $email;
         $_SESSION['reset_otp'] = $otp;
         $_SESSION['reset_expiry'] = time() + 300; // valid for 5 mins
@@ -289,7 +292,9 @@ class AuthService
             ];
         }
 
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         if (empty($_SESSION['reset_email']) || empty($_SESSION['reset_otp']) || empty($_SESSION['reset_expiry'])) {
             return [
