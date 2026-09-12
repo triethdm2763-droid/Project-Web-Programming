@@ -7,8 +7,8 @@ use App\Services\OrderService;
 class OrderController extends BaseController {
     private $orderService;
 
-    public function __construct() {
-        $this->orderService = new OrderService();
+    public function __construct(?OrderService $orderService = null) {
+        $this->orderService = $orderService ?? new OrderService();
     }
 
     /**

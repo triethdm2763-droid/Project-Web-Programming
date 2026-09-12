@@ -7,8 +7,8 @@ use App\Services\NotificationService;
 class NotificationController extends BaseController {
     private $notificationService;
 
-    public function __construct() {
-        $this->notificationService = new NotificationService();
+    public function __construct(?NotificationService $notificationService = null) {
+        $this->notificationService = $notificationService ?? new NotificationService();
     }
 
     /**

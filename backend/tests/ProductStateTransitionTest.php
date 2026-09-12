@@ -39,6 +39,7 @@ final class ProductStateTransitionTest extends TestCase
     {
         $_SESSION = ['user_id' => 7, 'role' => 'seller'];
         $repository = $this->createMock(ProductRepository::class);
+        $repository->expects(self::once())->method('categoryExists')->with(1)->willReturn(true);
         $repository->expects(self::once())->method('create')
             ->with(self::callback(fn (array $data): bool => $data['status'] === 'pending'))
             ->willReturn(31);
@@ -68,6 +69,7 @@ final class ProductStateTransitionTest extends TestCase
     ): void {
         $_SESSION = ['user_id' => $sessionUser, 'role' => $role];
         $repository = $this->createMock(ProductRepository::class);
+        $repository->expects(self::once())->method('categoryExists')->with(1)->willReturn(true);
         $repository->expects(self::once())->method('findById')->with(10)->willReturn([
             'ID' => 10,
             'Seller_ID' => 7,
@@ -197,9 +199,6 @@ final class ProductStateTransitionTest extends TestCase
 
     private function serviceWith(ProductRepository $repository): ProductService
     {
-        $reflection = new \ReflectionClass(ProductService::class);
-        $service = $reflection->newInstanceWithoutConstructor();
-        $reflection->getProperty('productRepository')->setValue($service, $repository);
-        return $service;
+        return new ProductService($repository);
     }
 }

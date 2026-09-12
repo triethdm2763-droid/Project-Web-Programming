@@ -135,6 +135,12 @@ class ProductRepository extends BaseRepository
         return (int)$this->db->lastInsertId();
     }
 
+    public function categoryExists(int $categoryId): bool {
+        $stmt = $this->db->prepare("SELECT 1 FROM `categories` WHERE `ID` = :id LIMIT 1");
+        $stmt->execute(['id' => $categoryId]);
+        return (bool)$stmt->fetchColumn();
+    }
+
     public function update(int $id, array $data): bool {
         $fields = [];
         $params = ['id' => $id];

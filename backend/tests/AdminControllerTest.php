@@ -13,8 +13,21 @@ class AdminControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_save_path(sys_get_temp_dir());
+            session_id('phpunit-admin-controller-' . getmypid());
+            session_start(['use_cookies' => false, 'cache_limiter' => '']);
+        }
         // Xóa Session trước mỗi bài test
         $_SESSION = [];
+    }
+
+    protected function tearDown(): void
+    {
+        $_SESSION = [];
+        http_response_code(200);
+        header_remove();
+        parent::tearDown();
     }
 
     /**
@@ -22,7 +35,7 @@ class AdminControllerTest extends TestCase
      */
     public function test_unauthenticated_user_access_returns_401()
     {
-        $controller = new AdminController();
+        $controller = $this->controllerWithMocks();
         $response = $controller->users();
 
         $this->assertEquals(401, $response['status_code']);
@@ -37,7 +50,7 @@ class AdminControllerTest extends TestCase
         $_SESSION['user_id'] = 10;
         $_SESSION['role'] = 'user';
 
-        $controller = new AdminController();
+        $controller = $this->controllerWithMocks();
         $response = $controller->users();
 
         $this->assertEquals(403, $response['status_code']);
@@ -83,7 +96,7 @@ class AdminControllerTest extends TestCase
         $_SESSION['user_id'] = 1; // Admin ID là 1
         $_SESSION['role'] = 'admin';
 
-        $controller = new AdminController();
+        $controller = $this->controllerWithMocks();
 
         // Giả lập gửi payload khóa chính ID 1
         $response = $controller->updateUserStatus([
@@ -93,5 +106,14 @@ class AdminControllerTest extends TestCase
 
         $this->assertEquals(400, $response['status_code']);
         $this->assertEquals('Không thể tự khóa tài khoản của chính mình.', $response['body']['message']);
+    }
+
+    private function controllerWithMocks(): AdminController
+    {
+        return new AdminController(
+            $this->createMock(UserRepository::class),
+            $this->createMock(OrderRepository::class),
+            $this->createMock(ProductRepository::class)
+        );
     }
 }

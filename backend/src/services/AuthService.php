@@ -7,11 +7,11 @@ use App\Validators\Validator;
 
 class AuthService
 {
-    private $userRepository;
+    private UserRepository $userRepository;
 
-    public function __construct()
+    public function __construct(?UserRepository $userRepository = null)
     {
-        $this->userRepository = new UserRepository();
+        $this->userRepository = $userRepository ?? new UserRepository();
     }
 
     /**
@@ -333,7 +333,14 @@ class AuthService
         }
 
         $newPasswordHash = password_hash($data['password'], PASSWORD_BCRYPT);
-        $this->userRepository->updatePassword((int)$user['ID'], $newPasswordHash);
+        $updated = $this->userRepository->updatePassword((int)$user['ID'], $newPasswordHash);
+        if (!$updated) {
+            return [
+                'status'  => 'error',
+                'code'    => 500,
+                'message' => 'Không thể cập nhật mật khẩu. Vui lòng thử lại.'
+            ];
+        }
 
         // Clear session variables after successful reset
         unset($_SESSION['reset_email'], $_SESSION['reset_otp'], $_SESSION['reset_expiry']);

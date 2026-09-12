@@ -7,8 +7,8 @@ use App\Services\AuthService;
 class AuthController extends BaseController {
     private $authService;
 
-    public function __construct() {
-        $this->authService = new AuthService();
+    public function __construct(?AuthService $authService = null) {
+        $this->authService = $authService ?? new AuthService();
     }
 
     /**
