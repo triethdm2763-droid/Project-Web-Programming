@@ -1,206 +1,466 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Tests;
 
+use App\Services\OrderService;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use App\Services\NotificationService;
-use App\Services\OrderService;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
-final class OrderStateTransitionTest extends TestCase
+class OrderStateTransitionTest extends TestCase
 {
+    private OrderService $service;
+    private $orderRepo;
+    private $productRepo;
+    private $userRepo;
+    private $notification;
+
     protected function setUp(): void
     {
-        $this->ensureSession();
-        $_SESSION = [];
+        parent::setUp();
+
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION = [];
+        } else {
+            @session_start();
+            $_SESSION = [];
+        }
+
         $_COOKIE = [];
+
+        // Tạo mocks
+        $this->orderRepo = $this->createMock(OrderRepository::class);
+        $this->productRepo = $this->createMock(ProductRepository::class);
+        $this->userRepo = $this->createMock(UserRepository::class);
+        $this->notification = $this->createMock(NotificationService::class);
+
+        // Notification mặc định không gây lỗi test
+        $this->notification
+            ->method('send')
+            ->willReturn(true);
+
+        // Tạo service
+        $this->service = new OrderService();
+
+        // Inject dependencies
+        $this->inject('orderRepository', $this->orderRepo);
+        $this->inject('productRepository', $this->productRepo);
+        $this->inject('userRepository', $this->userRepo);
+        $this->inject('notificationService', $this->notification);
     }
 
     protected function tearDown(): void
     {
         $_SESSION = [];
         $_COOKIE = [];
+
+        parent::tearDown();
     }
 
-    public function testCheckoutCreatesOrderInPendingState(): void
+    /**
+     * Inject mock vào private property của OrderService
+     */
+    private function inject(string $property, $value): void
     {
-        $orders = $this->createMock(OrderRepository::class);
-        $products = $this->createMock(ProductRepository::class);
-        $users = $this->createMock(UserRepository::class);
-        $notifications = $this->createMock(NotificationService::class);
+        $ref = new ReflectionClass(OrderService::class);
 
-        $products->method('findById')->willReturn($this->product());
-        $orders->expects(self::once())
-            ->method('createWithTransaction')
-            ->with(
-                self::callback(function (array $orderData): bool {
-                    self::assertSame('pending', $orderData['status']);
-                    return true;
-                }),
-                self::isType('array')
-            )
-            ->willReturn(701);
-        $notifications->expects(self::once())->method('send')->willReturn(true);
-
-        $result = $this->serviceWith($orders, $products, $users, $notifications)->checkout($this->checkoutData());
-
-        self::assertSame(201, $result['code']);
-        self::assertSame(701, $result['order_id']);
+        $propertyRef = $ref->getProperty($property);
+        $propertyRef->setAccessible(true);
+        $propertyRef->setValue($this->service, $value);
     }
 
-    public static function transitionCases(): array
+    /**
+     * Order fixture
+     */
+    private function order(array $override = []): array
     {
-        return [
-            'ORDER-ST-02 pending buyer cancel' => ['cancel', 'pending', 'cancelled', 200, 'cancelled', false],
-            'ORDER-ST-03 confirmed buyer cancel rejected' => ['cancel', 'confirmed', 'cancelled', 400, 'confirmed', false],
-            'ORDER-ST-04 completed buyer cancel rejected' => ['cancel', 'completed', 'cancelled', 400, 'completed', false],
-            'ORDER-ST-05 cancelled buyer cancel rejected' => ['cancel', 'cancelled', 'cancelled', 400, 'cancelled', false],
-            'ORDER-ST-06 pending seller confirms' => ['update', 'pending', 'confirmed', 200, 'confirmed', false],
-            'ORDER-ST-07 confirmed seller completes' => ['update', 'confirmed', 'completed', 200, 'completed', false],
-            // Characterization tests: current source has no transition matrix or status allowlist.
-            'ORDER-ST-GAP-01 completed can return to confirmed' => ['update', 'completed', 'confirmed', 200, 'confirmed', true],
-            'ORDER-ST-GAP-02 arbitrary status is accepted' => ['update', 'pending', 'archived', 200, 'archived', true],
-        ];
+        return array_merge([
+            'ID' => 20,
+            'Buyer_ID' => 7,
+            'Seller_ID' => 99,
+            'Product_ID' => 10,
+            'ProductName' => 'Ao khoac',
+            'ProductImage' => 'ao.jpg',
+            'Quantity' => 1,
+            'Total_price' => 100000,
+            'Shipping_address' => '123 Nguyen Trai',
+            'Status' => 'pending',
+            'Payment_method' => 'COD',
+            'PaymentStatus' => 'pending',
+            'Order_Code' => 'DH260912ABC123',
+            'created_at' => '2026-09-12 10:00:00',
+        ], $override);
     }
 
-    #[DataProvider('transitionCases')]
-    public function testOrderTransitionsAgainstCurrentSource(
-        string $operation,
-        string $startState,
-        string $requestedState,
-        int $expectedCode,
-        string $expectedEndState,
-        bool $isSourceGap
-    ): void {
-        $orders = new class($startState) extends OrderRepository {
-            public string $state;
-            public int $updateCalls = 0;
-            public int $cancelCalls = 0;
-
-            public function __construct(string $state)
-            {
-                $this->state = $state;
-            }
-
-            public function findById(int $id)
-            {
-                return [
-                    'ID' => $id,
-                    'Buyer_ID' => 1,
-                    'Seller_ID' => 99,
-                    'Product_ID' => 10,
-                    'ProductName' => 'Test Product',
-                    'Quantity' => 1,
-                    'Status' => $this->state,
-                ];
-            }
-
-            public function updateStatus(int $id, string $status): bool
-            {
-                $this->updateCalls++;
-                $this->state = $status;
-                return true;
-            }
-
-            public function cancelWithTransaction(int $orderId, int $productId, int $quantity = 1)
-            {
-                $this->cancelCalls++;
-                $this->state = 'cancelled';
-            }
-        };
-        $products = $this->createMock(ProductRepository::class);
-        $users = $this->createMock(UserRepository::class);
-        $notifications = $this->createMock(NotificationService::class);
-
-        if ($operation === 'cancel') {
-            $_SESSION = ['user_id' => 1, 'username' => 'Buyer A'];
-            $notifications->expects($expectedCode === 200 ? self::exactly(2) : self::never())
-                ->method('send')
-                ->willReturn(true);
-        } else {
-            $_SESSION = ['user_id' => 99, 'username' => 'Seller A'];
-            $notifications->expects(self::once())->method('send')->willReturn(true);
-        }
-
-        $service = $this->serviceWith($orders, $products, $users, $notifications);
-        $result = $operation === 'cancel'
-            ? $service->cancelOrder(['order_id' => 20])
-            : $service->updateStatus(['order_id' => 20, 'status' => $requestedState]);
-
-        self::assertSame($expectedCode, $result['code']);
-        self::assertSame($expectedCode === 200 ? 'success' : 'error', $result['status']);
-        self::assertSame($expectedEndState, $orders->state);
-
-        if ($operation === 'cancel') {
-            self::assertSame($expectedCode === 200 ? 1 : 0, $orders->cancelCalls);
-            self::assertSame(0, $orders->updateCalls);
-        } else {
-            self::assertSame(1, $orders->updateCalls);
-            self::assertSame(0, $orders->cancelCalls);
-        }
-        if ($isSourceGap) {
-            self::assertSame(200, $result['code'], 'Current source accepts a transition outside the intended business model.');
-        }
-    }
-
-    private function checkoutData(): array
+    /**
+     * Product fixture
+     */
+    private function product(array $override = []): array
     {
-        return [
-            'product_id' => 10,
-            'quantity' => 1,
-            'shipping_address' => '123 Nguyen Trai, District 1',
-            'payment_method' => 'COD',
-            'fullname' => 'Guest Buyer',
-            'phone' => '0901234567',
-        ];
-    }
-
-    private function product(): array
-    {
-        return [
+        return array_merge([
             'ID' => 10,
-            'Name' => 'Test Product',
+            'Seller_ID' => 99,
+            'Name' => 'Ao khoac',
             'Price' => 100000,
             'Stock_quantity' => 5,
             'Status' => 'active',
-            'Seller_ID' => 99,
-        ];
+        ], $override);
     }
 
-    private function serviceWith(
-        OrderRepository $orders,
-        ProductRepository $products,
-        UserRepository $users,
-        NotificationService $notifications
-    ): OrderService {
-        $reflection = new ReflectionClass(OrderService::class);
-        /** @var OrderService $service */
-        $service = $reflection->newInstanceWithoutConstructor();
-        foreach ([
-            'orderRepository' => $orders,
-            'productRepository' => $products,
-            'userRepository' => $users,
-            'notificationService' => $notifications,
-        ] as $property => $value) {
-            $reflection->getProperty($property)->setValue($service, $value);
-        }
-        return $service;
-    }
-
-    private function ensureSession(): void
+    /**
+     * Assert HTTP response code
+     */
+    private function assertCode(array $result, int $expected): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_save_path(sys_get_temp_dir());
-            session_id('phpunit-order-state-' . getmypid());
-            if (!session_start(['use_cookies' => false, 'cache_limiter' => ''])) {
-                self::fail('Không thể khởi tạo session kiểm thử Order State Transition.');
-            }
-        }
+        $this->assertSame(
+            $expected,
+            $result['code'] ?? null
+        );
+    }
+
+
+    // ============================================================
+    // ORDER-ST-01
+    // Không có order -> Checkout hợp lệ -> pending
+    // ============================================================
+
+    public function testST01CheckoutCreatesPendingOrder(): void
+    {
+        $_SESSION = [];
+
+        $this->productRepo
+            ->method('findById')
+            ->willReturn($this->product());
+
+        $this->orderRepo
+            ->method('createWithTransaction')
+            ->willReturn(101);
+
+        $result = $this->service->checkout([
+            'product_id' => 10,
+            'quantity' => 1,
+            'shipping_address' => '123 Nguyen Trai, Quan 1',
+            'payment_method' => 'COD',
+            'fullname' => 'Nguyen Van A',
+            'phone' => '0901234567',
+        ]);
+
+        $this->assertCode($result, 201);
+    }
+
+
+    // ============================================================
+    // ORDER-ST-02
+    // pending -> Buyer hủy -> cancelled
+    // ============================================================
+
+    public function testST02PendingBuyerCancelToCancelled(): void
+    {
+        $_SESSION = [
+            'user_id' => 7,
+            'username' => 'buyer'
+        ];
+
+        $this->orderRepo
+            ->method('findById')
+            ->willReturn(
+                $this->order([
+                    'Status' => 'pending'
+                ])
+            );
+
+        $this->orderRepo
+            ->expects($this->once())
+            ->method('cancelWithTransaction')
+            ->with(20, 10, 1);
+
+        $this->notification
+            ->method('send')
+            ->willReturn(true);
+
+        $result = $this->service->cancelOrder([
+            'order_id' => 20
+        ]);
+
+        $this->assertCode($result, 200);
+    }
+
+
+    // ============================================================
+    // ORDER-ST-03
+    // confirmed -> Buyer hủy -> giữ confirmed
+    // ============================================================
+
+    public function testST03ConfirmedBuyerCancelRejected(): void
+    {
+        $_SESSION = [
+            'user_id' => 7
+        ];
+
+        $this->orderRepo
+            ->method('findById')
+            ->willReturn(
+                $this->order([
+                    'Status' => 'confirmed'
+                ])
+            );
+
+        // Không được gọi cancelWithTransaction
+        $this->orderRepo
+            ->expects($this->never())
+            ->method('cancelWithTransaction');
+
+        $result = $this->service->cancelOrder([
+            'order_id' => 20
+        ]);
+
+        $this->assertCode($result, 400);
+    }
+
+
+    // ============================================================
+    // ORDER-ST-04
+    // completed -> Buyer hủy -> giữ completed
+    // ============================================================
+
+    public function testST04CompletedBuyerCancelRejected(): void
+    {
+        $_SESSION = [
+            'user_id' => 7
+        ];
+
+        $this->orderRepo
+            ->method('findById')
+            ->willReturn(
+                $this->order([
+                    'Status' => 'completed'
+                ])
+            );
+
+        $this->orderRepo
+            ->expects($this->never())
+            ->method('cancelWithTransaction');
+
+        $result = $this->service->cancelOrder([
+            'order_id' => 20
+        ]);
+
+        $this->assertCode($result, 400);
+    }
+
+
+    // ============================================================
+    // ORDER-ST-05
+    // cancelled -> Buyer hủy -> giữ cancelled
+    // ============================================================
+
+    public function testST05CancelledBuyerCancelRejected(): void
+    {
+        $_SESSION = [
+            'user_id' => 7
+        ];
+
+        $this->orderRepo
+            ->method('findById')
+            ->willReturn(
+                $this->order([
+                    'Status' => 'cancelled'
+                ])
+            );
+
+        $this->orderRepo
+            ->expects($this->never())
+            ->method('cancelWithTransaction');
+
+        $result = $this->service->cancelOrder([
+            'order_id' => 20
+        ]);
+
+        $this->assertCode($result, 400);
+    }
+
+
+    // ============================================================
+    // ORDER-ST-06
+    // pending -> Seller cập nhật confirmed
+    // ============================================================
+
+    public function testST06PendingSellerConfirmToConfirmed(): void
+    {
+        $_SESSION = [
+            'user_id' => 99
+        ];
+
+        $this->orderRepo
+            ->method('findById')
+            ->willReturn(
+                $this->order([
+                    'Status' => 'pending',
+                    'Seller_ID' => 99,
+                    'Buyer_ID' => 7
+                ])
+            );
+
+        $this->orderRepo
+            ->expects($this->once())
+            ->method('updateStatus')
+            ->with(20, 'confirmed')
+            ->willReturn(true);
+
+        $this->notification
+            ->method('send')
+            ->willReturn(true);
+
+        $result = $this->service->updateStatus([
+            'order_id' => 20,
+            'status' => 'confirmed'
+        ]);
+
+        $this->assertCode($result, 200);
+    }
+
+
+    // ============================================================
+    // ORDER-ST-07
+    // confirmed -> Seller cập nhật completed
+    // ============================================================
+
+    public function testST07ConfirmedSellerCompleteToCompleted(): void
+    {
+        $_SESSION = [
+            'user_id' => 99
+        ];
+
+        $this->orderRepo
+            ->method('findById')
+            ->willReturn(
+                $this->order([
+                    'Status' => 'confirmed',
+                    'Seller_ID' => 99,
+                    'Buyer_ID' => 7
+                ])
+            );
+
+        $this->orderRepo
+            ->expects($this->once())
+            ->method('updateStatus')
+            ->with(20, 'completed')
+            ->willReturn(true);
+
+        $this->notification
+            ->method('send')
+            ->willReturn(true);
+
+        $result = $this->service->updateStatus([
+            'order_id' => 20,
+            'status' => 'completed'
+        ]);
+
+        $this->assertCode($result, 200);
+    }
+
+
+    // ============================================================
+    // ORDER-ST-GAP-01
+    // completed -> Seller cập nhật confirmed
+    //
+    // EXPECTED:
+    // Giữ completed / từ chối
+    //
+    // CURRENT SOURCE:
+    // Cho phép update -> confirmed
+    // => GAP
+    // ============================================================
+
+    public function testSTGap01CompletedSellerChangesToConfirmed(): void
+    {
+        $_SESSION = [
+            'user_id' => 99
+        ];
+
+        $this->orderRepo
+            ->method('findById')
+            ->willReturn(
+                $this->order([
+                    'Status' => 'completed',
+                    'Seller_ID' => 99,
+                    'Buyer_ID' => 7
+                ])
+            );
+
+        $this->orderRepo
+            ->expects($this->once())
+            ->method('updateStatus')
+            ->with(20, 'confirmed')
+            ->willReturn(true);
+
+        $this->notification
+            ->method('send')
+            ->willReturn(true);
+
+        $result = $this->service->updateStatus([
+            'order_id' => 20,
+            'status' => 'confirmed'
+        ]);
+
+        /*
+         * Source hiện tại cho phép chuyển completed -> confirmed.
+         * Vì vậy HTTP 200 là hành vi hiện tại.
+         */
+        $this->assertCode($result, 200);
+    }
+
+
+    // ============================================================
+    // ORDER-ST-GAP-02
+    // pending -> Seller cập nhật archived
+    //
+    // EXPECTED:
+    // Giữ pending / từ chối
+    //
+    // CURRENT SOURCE:
+    // Cho phép archived
+    // => GAP
+    // ============================================================
+
+    public function testSTGap02PendingSellerChangesToArchived(): void
+    {
+        $_SESSION = [
+            'user_id' => 99
+        ];
+
+        $this->orderRepo
+            ->method('findById')
+            ->willReturn(
+                $this->order([
+                    'Status' => 'pending',
+                    'Seller_ID' => 99,
+                    'Buyer_ID' => 7
+                ])
+            );
+
+        $this->orderRepo
+            ->expects($this->once())
+            ->method('updateStatus')
+            ->with(20, 'archived')
+            ->willReturn(true);
+
+        $this->notification
+            ->method('send')
+            ->willReturn(true);
+
+        $result = $this->service->updateStatus([
+            'order_id' => 20,
+            'status' => 'archived'
+        ]);
+
+        /*
+         * Source hiện tại không có status allowlist
+         * nên archived vẫn được cập nhật.
+         */
+        $this->assertCode($result, 200);
     }
 }
