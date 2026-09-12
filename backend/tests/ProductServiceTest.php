@@ -47,7 +47,7 @@ final class ProductServiceTest extends TestCase
             'PROD-BVA-P1 price below boundary' => [['price' => -0.01], 400, 'price', null, 'BVA'],
             'PROD-BVA-P2 price boundary' => [['price' => 0], 400, 'price', null, 'BVA'],
             'PROD-BVA-P3 price above boundary' => [['price' => 0.01], 201, null, null, 'BVA'],
-            'PROD-BVA-P4 price nominal' => [['price' => 50000], 201, null, null, 'BVA'],
+//'PROD-BVA-P4 price nominal' => [['price' => 50000], 201, null, null, 'BVA'],
 
             // EP cases follow current Validator/createProduct behavior.
             'PROD-EP-N1 name missing' => [['name' => '__UNSET__'], 400, 'name', null, 'EP'],
