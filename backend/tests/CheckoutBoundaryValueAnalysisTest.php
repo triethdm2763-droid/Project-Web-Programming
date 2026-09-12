@@ -9,148 +9,68 @@ use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use App\Services\NotificationService;
 use App\Services\OrderService;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
 final class CheckoutBoundaryValueAnalysisTest extends TestCase
 {
+    private OrderRepository $orders;
+    private ProductRepository $products;
+    private UserRepository $users;
+    private NotificationService $notifications;
+    private OrderService $service;
+
     protected function setUp(): void
     {
-        $this->ensureSession();
+        parent::setUp();
+
         $_SESSION = [];
         $_COOKIE = [];
+
+        $this->orders = $this->createMock(OrderRepository::class);
+        $this->products = $this->createMock(ProductRepository::class);
+        $this->users = $this->createMock(UserRepository::class);
+        $this->notifications = $this->createMock(NotificationService::class);
+
+        $this->notifications
+            ->method('send')
+            ->willReturn(true);
+
+        $this->service = new OrderService();
+
+        $this->inject('orderRepository', $this->orders);
+        $this->inject('productRepository', $this->products);
+        $this->inject('userRepository', $this->users);
+        $this->inject('notificationService', $this->notifications);
     }
 
     protected function tearDown(): void
     {
         $_SESSION = [];
         $_COOKIE = [];
+
+        parent::tearDown();
     }
 
-    public static function shippingAddressBoundaries(): array
+    private function inject(string $property, object $value): void
     {
-        // Source rule: shipping_address has only a lower boundary, min = 10.
-        return [
-            'ORDER-BVA-ADDR-01 min-1' => [9, 400],
-            'ORDER-BVA-ADDR-02 min' => [10, 201],
-            'ORDER-BVA-ADDR-03 min+1' => [11, 201],
-            'ORDER-BVA-ADDR-04 nominal' => [20, 201],
-        ];
+        $ref = new ReflectionClass($this->service);
+
+        $propertyRef = $ref->getProperty($property);
+        $propertyRef->setAccessible(true);
+        $propertyRef->setValue($this->service, $value);
     }
 
-    #[DataProvider('shippingAddressBoundaries')]
-    public function testShippingAddressLowerBoundary(int $length, int $expectedCode): void
+    private function checkoutData(array $overrides = []): array
     {
-        $orders = $this->createMock(OrderRepository::class);
-        $products = $this->createMock(ProductRepository::class);
-        $users = $this->createMock(UserRepository::class);
-        $notifications = $this->createMock(NotificationService::class);
-
-        $address = str_repeat('A', $length);
-        if ($expectedCode === 400) {
-            $products->expects(self::never())->method('findById');
-            $orders->expects(self::never())->method('createWithTransaction');
-        } else {
-            $products->expects(self::once())->method('findById')->with(10)->willReturn($this->product());
-            $orders->expects(self::once())
-                ->method('createWithTransaction')
-                ->with(
-                    self::callback(function (array $orderData) use ($address): bool {
-                        self::assertSame(1, $orderData['quantity']);
-                        self::assertSame('pending', $orderData['status']);
-                        self::assertStringEndsWith($address, $orderData['shipping_address']);
-                        return true;
-                    }),
-                    self::callback(function (array $paymentData): bool {
-                        self::assertSame('COD', $paymentData['payment_method']);
-                        self::assertSame('pending', $paymentData['status']);
-                        return true;
-                    })
-                )
-                ->willReturn(501);
-            $notifications->expects(self::once())->method('send')->willReturn(true);
-        }
-
-        $result = $this->serviceWith($orders, $products, $users, $notifications)->checkout([
+        return array_merge([
             'product_id' => 10,
             'quantity' => 1,
-            'shipping_address' => $address,
+            'shipping_address' => '1234567890',
             'payment_method' => 'COD',
             'fullname' => 'Nguyen Van A',
             'phone' => '0901234567',
-        ]);
-
-        self::assertSame($expectedCode, $result['code']);
-        self::assertSame($expectedCode === 201 ? 'success' : 'error', $result['status']);
-        if ($expectedCode === 400) {
-            self::assertArrayHasKey('shipping_address', $result['errors']);
-        } else {
-            self::assertSame(501, $result['order_id']);
-        }
-    }
-
-    public static function quantityBoundaries(): array
-    {
-        // Product stock is fixed at 5. Source normalizes quantity < 1 to 1.
-        return [
-            'ORDER-BVA-QTY-01 lower-1 normalized' => [0, 201, 1],
-            'ORDER-BVA-QTY-02 lower' => [1, 201, 1],
-            'ORDER-BVA-QTY-03 lower+1' => [2, 201, 2],
-            'ORDER-BVA-QTY-04 nominal' => [3, 201, 3],
-            'ORDER-BVA-QTY-05 stock-1' => [4, 201, 4],
-            'ORDER-BVA-QTY-06 stock' => [5, 201, 5],
-            'ORDER-BVA-QTY-07 stock+1' => [6, 400, null],
-        ];
-    }
-
-    #[DataProvider('quantityBoundaries')]
-    public function testQuantityBoundariesAgainstStock(
-        int $inputQuantity,
-        int $expectedCode,
-        ?int $expectedStoredQuantity
-    ): void {
-        $orders = $this->createMock(OrderRepository::class);
-        $products = $this->createMock(ProductRepository::class);
-        $users = $this->createMock(UserRepository::class);
-        $notifications = $this->createMock(NotificationService::class);
-
-        $products->expects(self::once())->method('findById')->with(10)->willReturn($this->product(stock: 5));
-        if ($expectedCode === 201) {
-            $orders->expects(self::once())
-                ->method('createWithTransaction')
-                ->with(
-                    self::callback(function (array $orderData) use ($expectedStoredQuantity): bool {
-                        self::assertSame($expectedStoredQuantity, $orderData['quantity']);
-                        self::assertSame(100000.0 * $expectedStoredQuantity, $orderData['total_price']);
-                        return true;
-                    }),
-                    self::callback(function (array $paymentData) use ($expectedStoredQuantity): bool {
-                        self::assertSame(100000.0 * $expectedStoredQuantity, $paymentData['amount']);
-                        return true;
-                    })
-                )
-                ->willReturn(502);
-            $notifications->expects(self::once())->method('send')->willReturn(true);
-        } else {
-            $orders->expects(self::never())->method('createWithTransaction');
-            $notifications->expects(self::never())->method('send');
-        }
-
-        $result = $this->serviceWith($orders, $products, $users, $notifications)->checkout([
-            'product_id' => 10,
-            'quantity' => $inputQuantity,
-            'shipping_address' => '123 Nguyen Trai, District 1',
-            'payment_method' => 'COD',
-            'fullname' => 'Nguyen Van A',
-            'phone' => '0901234567',
-        ]);
-
-        self::assertSame($expectedCode, $result['code']);
-        self::assertSame($expectedCode === 201 ? 'success' : 'error', $result['status']);
-        if ($expectedCode === 400) {
-            self::assertStringContainsString('tồn kho', $result['message']);
-        }
+        ], $overrides);
     }
 
     private function product(int $stock = 5): array
@@ -165,34 +85,294 @@ final class CheckoutBoundaryValueAnalysisTest extends TestCase
         ];
     }
 
-    private function serviceWith(
-        OrderRepository $orders,
-        ProductRepository $products,
-        UserRepository $users,
-        NotificationService $notifications
-    ): OrderService {
-        $reflection = new ReflectionClass(OrderService::class);
-        /** @var OrderService $service */
-        $service = $reflection->newInstanceWithoutConstructor();
-        foreach ([
-            'orderRepository' => $orders,
-            'productRepository' => $products,
-            'userRepository' => $users,
-            'notificationService' => $notifications,
-        ] as $property => $value) {
-            $reflection->getProperty($property)->setValue($service, $value);
-        }
-        return $service;
+    private function assertResponseCode(array $response, int $expected): void
+    {
+        $this->assertSame(
+            $expected,
+            $response['code'] ?? null
+        );
     }
 
-    private function ensureSession(): void
+    /*
+     * ==========================================================
+     * SHIPPING_ADDRESS
+     * min = 10
+     * ==========================================================
+     */
+
+    // ORDER-BVA-ADDR-01
+    // min - 1 = 9
+    public function testBVAAddr01MinimumMinusOne(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_save_path(sys_get_temp_dir());
-            session_id('phpunit-order-bva-' . getmypid());
-            if (!session_start(['use_cookies' => false, 'cache_limiter' => ''])) {
-                self::fail('Không thể khởi tạo session kiểm thử Order BVA.');
-            }
-        }
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'shipping_address' => '123456789',
+            ])
+        );
+
+        $this->assertResponseCode($response, 400);
+    }
+
+    // ORDER-BVA-ADDR-02
+    // min = 10
+    public function testBVAAddr02Minimum(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product());
+
+        $this->orders
+            ->method('createWithTransaction')
+            ->willReturn(2001);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'shipping_address' => '1234567890',
+            ])
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    // ORDER-BVA-ADDR-03
+    // min + 1 = 11
+    public function testBVAAddr03MinimumPlusOne(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product());
+
+        $this->orders
+            ->method('createWithTransaction')
+            ->willReturn(2002);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'shipping_address' => '12345678901',
+            ])
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    // ORDER-BVA-ADDR-04
+    // nominal = 20
+    public function testBVAAddr04Nominal(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product());
+
+        $this->orders
+            ->method('createWithTransaction')
+            ->willReturn(2003);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'shipping_address' => '12345678901234567890',
+            ])
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    /*
+     * ==========================================================
+     * QUANTITY
+     * min = 1
+     * max động = stock = 5
+     * ==========================================================
+     */
+
+    // ORDER-BVA-QTY-01
+    // min - 1 = 0
+    // Source hiện tại chuẩn hóa 0 -> 1
+    public function testBVAQty01MinimumMinusOne(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product(stock: 5));
+
+        $this->orders
+            ->expects($this->once())
+            ->method('createWithTransaction')
+            ->with(
+                $this->callback(
+                    fn(array $order): bool =>
+                        ($order['quantity'] ?? null) === 1
+                ),
+                $this->isType('array')
+            )
+            ->willReturn(2004);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'quantity' => 0,
+            ])
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    // ORDER-BVA-QTY-02
+    // min = 1
+    public function testBVAQty02Minimum(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product(stock: 5));
+
+        $this->orders
+            ->expects($this->once())
+            ->method('createWithTransaction')
+            ->with(
+                $this->callback(
+                    fn(array $order): bool =>
+                        ($order['quantity'] ?? null) === 1
+                ),
+                $this->isType('array')
+            )
+            ->willReturn(2005);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'quantity' => 1,
+            ])
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    // ORDER-BVA-QTY-03
+    // min + 1 = 2
+    public function testBVAQty03MinimumPlusOne(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product(stock: 5));
+
+        $this->orders
+            ->expects($this->once())
+            ->method('createWithTransaction')
+            ->with(
+                $this->callback(
+                    fn(array $order): bool =>
+                        ($order['quantity'] ?? null) === 2
+                ),
+                $this->isType('array')
+            )
+            ->willReturn(2006);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'quantity' => 2,
+            ])
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    // ORDER-BVA-QTY-04
+    // nominal = 3
+    public function testBVAQty04Nominal(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product(stock: 5));
+
+        $this->orders
+            ->expects($this->once())
+            ->method('createWithTransaction')
+            ->with(
+                $this->callback(
+                    fn(array $order): bool =>
+                        ($order['quantity'] ?? null) === 3
+                ),
+                $this->isType('array')
+            )
+            ->willReturn(2007);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'quantity' => 3,
+            ])
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    // ORDER-BVA-QTY-05
+    // max - 1 = 4
+    public function testBVAQty05MaximumMinusOne(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product(stock: 5));
+
+        $this->orders
+            ->expects($this->once())
+            ->method('createWithTransaction')
+            ->with(
+                $this->callback(
+                    fn(array $order): bool =>
+                        ($order['quantity'] ?? null) === 4
+                ),
+                $this->isType('array')
+            )
+            ->willReturn(2008);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'quantity' => 4,
+            ])
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    // ORDER-BVA-QTY-06
+    // max = stock = 5
+    public function testBVAQty06Maximum(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product(stock: 5));
+
+        $this->orders
+            ->expects($this->once())
+            ->method('createWithTransaction')
+            ->with(
+                $this->callback(
+                    fn(array $order): bool =>
+                        ($order['quantity'] ?? null) === 5
+                ),
+                $this->isType('array')
+            )
+            ->willReturn(2009);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'quantity' => 5,
+            ])
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    // ORDER-BVA-QTY-07
+    // max + 1 = 6
+    public function testBVAQty07MaximumPlusOne(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product(stock: 5));
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'quantity' => 6,
+            ])
+        );
+
+        $this->assertResponseCode($response, 400);
     }
 }

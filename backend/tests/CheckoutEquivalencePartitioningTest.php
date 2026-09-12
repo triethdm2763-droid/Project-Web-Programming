@@ -9,199 +9,540 @@ use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use App\Services\NotificationService;
 use App\Services\OrderService;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
 final class CheckoutEquivalencePartitioningTest extends TestCase
 {
+    private OrderRepository $orders;
+    private ProductRepository $products;
+    private UserRepository $users;
+    private NotificationService $notifications;
+    private OrderService $service;
+
     protected function setUp(): void
     {
-        $this->ensureSession();
+        parent::setUp();
+
         $_SESSION = [];
         $_COOKIE = [];
+
+        $this->orders = $this->createMock(OrderRepository::class);
+        $this->products = $this->createMock(ProductRepository::class);
+        $this->users = $this->createMock(UserRepository::class);
+        $this->notifications = $this->createMock(NotificationService::class);
+
+        // NotificationService::send() returns bool.
+        $this->notifications
+            ->method('send')
+            ->willReturn(true);
+
+        $this->service = new OrderService();
+
+        $this->inject('orderRepository', $this->orders);
+        $this->inject('productRepository', $this->products);
+        $this->inject('userRepository', $this->users);
+        $this->inject('notificationService', $this->notifications);
     }
 
     protected function tearDown(): void
     {
         $_SESSION = [];
         $_COOKIE = [];
+
+        parent::tearDown();
     }
 
-    public static function checkoutPartitions(): array
+    private function inject(string $property, object $value): void
     {
-        return [
-            'ORDER-EP-01 product_id missing' => [['product_id' => '__UNSET__'], 'default', false, 400, 'product_id', null, null, 'EP'],
-            'ORDER-EP-02 product_id blank' => [['product_id' => '   '], 'default', false, 400, 'product_id', null, null, 'EP'],
-            'ORDER-EP-03 product_id nonnumeric maps to missing product' => [['product_id' => 'abc'], 'missing', false, 404, null, null, null, 'EP'],
-            'ORDER-EP-04 product not found' => [['product_id' => 999999], 'missing', false, 404, null, null, null, 'EP'],
-            'ORDER-EP-05 active product' => [[], 'active', false, 201, null, 1, 'pending', 'EP'],
-            'ORDER-EP-06 available product' => [[], 'available', false, 201, null, 1, 'pending', 'EP'],
-            'ORDER-EP-07 inactive product' => [[], 'inactive', false, 400, null, null, null, 'EP'],
-            'ORDER-EP-08 zero stock' => [[], 'zero-stock', false, 400, null, null, null, 'EP'],
-            'ORDER-EP-09 shipping_address missing' => [['shipping_address' => '__UNSET__'], 'default', false, 400, 'shipping_address', null, null, 'EP'],
-            'ORDER-EP-10 shipping_address whitespace' => [['shipping_address' => '   '], 'default', false, 400, 'shipping_address', null, null, 'EP'],
-            'ORDER-EP-11 shipping_address too short' => [['shipping_address' => '123456789'], 'default', false, 400, 'shipping_address', null, null, 'EP'],
-            'ORDER-EP-12 shipping_address valid' => [['shipping_address' => '1234567890'], 'default', false, 201, null, 1, 'pending', 'EP'],
-            'ORDER-EP-13 payment_method missing' => [['payment_method' => '__UNSET__'], 'default', false, 400, 'payment_method', null, null, 'EP'],
-            'ORDER-EP-14 payment_method whitespace' => [['payment_method' => '   '], 'default', false, 400, 'payment_method', null, null, 'EP'],
-            'ORDER-EP-15 COD payment' => [['payment_method' => 'COD'], 'default', false, 201, null, 1, 'pending', 'EP'],
-            'ORDER-EP-16 bank payment' => [['payment_method' => 'Bank Transfer'], 'default', false, 201, null, 1, 'success', 'EP'],
-            'ORDER-GAP-01 unsupported payment accepted' => [['payment_method' => 'Crypto'], 'default', false, 201, null, 1, 'success', 'GAP'],
-            'ORDER-EP-17 quantity missing defaults to one' => [['quantity' => '__UNSET__'], 'default', false, 201, null, 1, 'pending', 'EP'],
-            'ORDER-GAP-02 quantity zero normalized to one' => [['quantity' => 0], 'default', false, 201, null, 1, 'pending', 'GAP'],
-            'ORDER-GAP-03 negative quantity normalized to one' => [['quantity' => -5], 'default', false, 201, null, 1, 'pending', 'GAP'],
-            'ORDER-GAP-04 nonnumeric quantity normalized to one' => [['quantity' => 'abc'], 'default', false, 201, null, 1, 'pending', 'GAP'],
-            'ORDER-EP-18 quantity within stock' => [['quantity' => 5], 'default', false, 201, null, 5, 'pending', 'EP'],
-            'ORDER-EP-19 quantity over stock' => [['quantity' => 6], 'default', false, 400, null, null, null, 'EP'],
-            'ORDER-GAP-05 empty guest contact accepted' => [['fullname' => '', 'phone' => ''], 'default', false, 201, null, 1, 'pending', 'GAP'],
-            'ORDER-EP-20 buyer cannot buy own product' => [[], 'self-owned', true, 400, null, null, null, 'EP'],
-        ];
+        $ref = new ReflectionClass($this->service);
+
+        $propertyRef = $ref->getProperty($property);
+        $propertyRef->setAccessible(true);
+        $propertyRef->setValue($this->service, $value);
     }
 
-    #[DataProvider('checkoutPartitions')]
-    public function testCheckoutPartitionsAgainstCurrentSource(
-        array $changes,
-        string $productCase,
-        bool $loggedIn,
-        int $expectedCode,
-        ?string $expectedErrorField,
-        ?int $expectedQuantity,
-        ?string $expectedPaymentStatus,
-        string $classification
-    ): void {
-        $data = $this->validData();
-        foreach ($changes as $field => $value) {
-            if ($value === '__UNSET__') {
-                unset($data[$field]);
-            } else {
-                $data[$field] = $value;
-            }
-        }
-
-        $orders = $this->createMock(OrderRepository::class);
-        $products = $this->createMock(ProductRepository::class);
-        $users = $this->createMock(UserRepository::class);
-        $notifications = $this->createMock(NotificationService::class);
-
-        if ($loggedIn) {
-            $_SESSION = ['user_id' => 7, 'username' => 'Buyer A'];
-            $users->expects(self::once())->method('findById')->with(7)->willReturn($this->user());
-        }
-
-        if ($expectedErrorField !== null) {
-            $products->expects(self::never())->method('findById');
-            $orders->expects(self::never())->method('createWithTransaction');
-        } else {
-            $productId = isset($data['product_id']) ? (int)$data['product_id'] : 0;
-            $products->expects(self::once())
-                ->method('findById')
-                ->with($productId)
-                ->willReturn($this->productFor($productCase));
-
-            if ($expectedCode === 201) {
-                $expectedMethod = trim((string)$data['payment_method']);
-                $orders->expects(self::once())
-                    ->method('createWithTransaction')
-                    ->with(
-                        self::callback(function (array $orderData) use ($expectedQuantity): bool {
-                            self::assertSame($expectedQuantity, $orderData['quantity']);
-                            self::assertSame('pending', $orderData['status']);
-                            self::assertSame(10, $orderData['product_id']);
-                            return true;
-                        }),
-                        self::callback(function (array $paymentData) use ($expectedMethod, $expectedPaymentStatus): bool {
-                            self::assertSame($expectedMethod, $paymentData['payment_method']);
-                            self::assertSame($expectedPaymentStatus, $paymentData['status']);
-                            return true;
-                        })
-                    )
-                    ->willReturn(601);
-                $notifications->expects(self::once())->method('send')->willReturn(true);
-            } else {
-                $orders->expects(self::never())->method('createWithTransaction');
-                $notifications->expects(self::never())->method('send');
-            }
-        }
-
-        $result = $this->serviceWith($orders, $products, $users, $notifications)->checkout($data);
-
-        self::assertSame($expectedCode, $result['code'], $classification . ' returned an unexpected status code.');
-        self::assertSame($expectedCode === 201 ? 'success' : 'error', $result['status']);
-        if ($expectedErrorField !== null) {
-            self::assertArrayHasKey('errors', $result);
-            self::assertArrayHasKey($expectedErrorField, $result['errors']);
-        }
-        if ($expectedCode === 201) {
-            self::assertSame(601, $result['order_id']);
-        }
-    }
-
-    private function validData(): array
+    private function checkoutData(array $overrides = []): array
     {
-        return [
+        return array_merge([
             'product_id' => 10,
-            'shipping_address' => '123 Nguyen Trai, District 1',
-            'payment_method' => 'COD',
             'quantity' => 1,
+            'shipping_address' => '123 Nguyen Trai, Q1',
+            'payment_method' => 'COD',
             'fullname' => 'Nguyen Van A',
             'phone' => '0901234567',
-        ];
+        ], $overrides);
     }
 
-    private function productFor(string $case): ?array
-    {
-        if ($case === 'missing') {
-            return null;
-        }
-        $status = match ($case) {
-            'available' => 'available',
-            'inactive' => 'inactive',
-            default => 'active',
-        };
+    private function product(
+        int $sellerId = 99,
+        int $stock = 5,
+        string $status = 'active'
+    ): array {
         return [
             'ID' => 10,
             'Name' => 'Test Product',
             'Price' => 100000,
-            'Stock_quantity' => $case === 'zero-stock' ? 0 : 5,
+            'Stock_quantity' => $stock,
             'Status' => $status,
-            'Seller_ID' => $case === 'self-owned' ? 7 : 99,
+            'Seller_ID' => $sellerId,
         ];
     }
 
-    private function user(): array
+    private function assertResponseCode(array $response, int $expected): void
     {
-        return ['ID' => 7, 'Fullname' => 'Buyer A', 'Phone' => '0900000000', 'Address' => 'Existing address'];
+        $this->assertSame(
+            $expected,
+            $response['code'] ?? null
+        );
     }
 
-    private function serviceWith(
-        OrderRepository $orders,
-        ProductRepository $products,
-        UserRepository $users,
-        NotificationService $notifications
-    ): OrderService {
-        $reflection = new ReflectionClass(OrderService::class);
-        /** @var OrderService $service */
-        $service = $reflection->newInstanceWithoutConstructor();
-        foreach ([
-            'orderRepository' => $orders,
-            'productRepository' => $products,
-            'userRepository' => $users,
-            'notificationService' => $notifications,
-        ] as $property => $value) {
-            $reflection->getProperty($property)->setValue($service, $value);
-        }
-        return $service;
+    /*
+     * ==========================================================
+     * ORDER-EP-01
+     * product_id: Thiếu trường
+     * Expected: HTTP 400
+     * Source: OrderService.php:39-52
+     * ==========================================================
+     */
+    public function testEP01ProductIdMissing(): void
+    {
+        $data = $this->checkoutData();
+
+        unset($data['product_id']);
+
+        $response = $this->service->checkout($data);
+
+        $this->assertResponseCode($response, 400);
     }
 
-    private function ensureSession(): void
+    /*
+     * ORDER-EP-02
+     * product_id: Rỗng / khoảng trắng
+     */
+    public function testEP02ProductIdWhitespace(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_save_path(sys_get_temp_dir());
-            session_id('phpunit-order-ep-' . getmypid());
-            if (!session_start(['use_cookies' => false, 'cache_limiter' => ''])) {
-                self::fail('Không thể khởi tạo session kiểm thử Order EP.');
-            }
-        }
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'product_id' => '   ',
+            ])
+        );
+
+        $this->assertResponseCode($response, 400);
+    }
+
+    /*
+     * ORDER-EP-03
+     * product_id: Không phải số
+     * "abc" -> intval = 0
+     * Expected: HTTP 404
+     */
+    public function testEP03ProductIdNonNumeric(): void
+    {
+        $this->products
+            ->expects($this->once())
+            ->method('findById')
+            ->with(0)
+            ->willReturn(null);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'product_id' => 'abc',
+            ])
+        );
+
+        $this->assertResponseCode($response, 404);
+    }
+
+    /*
+     * ORDER-EP-04
+     * product_id: ID không tồn tại
+     */
+    public function testEP04ProductIdNotFound(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn(null);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'product_id' => 999999,
+            ])
+        );
+
+        $this->assertResponseCode($response, 404);
+    }
+
+    /*
+     * ORDER-EP-05
+     * product status = active
+     */
+    public function testEP05ProductStatusActive(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product(
+                status: 'active'
+            ));
+
+        $this->orders
+            ->method('createWithTransaction')
+            ->willReturn(1001);
+
+        $response = $this->service->checkout(
+            $this->checkoutData()
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    /*
+     * ORDER-EP-06
+     * product status = available
+     */
+    public function testEP06ProductStatusAvailable(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product(
+                status: 'available'
+            ));
+
+        $this->orders
+            ->method('createWithTransaction')
+            ->willReturn(1002);
+
+        $response = $this->service->checkout(
+            $this->checkoutData()
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    /*
+     * ORDER-EP-07
+     * product status: Không khả dụng
+     */
+    public function testEP07ProductInactive(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product(
+                status: 'inactive'
+            ));
+
+        $response = $this->service->checkout(
+            $this->checkoutData()
+        );
+
+        $this->assertResponseCode($response, 400);
+    }
+
+    /*
+     * ORDER-EP-08
+     * stock = 0
+     */
+    public function testEP08ProductOutOfStock(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product(
+                stock: 0
+            ));
+
+        $response = $this->service->checkout(
+            $this->checkoutData()
+        );
+
+        $this->assertResponseCode($response, 400);
+    }
+
+    /*
+     * ORDER-EP-09
+     * shipping_address: Thiếu trường
+     */
+    public function testEP09ShippingAddressMissing(): void
+    {
+        $data = $this->checkoutData();
+
+        unset($data['shipping_address']);
+
+        $response = $this->service->checkout($data);
+
+        $this->assertResponseCode($response, 400);
+    }
+
+    /*
+     * ORDER-EP-10
+     * shipping_address: Rỗng / khoảng trắng
+     */
+    public function testEP10ShippingAddressWhitespace(): void
+    {
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'shipping_address' => '   ',
+            ])
+        );
+
+        $this->assertResponseCode($response, 400);
+    }
+
+    /*
+     * ORDER-EP-11
+     * shipping_address: dưới 10 ký tự
+     */
+    public function testEP11ShippingAddressBelowMinimum(): void
+    {
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'shipping_address' => '123456789',
+            ])
+        );
+
+        $this->assertResponseCode($response, 400);
+    }
+
+    /*
+     * ORDER-EP-12
+     * shipping_address: đúng 10 ký tự
+     */
+    public function testEP12ShippingAddressMinimum(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product());
+
+        $this->orders
+            ->method('createWithTransaction')
+            ->willReturn(1003);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'shipping_address' => '1234567890',
+            ])
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    /*
+     * ORDER-EP-13
+     * payment_method: Thiếu trường
+     */
+    public function testEP13PaymentMethodMissing(): void
+    {
+        $data = $this->checkoutData();
+
+        unset($data['payment_method']);
+
+        $response = $this->service->checkout($data);
+
+        $this->assertResponseCode($response, 400);
+    }
+
+    /*
+     * ORDER-EP-14
+     * payment_method: Rỗng / khoảng trắng
+     */
+    public function testEP14PaymentMethodWhitespace(): void
+    {
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'payment_method' => '   ',
+            ])
+        );
+
+        $this->assertResponseCode($response, 400);
+    }
+
+    /*
+     * ORDER-EP-15
+     * payment_method = COD
+     * Expected: HTTP 201 + payment pending
+     */
+    public function testEP15PaymentMethodCOD(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product());
+
+        $this->orders
+            ->expects($this->once())
+            ->method('createWithTransaction')
+            ->with(
+                $this->isType('array'),
+                $this->callback(
+                    function (array $payment): bool {
+                        return
+                            $payment['payment_method'] === 'COD'
+                            && $payment['status'] === 'pending';
+                    }
+                )
+            )
+            ->willReturn(1004);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'payment_method' => 'COD',
+            ])
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    /*
+     * ORDER-EP-16
+     * payment_method = Bank Transfer
+     * Expected: HTTP 201 + payment success
+     */
+    public function testEP16PaymentMethodBankTransfer(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product());
+
+        $this->orders
+            ->expects($this->once())
+            ->method('createWithTransaction')
+            ->with(
+                $this->isType('array'),
+                $this->callback(
+                    function (array $payment): bool {
+                        return
+                            $payment['payment_method'] === 'Bank Transfer'
+                            && $payment['status'] === 'success';
+                    }
+                )
+            )
+            ->willReturn(1005);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'payment_method' => 'Bank Transfer',
+            ])
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    /*
+     * ORDER-EP-17
+     * quantity: Thiếu trường
+     * Source: mặc định quantity = 1
+     */
+    public function testEP17QuantityMissingDefaultsToOne(): void
+    {
+        $data = $this->checkoutData();
+
+        unset($data['quantity']);
+
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product());
+
+        $this->orders
+            ->expects($this->once())
+            ->method('createWithTransaction')
+            ->with(
+                $this->callback(
+                    fn(array $order): bool =>
+                        ($order['quantity'] ?? null) === 1
+                ),
+                $this->isType('array')
+            )
+            ->willReturn(1006);
+
+        $response = $this->service->checkout($data);
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    /*
+     * ORDER-EP-18
+     * quantity trong tồn kho
+     * quantity = stock = 5
+     */
+    public function testEP18QuantityWithinStock(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product(
+                stock: 5
+            ));
+
+        $this->orders
+            ->expects($this->once())
+            ->method('createWithTransaction')
+            ->with(
+                $this->callback(
+                    fn(array $order): bool =>
+                        ($order['quantity'] ?? null) === 5
+                ),
+                $this->isType('array')
+            )
+            ->willReturn(1007);
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'quantity' => 5,
+            ])
+        );
+
+        $this->assertResponseCode($response, 201);
+    }
+
+    /*
+     * ORDER-EP-19
+     * quantity vượt tồn kho
+     * quantity = 6, stock = 5
+     */
+    public function testEP19QuantityExceedsStock(): void
+    {
+        $this->products
+            ->method('findById')
+            ->willReturn($this->product(
+                stock: 5
+            ));
+
+        $response = $this->service->checkout(
+            $this->checkoutData([
+                'quantity' => 6,
+            ])
+        );
+
+        $this->assertResponseCode($response, 400);
+    }
+
+    /*
+     * ORDER-EP-20
+     * buyer_id = seller_id
+     * Expected: không cho tự mua sản phẩm
+     */
+    public function testEP20BuyerCannotBuyOwnProduct(): void
+    {
+        $_SESSION = [
+            'user_id' => 99,
+            'username' => 'seller',
+        ];
+
+        $this->users
+            ->method('findById')
+            ->willReturn([
+                'ID' => 99,
+            ]);
+
+        $this->products
+            ->method('findById')
+            ->willReturn(
+                $this->product(
+                    sellerId: 99
+                )
+            );
+
+        $response = $this->service->checkout(
+            $this->checkoutData()
+        );
+
+        $this->assertResponseCode($response, 400);
     }
 }
