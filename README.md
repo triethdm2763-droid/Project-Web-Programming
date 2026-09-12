@@ -45,6 +45,48 @@ Project-Web-Programming/
 
 ## Hướng dẫn Setup & Khởi chạy dự án
 
+### Chạy bằng Docker
+
+Yêu cầu: Docker Desktop đang chạy với Linux containers. Tại thư mục gốc của
+project, chạy:
+
+```powershell
+docker compose up -d --build --wait
+```
+
+Sau khi cả hai container ở trạng thái `healthy`, mở:
+
+```text
+http://localhost:8080/
+```
+
+Compose tạo image ứng dụng `cho-thanh-ly:local`, chạy PHP 8.2 + Apache và một
+container MySQL 8.4. Schema cùng dữ liệu mẫu được tự động nhập từ
+`database/001_schema.sql` và `database/002_seed.sql` khi database được tạo lần đầu.
+
+Các lệnh thường dùng:
+
+```powershell
+# Xem trạng thái
+docker compose ps
+
+# Xem log
+docker compose logs --tail=100 app db
+
+# Dừng dịch vụ nhưng giữ dữ liệu
+docker compose down
+
+# Build riêng image ứng dụng
+docker build -t cho-thanh-ly:local .
+
+# Xuất image thành file để chuyển sang máy khác
+docker save -o cho-thanh-ly.tar cho-thanh-ly:local
+```
+
+Có thể tạo file `.env` ở thư mục gốc để đổi `APP_PORT`, `DB_PASS` và
+`DB_ROOT_PASSWORD`. Mật khẩu mặc định trong `compose.yaml` chỉ dành cho môi trường
+local. Không chạy `docker compose down -v` nếu muốn giữ database và ảnh đã tải lên.
+
 ### 1. Cấu hình cơ sở dữ liệu (MySQL)
 
 1. Đảm bảo bạn đã bật **Apache** và **MySQL** trên **XAMPP Control Panel**.

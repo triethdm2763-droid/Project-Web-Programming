@@ -18,9 +18,11 @@
                 }
                 const base = (window.APP_BASE_URL || '').replace(/\/$/, '');
                 const cleanPath = path.startsWith('/') ? path : '/' + path;
+
                 if (base && (cleanPath === base || cleanPath.startsWith(base + '/'))) {
                         return cleanPath;
                 }
+
                 return base + cleanPath;
         };
 </script>

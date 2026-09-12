@@ -11,6 +11,10 @@ use ReflectionClass;
 
 final class AuthLoginPathTest extends TestCase
 {
+    // Canonical CFG: N1 entry, N2 validation, N3 errors?, N4 return 400,
+    // N5 lookup username, N6 null?, N7 lookup email, N8 null?, N9 return 401,
+    // N10 wrong password?, N11 return 401, N12 non-active?, N13 return 403,
+    // N14 strip Password, N15 return 200, N16 exit. See AUTH-WB corrected report.
     /**
      * P1:
      * Thiếu username -> validation fail -> HTTP 400

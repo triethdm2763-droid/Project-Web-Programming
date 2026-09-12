@@ -12,5 +12,11 @@ backend/vendor
 backend/.phpunit.result.cache
 *.log
 .env
+**/.env
+**/.env.*
+backend/coverage*
+backend/storage/**
+**/sess_*
+*.tar
 .DS_Store
 Thumbs.db

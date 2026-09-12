@@ -2,7 +2,6 @@
 namespace App\Controllers;
 
 use App\Core\BaseController;
-use App\Core\Session;
 use App\Services\AuthService;
 
 class AuthController extends BaseController {
@@ -55,7 +54,9 @@ class AuthController extends BaseController {
             setcookie('token', $token, time() + 3600 * 24, '/', '', false, true);
 
             // Bind authentication parameters into active Session State
-            Session::start();
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
 
             $_SESSION['user_id']  = $user['ID'];
             $_SESSION['username'] = $user['Username'];
@@ -80,7 +81,9 @@ class AuthController extends BaseController {
      * Log the user out by destroying active session variables and cookies.
      */
     public function logout() {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         // Clear all session variables
         $_SESSION = [];
@@ -173,7 +176,9 @@ class AuthController extends BaseController {
      * Update authenticated user profile details.
      */
     public function updateProfile() {
-        Session::start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         if (empty($_SESSION['user_id'])) {
             return $this->json(['error' => 'Bạn chưa đăng nhập.'], 401);
         }

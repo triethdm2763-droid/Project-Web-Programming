@@ -16,10 +16,8 @@
 .DS_Store
 Thumbs.db
 backend/vendor/
-<<<<<<< HEAD
 backend/.phpunit.result.cache
+backend/coverage-html/
+backend/coverage.xml
 node_modules/
 output/
-=======
-backend/.phpunit.result.cache
->>>>>>> 798812e7ff3d82d10aedc22d1123ffffaa1407f2

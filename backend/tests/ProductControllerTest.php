@@ -1,161 +1,140 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
-use App\controllers\ProductController;
+declare(strict_types=1);
 
-class ProductControllerTest extends TestCase
+use App\Controllers\ProductController;
+use App\Services\ProductService;
+use PHPUnit\Framework\TestCase;
+
+final class ProductControllerTest extends TestCase
 {
     protected function setUp(): void
     {
-        parent::setUp();
-        // Mồi sẵn phiên đăng nhập mặc định để vượt qua bộ lọc Auth cơ bản
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_save_path(sys_get_temp_dir());
+            session_id('phpunit-product-controller-' . getmypid());
+            session_start(['use_cookies' => false, 'cache_limiter' => '']);
         }
-        $_SESSION['user_id'] = 1; // Giả lập User A (ID = 1)
-        $_SESSION['role'] = 'seller';
-    }
-
-    /**
-     * TC-PROD-01: Đăng sản phẩm thành công khi dữ liệu hợp lệ và hình ảnh lưu đúng thư mục
-     */
-    public function testTC_PROD_01_CreateProductSuccess()
-    {
-        $_POST = [
-            'name' => 'Sản phẩm thử nghiệm chuẩn',
-            'price' => 150000,
-            'description' => 'Mô tả sản phẩm hợp lệ',
-            'category_id' => 2
-        ];
-        
-        // Giả lập file ảnh gửi lên hợp lệ
-        $_FILES['image'] = [
-            'name' => 'phone.jpg',
-            'type' => 'image/jpeg',
-            'tmp_name' => '/tmp/phpYzd95x',
-            'error' => 0,
-            'size' => 500000 // 500KB
-        ];
-
-        ob_start();
-        $controller = new ProductController();
-        
-        try {
-            $controller->create(); // Hàm đăng bán sản phẩm
-        } catch (\Throwable $e) {}
-        
-        $output = ob_get_clean();
-        
-        // Khẳng định: Hệ thống phải phản hồi thành công hoặc in ra cấu trúc dữ liệu tạo mới
-        $this->assertJson($output);
-        $this->assertStringNotContainsString('error', $output);
-    }
-
-    /**
-     * TC-PROD-02 & TC-FILE-01: Bảo mật Upload - Từ chối tệp ảnh sai định dạng, vượt dung lượng, đổi đuôi giả mạo
-     */
-    public function testTC_PROD_02_UploadSecurityFailure()
-    {
-        // Kịch bản gửi file ảnh giả mạo (.script đổi đuôi thành .jpg)
-        $_FILES['image'] = [
-            'name' => 'malware.jpg',
-            'type' => 'text/php', // Định dạng thực tế bị phát hiện là mã độc
-            'tmp_name' => '/tmp/phpMalware',
-            'error' => 0,
-            'size' => 15000000 // Vượt dung lượng cho phép (>10MB)
-        ];
-
-        ob_start();
-        $controller = new ProductController();
-        
-        try {
-            $controller->uploadImage();
-        } catch (\Throwable $e) {}
-        
-        $output = ob_get_clean();
-        
-        // Khẳng định: Hệ thống bắt buộc phải từ chối và trả về thông báo lỗi bảo mật
-        $this->assertJson($output);
-        $this->assertStringContainsString('error', $output);
-    }
-
-    /**
-     * TC-PROD-03: Bảo mật IDOR - Kiểm tra User A thao tác sửa/xóa sản phẩm của User B phải bị từ chối (403)
-     */
-    public function testTC_PROD_03_IDORProtection()
-    {
-        $_SESSION['user_id'] = 1; // User A đang đăng nhập
-        $_POST['id'] = 999;       // ID sản phẩm thuộc quyền sở hữu của User B (ID = 2)
-
-        ob_start();
-        $controller = new ProductController();
-        
-        try {
-            $controller->update(); // Hoặc hàm delete() tùy nhóm đặt tên
-        } catch (\Throwable $e) {}
-        
-        $output = ob_get_clean();
-
-        // Khẳng định: Hệ thống phải từ chối quyền truy cập (mã lỗi hoặc chữ từ chối/403)
-        $this->assertJson($output);
-        $this->assertStringContainsString('error', $output);
-    }
-
-    /**
-     * FR-07 & FR-08: Ràng buộc logic - Chỉ cho phép xóa/sửa sản phẩm khi chưa có đơn hàng/giao dịch
-     */
-    public function testFR_07_ProductBusinessLogicConstraint()
-    {
-        $_POST['id'] = 5; // Giả lập sản phẩm ID số 5 đã có người đặt mua trong DB
-
-        ob_start();
-        $controller = new ProductController();
-        
-        try {
-            $controller->delete();
-        } catch (\Throwable $e) {}
-        
-        $output = ob_get_clean();
-
-        // Khẳng định: Hệ thống chặn lại không cho xóa và báo lỗi ràng buộc
-        $this->assertJson($output);
-        $this->assertStringContainsString('error', $output);
-    }
-
-    /**
-     * TC-SEARCH-01: Tìm kiếm và Lọc - Kiểm tra kết quả trả về đúng khi tìm theo từ khóa, danh mục, khoảng giá, tình trạng
-     */
-    public function testTC_SEARCH_01_FilterAndSearchSuccess()
-    {
-        // Giả lập các tham số lọc gửi lên từ URL
-        $_GET['search'] = 'Laptop';
-        $_GET['category_id'] = 3;
-        $_GET['min_price'] = 5000000;
-        $_GET['max_price'] = 20000000;
-        $_GET['status'] = 'active';
-
-        ob_start();
-        $controller = new ProductController();
-        
-        try {
-            $controller->list(); // Hàm hiển thị danh sách sản phẩm kèm bộ lọc
-        } catch (\Throwable $e) {}
-        
-        $output = ob_get_clean();
-
-        // Khẳng định: Hệ thống trả về danh sách sản phẩm dạng JSON khớp bộ lọc
-        $this->assertJson($output);
-        $this->assertStringContainsString('data', $output);
+        $_SESSION = ['user_id' => 1, 'role' => 'seller'];
+        $_GET = [];
+        $_FILES = [];
+        http_response_code(200);
     }
 
     protected function tearDown(): void
     {
-        $_POST = [];
+        $_SESSION = [];
         $_GET = [];
         $_FILES = [];
-        unset($_SESSION['user_id']);
-        unset($_SESSION['role']);
-        parent::tearDown();
+        http_response_code(200);
+        header_remove();
+    }
+
+    public function testTC_PROD_01_CreateProductSuccess(): void
+    {
+        $body = [
+            'name' => 'Sản phẩm thử nghiệm chuẩn',
+            'price' => 150000,
+            'description' => 'Mô tả sản phẩm hợp lệ',
+            'category_id' => 2,
+        ];
+        $service = $this->createMock(ProductService::class);
+        $service->expects(self::once())->method('createProduct')->with($body)->willReturn([
+            'status' => 'success', 'code' => 201, 'product_id' => 42,
+        ]);
+
+        $output = $this->capture(fn() => $this->controllerWith($service, $body)->create());
+
+        self::assertSame(201, http_response_code());
+        self::assertSame([
+            'message' => 'Đăng bán sản phẩm thành công!',
+            'product_id' => 42,
+        ], json_decode($output, true, 512, JSON_THROW_ON_ERROR));
+    }
+
+    public function testTC_PROD_02_UploadSecurityFailure(): void
+    {
+        $_FILES['image'] = [
+            'name' => 'malware.jpg',
+            'type' => 'text/php',
+            'tmp_name' => sys_get_temp_dir() . '/missing-malware-file',
+            'error' => UPLOAD_ERR_OK,
+            'size' => 15_000_000,
+        ];
+
+        $output = $this->capture(fn() => $this->controllerWith($this->createMock(ProductService::class))->uploadImage());
+        $json = json_decode($output, true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(400, http_response_code());
+        self::assertArrayHasKey('error', $json);
+        self::assertStringContainsString('5MB', $json['error']);
+    }
+
+    public function testTC_PROD_03_IDORProtection(): void
+    {
+        $body = ['id' => 999, 'name' => 'Sản phẩm', 'price' => 1000, 'category_id' => 2];
+        $service = $this->createMock(ProductService::class);
+        $service->expects(self::once())->method('updateProduct')->with(999, $body)->willReturn([
+            'status' => 'error', 'code' => 403, 'message' => 'Bạn không có quyền chỉnh sửa.',
+        ]);
+
+        $output = $this->capture(fn() => $this->controllerWith($service, $body)->update());
+        $json = json_decode($output, true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(403, http_response_code());
+        self::assertSame('Bạn không có quyền chỉnh sửa.', $json['error']);
+    }
+
+    public function testFR_07_ProductBusinessLogicConstraint(): void
+    {
+        $body = ['id' => 5];
+        $service = $this->createMock(ProductService::class);
+        $service->expects(self::once())->method('deleteProduct')->with(5)->willReturn([
+            'status' => 'error', 'code' => 400, 'message' => 'Sản phẩm đã bán, không thể xóa.',
+        ]);
+
+        $output = $this->capture(fn() => $this->controllerWith($service, $body)->delete());
+        $json = json_decode($output, true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(400, http_response_code());
+        self::assertSame('Sản phẩm đã bán, không thể xóa.', $json['error']);
+    }
+
+    public function testTC_SEARCH_01_FilterAndSearchSuccess(): void
+    {
+        $_GET = [
+            'search' => 'Laptop',
+            'category_id' => 3,
+            'min_price' => 5_000_000,
+            'max_price' => 20_000_000,
+        ];
+        $products = [['ID' => 10, 'Name' => 'Laptop A', 'Price' => 12_000_000]];
+        $service = $this->createMock(ProductService::class);
+        $service->expects(self::once())->method('getActiveProducts')->with($_GET)->willReturn([
+            'status' => 'success', 'code' => 200, 'data' => $products,
+        ]);
+
+        $output = $this->capture(fn() => $this->controllerWith($service)->list());
+
+        self::assertSame(200, http_response_code());
+        self::assertSame($products, json_decode($output, true, 512, JSON_THROW_ON_ERROR));
+    }
+
+    private function controllerWith(ProductService $service, array $body = []): ProductController
+    {
+        $controller = new class($body) extends ProductController {
+            public function __construct(private array $body) {}
+            protected function getRequestBody(): array { return $this->body; }
+        };
+        $property = (new \ReflectionClass(ProductController::class))->getProperty('productService');
+        $property->setValue($controller, $service);
+        return $controller;
+    }
+
+    private function capture(callable $action): string
+    {
+        ob_start();
+        $action();
+        return (string)ob_get_clean();
     }
 }
-                

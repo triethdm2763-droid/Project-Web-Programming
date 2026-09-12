@@ -58,9 +58,10 @@ class NotificationRepository extends BaseRepository
     {
         $sql = "UPDATE `notifications` SET `Is_read` = 1 WHERE `ID` = :id AND `User_ID` = :user_id";
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
+        $executed = $stmt->execute([
             'id'      => $notificationId,
             'user_id' => $userId
         ]);
+        return $executed && $stmt->rowCount() > 0;
     }
 }

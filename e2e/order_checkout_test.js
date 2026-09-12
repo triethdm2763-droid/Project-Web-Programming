@@ -1,57 +1,53 @@
 Feature('Order Checkout');
 
 Scenario('Buyer completes checkout successfully', async ({ I }) => {
-    I.amOnPage('/frontend/pages/auth/login.php');
-    I.waitForElement('#username', 5);
-    I.fillField('#username', 'huynhduongminhtriet@gmail.com');
-    I.fillField('#password', '12345678');
-    I.click('#loginBtn');
-    I.waitForCookie('token', 5);
+    const uniqueId = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
+    const username = `buyer_${uniqueId}`;
+    const email = `buyer_${uniqueId}@example.com`;
+    const phone = `09${uniqueId.slice(-8)}`;
+    const password = 'E2ePassword@123';
 
-    I.amOnPage('/frontend/pages/home/index.php');
+    I.amOnPage('/frontend/pages/auth/register.php');
+    I.fillField('#username', username);
+    I.fillField('#email', email);
+    I.fillField('#phone', phone);
+    I.fillField('#password', password);
+    I.fillField('#confirmPassword', password);
+    I.click('#registerBtn');
+    I.waitForText('Đăng ký thành công!', 10);
+    I.waitForFunction(() => window.location.pathname.endsWith('/frontend/pages/auth/login.php'), 10);
+
+    I.fillField('#username', username);
+    I.fillField('#password', password);
+    I.click('#loginBtn');
+    I.waitForFunction(() => window.location.pathname.endsWith('/frontend/pages/home/index.php'), 10);
 
     I.waitForElement('a[href*="/frontend/pages/products/detail.php?id="]', 10);
     I.click('a[href*="/frontend/pages/products/detail.php?id="]');
+    I.waitForFunction(() => window.location.pathname.endsWith('/frontend/pages/products/detail.php'), 10);
 
-    I.waitForElement('#btn-buy-now', 10);
-    I.waitForFunction(() => {
-        const name = document.querySelector('#product-name')?.textContent?.trim();
-        return name && !name.includes('Dang tai') && !name.includes('Đang tải');
-    }, 10);
+    I.waitForElement('#btn-buy-now',10);
+    I.waitForFunction(
+        () => document.querySelector('#product-name')?.textContent.trim() !== 'Đang tải...',
+        10
+    );
 
     I.click('#btn-buy-now');
 
-    I.waitForElement('#fullname', 5);
-    I.fillField('#fullname', 'Huynh Duong Minh Triet');
-    I.fillField('#phone', '0962618573');
-    I.fillField('#address', '123 Nguyen Kiem');
+    I.waitForElement('#fullname', 10);
+
+    I.fillField('#fullname','Huỳnh Dương Minh Triết');
+    I.fillField('#phone', phone);
+    I.fillField('#address','123 Nguyễn Kiệm');
 
     I.checkOption('input[name="payment_method"][value="cash"]');
 
-    I.waitForElement('#btn-place-order', 5);
-    I.click('#btn-place-order');
+    I.see('Đặt hàng');
 
-    I.waitForFunction(() => window.location.pathname.includes('/frontend/pages/payment/track.php'), 10);
+    I.click('Đặt hàng');
 
-    await I.executeScript(async () => {
-        const apiUrl = window.appUrl || ((path) => path);
-        const orderCode = new URL(window.location.href).searchParams.get('id');
-        if (!orderCode) return false;
+    I.waitForText('Đơn hàng đã được tạo thành công!', 15);
+    I.see('Thành công');
 
-        const historyResponse = await fetch(apiUrl('/backend/public/index.php/api/orders/buyer'));
-        const orders = await historyResponse.json();
-        const order = (Array.isArray(orders) ? orders : []).find((item) => {
-            return (item.Order_Code || item.order_code) === orderCode;
-        });
 
-        if (!order) return false;
-
-        await fetch(apiUrl('/backend/public/index.php/api/orders/cancel'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ order_id: order.ID || order.id })
-        });
-
-        return true;
-    });
 });

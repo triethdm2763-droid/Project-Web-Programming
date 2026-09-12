@@ -160,8 +160,7 @@ $conditionOption     = isset($_GET['condition_status']) ? trim($_GET['condition_
             let list = document.getElementById("categoriesList");
             try {
                 let res = await fetch("/backend/public/index.php/api/categories");
-                let data = await res.json();
-                let categories = data.data || data || [];
+                let categories = await res.json();
                 loadedCategoriesData = categories;
                 
                 const renderList = () => {

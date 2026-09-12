@@ -4,173 +4,62 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use PHPUnit\Framework\TestCase;
 use App\Services\AuthService;
 use App\Repositories\UserRepository;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 final class AuthBranchConditionTest extends TestCase
 {
-    private function serviceWithRepository($repo): AuthService
+    public static function decisionCases(): array
     {
-        $service = new AuthService();
-
-        $reflection = new \ReflectionClass($service);
-        $property = $reflection->getProperty('userRepository');
-        $property->setAccessible(true);
-        $property->setValue($service, $repo);
-
-        return $service;
+        // route, password, status, code, D1..D5 (null = not evaluated).
+        return [
+            'AUTH-WB-01' => ['validation', 'Password123', 'active', 400, [true, null, null, null, null]],
+            'AUTH-WB-02' => ['missing', 'Password123', 'active', 401, [false, true, true, null, null]],
+            'AUTH-WB-03' => ['username', 'WrongPassword', 'active', 401, [false, false, false, true, null]],
+            'AUTH-WB-04' => ['username', 'Password123', 'banned', 403, [false, false, false, false, true]],
+            'AUTH-WB-05' => ['username', 'Password123', 'active', 200, [false, false, false, false, false]],
+        ];
     }
 
-
-    /**
-     * AUTH-WB-01
-     * Branch:
-     * Validation error = True
-     */
-    public function testLoginValidationFailed(): void
+    #[DataProvider('decisionCases')]
+    public function testDecisionCase(string $route, string $password, string $status, int $code, array $outcomes): void
     {
         $repo = $this->createMock(UserRepository::class);
-
-        $service = $this->serviceWithRepository($repo);
-
-        $result = $service->login([
-            'username' => '',
-            'password' => ''
-        ]);
-
-        self::assertSame('error', $result['status']);
-        self::assertSame(400, $result['code']);
-    }
-
-
-    /**
-     * AUTH-WB-02
-     * Branch:
-     * username not found
-     * user === null = True
-     */
-    public function testLoginUserNotFound(): void
-    {
-        $repo = $this->createMock(UserRepository::class);
-
-        $repo->expects(self::once())
-            ->method('findByUsername')
-            ->willReturn(null);
-
-        $repo->expects(self::once())
-            ->method('findByEmail')
-            ->willReturn(null);
-
-        $service = $this->serviceWithRepository($repo);
-
-        $result = $service->login([
-            'username' => 'unknown',
-            'password' => 'Password123'
-        ]);
-
-        self::assertSame('error', $result['status']);
-        self::assertSame(401, $result['code']);
-    }
-
-
-    /**
-     * AUTH-WB-03
-     * Branch:
-     * password_verify = False
-     */
-    public function testLoginWrongPassword(): void
-    {
-        $repo = $this->createMock(UserRepository::class);
-
-        $repo->expects(self::once())
-            ->method('findByUsername')
-            ->willReturn([
-                'ID' => 1,
-                'Username' => 'user01',
-                'Password' => password_hash(
-                    'CorrectPassword123',
-                    PASSWORD_BCRYPT
-                ),
-                'Status' => 'active'
-            ]);
-
-        $service = $this->serviceWithRepository($repo);
-
-        $result = $service->login([
-            'username' => 'user01',
-            'password' => 'WrongPassword'
-        ]);
-
-        self::assertSame('error', $result['status']);
-        self::assertSame(401, $result['code']);
-    }
-
-
-    /**
-     * AUTH-WB-04
-     * Branch:
-     * Status !== active = True
-     */
-    public function testLoginInactiveAccount(): void
-    {
-        $repo = $this->createMock(UserRepository::class);
-
-        $repo->expects(self::once())
-            ->method('findByUsername')
-            ->willReturn([
-                'ID' => 1,
-                'Username' => 'user01',
-                'Password' => password_hash(
-                    'Password123',
-                    PASSWORD_BCRYPT
-                ),
-                'Status' => 'inactive'
-            ]);
-
-        $service = $this->serviceWithRepository($repo);
-
-        $result = $service->login([
-            'username' => 'user01',
-            'password' => 'Password123'
-        ]);
-
-        self::assertSame('error', $result['status']);
-        self::assertSame(403, $result['code']);
-    }
-
-
-    /**
-     * AUTH-WB-05
-     * Branch:
-     * All conditions False
-     * Login success
-     */
-    public function testLoginSuccess(): void
-    {
-        $repo = $this->createMock(UserRepository::class);
-
-        $repo->expects(self::once())
-            ->method('findByUsername')
-            ->willReturn([
-                'ID' => 1,
-                'Username' => 'user01',
-                'Email' => 'user01@gmail.com',
-                'Password' => password_hash(
-                    'Password123',
-                    PASSWORD_BCRYPT
-                ),
-                'Status' => 'active'
-            ]);
-
-        $service = $this->serviceWithRepository($repo);
-
-        $result = $service->login([
-            'username' => 'user01',
-            'password' => 'Password123'
-        ]);
-
-        self::assertSame('success', $result['status']);
-        self::assertSame(200, $result['code']);
+        $user = ['ID' => 7, 'Username' => 'user01', 'Email' => 'user01@example.com',
+            'Role' => 'user', 'Status' => $status, 'Password' => password_hash('Password123', PASSWORD_BCRYPT)];
+        if ($route === 'validation') {
+            $repo->expects(self::never())->method('findByUsername');
+            $repo->expects(self::never())->method('findByEmail');
+        } else {
+            $repo->expects(self::once())->method('findByUsername')->with('user01')
+                ->willReturn($route === 'missing' ? null : $user);
+            if ($route === 'missing') {
+                $repo->expects(self::once())->method('findByEmail')->with('user01')->willReturn(null);
+            } else {
+                $repo->expects(self::never())->method('findByEmail');
+            }
+        }
+        $reflection = new ReflectionClass(AuthService::class);
+        $service = $reflection->newInstanceWithoutConstructor();
+        $reflection->getProperty('userRepository')->setValue($service, $repo);
+        $result = $service->login(['username' => $route === 'validation' ? '' : 'user01', 'password' => $password]);
+        // This metadata documents the source trace; it is not a measured coverage counter.
+        self::assertSame($code, $result['code'], json_encode($outcomes));
+        self::assertSame($code === 200 ? 'success' : 'error', $result['status']);
+        if ($code === 200) {
+            unset($user['Password']);
+            self::assertSame($user, $result['user']);
+            self::assertArrayNotHasKey('Password', $result['user']);
+        } else {
+            self::assertArrayNotHasKey('user', $result);
+            if ($code === 400) {
+                self::assertSame(['username'], array_keys($result['errors']));
+            } else {
+                self::assertNotEmpty($result['message']);
+            }
+        }
     }
 }
