@@ -7,11 +7,14 @@ use App\Validators\Validator;
 
 class ProductService
 {
-    private $productRepository;
+    private const MIN_PRICE = 0.01;
+    private const MAX_PRICE = 9999999999999.99;
 
-    public function __construct()
+    private ProductRepository $productRepository;
+
+    public function __construct(?ProductRepository $productRepository = null)
     {
-        $this->productRepository = new ProductRepository();
+        $this->productRepository = $productRepository ?? new ProductRepository();
     }
 
     public function getActiveProducts(array $filters = []): array
@@ -39,18 +42,21 @@ class ProductService
         }
         $sellerId = intval($_SESSION['user_id']);
 
-        $rules = ['name' => 'required|min:3|max:255', 'price' => 'required', 'category_id' => 'required'];
-        $errors = Validator::validate($data, $rules);
+        $errors = $this->validateProductData($data);
         if (!empty($errors)) return ['status' => 'error', 'code' => 400, 'errors' => $errors];
 
         $price = floatval($data['price']);
-        if ($price <= 0) return ['status' => 'error', 'code' => 400, 'errors' => ['price' => ['Giá bán phải > 0.']]];
+        $categoryId = intval($data['category_id']);
+
+        if (!$this->productRepository->categoryExists($categoryId)) {
+            return ['status' => 'error', 'code' => 400, 'errors' => ['category_id' => ['Danh mục không tồn tại.']]];
+        }
 
         $insertData = [
             'name'             => trim($data['name']),
             'description'      => $data['description'] ?? '',
             'image'            => $data['image'] ?? '',
-            'category_id'      => intval($data['category_id']),
+            'category_id'      => $categoryId,
             'seller_id'        => $sellerId,
             'price'            => $price,
             'status'           => 'pending',
@@ -61,7 +67,12 @@ class ProductService
             'stock_quantity'   => isset($data['stock_quantity']) ? intval($data['stock_quantity']) : 1
         ];
 
-        return ['status' => 'success', 'code' => 201, 'product_id' => $this->productRepository->create($insertData)];
+        $productId = $this->productRepository->create($insertData);
+        if ($productId <= 0) {
+            return ['status' => 'error', 'code' => 500, 'message' => 'Không thể tạo tin đăng.'];
+        }
+
+        return ['status' => 'success', 'code' => 201, 'product_id' => $productId];
     }
 
     public function updateProduct(int $id, array $data): array
@@ -77,8 +88,20 @@ class ProductService
         if (!$isOwner && !$isAdmin) return ['status' => 'error', 'code' => 403, 'message' => 'Bạn không có quyền chỉnh sửa.'];
         if (($product['Status'] ?? '') === 'sold') return ['status' => 'error', 'code' => 400, 'message' => 'Sản phẩm đã bán.'];
 
-        $rules = ['name' => 'required|min:3|max:255', 'price' => 'required', 'category_id' => 'required'];
-        if (!empty(Validator::validate($data, $rules))) return ['status' => 'error', 'code' => 400, 'message' => 'Dữ liệu không hợp lệ.'];
+        $errors = $this->validateProductData($data);
+        if (!empty($errors)) {
+            return ['status' => 'error', 'code' => 400, 'message' => 'Dữ liệu không hợp lệ.', 'errors' => $errors];
+        }
+
+        $categoryId = intval($data['category_id']);
+        if (!$this->productRepository->categoryExists($categoryId)) {
+            return [
+                'status' => 'error',
+                'code' => 400,
+                'message' => 'Dữ liệu không hợp lệ.',
+                'errors' => ['category_id' => ['Danh mục không tồn tại.']],
+            ];
+        }
 
         $status = $product['Status'];
         if ($isOwner && !$isAdmin) {
@@ -88,7 +111,7 @@ class ProductService
         $updateData = [
             'name'             => trim($data['name']),
             'description'      => $data['description'] ?? '',
-            'category_id'      => intval($data['category_id']),
+            'category_id'      => $categoryId,
             'price'            => floatval($data['price']),
             'condition_status' => trim($data['condition_status'] ?? ''),
             'accessories'      => trim($data['accessories'] ?? ''),
@@ -99,7 +122,10 @@ class ProductService
         ];
         if (!empty($data['image'])) $updateData['image'] = $data['image'];
 
-        $this->productRepository->update($id, $updateData);
+        if (!$this->productRepository->update($id, $updateData)) {
+            return ['status' => 'error', 'code' => 500, 'message' => 'Không thể cập nhật tin đăng.'];
+        }
+
         return ['status' => 'success', 'code' => 200, 'message' => 'Cập nhật tin đăng thành công!'];
     }
 
@@ -116,7 +142,10 @@ class ProductService
         if (!$isOwner && !$isAdmin) return ['status' => 'error', 'code' => 403, 'message' => 'Bạn không có quyền xóa.'];
         if (($product['Status'] ?? '') === 'sold') return ['status' => 'error', 'code' => 400, 'message' => 'Sản phẩm đã bán, không thể xóa.'];
 
-        $this->productRepository->softDelete($id);
+        if (!$this->productRepository->softDelete($id)) {
+            return ['status' => 'error', 'code' => 500, 'message' => 'Không thể xóa tin đăng.'];
+        }
+
         return ['status' => 'success', 'code' => 200, 'message' => 'Xóa tin đăng thành công!'];
     }
 
@@ -152,5 +181,38 @@ class ProductService
         $stats['sold_products'] = $soldProducts;
         
         return ['status' => 'success', 'code' => 200, 'data' => $stats];
+    }
+
+    private function validateProductData(array $data): array
+    {
+        $rules = ['name' => 'required|min:3|max:255', 'price' => 'required', 'category_id' => 'required'];
+        $errors = Validator::validate($data, $rules);
+
+        if (isset($data['price']) && trim((string)$data['price']) !== '') {
+            if (!is_numeric($data['price'])) {
+                $errors['price'][] = 'Giá bán phải là số.';
+            } else {
+                $price = (float)$data['price'];
+                if ($price < self::MIN_PRICE || $price > self::MAX_PRICE) {
+                    $errors['price'][] = 'Giá bán phải từ 0.01 đến 9999999999999.99.';
+                }
+            }
+        }
+
+        if (isset($data['category_id']) && trim((string)$data['category_id']) !== '') {
+            $categoryId = filter_var($data['category_id'], FILTER_VALIDATE_INT);
+            if ($categoryId === false || $categoryId < 1) {
+                $errors['category_id'][] = 'Danh mục phải là số nguyên dương.';
+            }
+        }
+
+        if (array_key_exists('stock_quantity', $data)) {
+            $stock = filter_var($data['stock_quantity'], FILTER_VALIDATE_INT);
+            if ($stock === false || $stock < 1) {
+                $errors['stock_quantity'][] = 'Số lượng phải là số nguyên dương.';
+            }
+        }
+
+        return $errors;
     }
 }

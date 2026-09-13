@@ -34,14 +34,17 @@ final class ProductServiceTest extends TestCase
     public static function createProductCases(): array
     {
         return [
-            // Robust BVA for name length: min=3, max=255, one field varied at a time.
-            'PROD-BVA-N1 name min-1' => [['name' => str_repeat('n', 2)], 400, 'name', null, 'BVA'],
-            'PROD-BVA-N2 name min' => [['name' => str_repeat('n', 3)], 201, null, null, 'BVA'],
-            'PROD-BVA-N3 name min+1' => [['name' => str_repeat('n', 4)], 201, null, null, 'BVA'],
-            'PROD-BVA-N4 name nominal' => [['name' => str_repeat('n', 20)], 201, null, null, 'BVA'],
-            'PROD-BVA-N5 name max-1' => [['name' => str_repeat('n', 254)], 201, null, null, 'BVA'],
-            'PROD-BVA-N6 name max' => [['name' => str_repeat('n', 255)], 201, null, null, 'BVA'],
-            'PROD-BVA-N7 name max+1' => [['name' => str_repeat('n', 256)], 400, 'name', null, 'BVA'],
+            // Standard BVA 4n+1, n=2 (name length and price): one nominal case
+            // plus min, min+, max-, max for each variable. All other fields stay nominal.
+            'PROD-BVA-01 all nominal' => [[], 201, null, null, 'BVA', true],
+            'PROD-BVA-02 name min' => [['name' => str_repeat('n', 3)], 201, null, null, 'BVA', true],
+            'PROD-BVA-03 name min+' => [['name' => str_repeat('n', 4)], 201, null, null, 'BVA', true],
+            'PROD-BVA-04 name max-' => [['name' => str_repeat('n', 254)], 201, null, null, 'BVA', true],
+            'PROD-BVA-05 name max' => [['name' => str_repeat('n', 255)], 201, null, null, 'BVA', true],
+            'PROD-BVA-06 price min' => [['price' => 0.01], 201, null, null, 'BVA', true],
+            'PROD-BVA-07 price min+' => [['price' => 0.02], 201, null, null, 'BVA', true],
+            'PROD-BVA-08 price max-' => [['price' => 9999999999999.98], 201, null, null, 'BVA', true],
+            'PROD-BVA-09 price max' => [['price' => 9999999999999.99], 201, null, null, 'BVA', true],
 
             // Price has only the source boundary price > 0. DECIMAL(15,2) motivates epsilon=0.01.
             'PROD-BVA-P1 price below boundary' => [['price' => -0.01], 400, 'price', null, 'BVA'],
@@ -74,7 +77,8 @@ final class ProductServiceTest extends TestCase
         int $expectedCode,
         ?string $expectedErrorField,
         ?int $expectedStock,
-        string $technique
+        string $technique,
+        bool $categoryExists
     ): void {
         $data = [
             'name' => str_repeat('n', 20),
@@ -91,6 +95,7 @@ final class ProductServiceTest extends TestCase
         }
 
         $repository = $this->createMock(ProductRepository::class);
+        $repository->method('categoryExists')->willReturn($categoryExists);
         if ($expectedCode === 201) {
             $repository->expects(self::once())
                 ->method('create')
@@ -122,11 +127,26 @@ final class ProductServiceTest extends TestCase
         }
     }
 
+    public function testCreateProductReturns500WhenRepositoryCannotCreate(): void
+    {
+        $repository = $this->createMock(ProductRepository::class);
+        $repository->expects(self::once())->method('categoryExists')->with(1)->willReturn(true);
+        $repository->expects(self::once())->method('create')->willReturn(0);
+
+        $result = $this->serviceWith($repository)->createProduct([
+            'name' => 'Valid product',
+            'price' => 50000,
+            'category_id' => 1,
+            'stock_quantity' => 10,
+        ]);
+
+        self::assertSame('error', $result['status']);
+        self::assertSame(500, $result['code']);
+        self::assertSame('Không thể tạo tin đăng.', $result['message']);
+    }
+
     private function serviceWith(ProductRepository $repository): ProductService
     {
-        $reflection = new \ReflectionClass(ProductService::class);
-        $service = $reflection->newInstanceWithoutConstructor();
-        $reflection->getProperty('productRepository')->setValue($service, $repository);
-        return $service;
+        return new ProductService($repository);
     }
 }

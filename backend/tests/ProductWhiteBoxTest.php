@@ -51,7 +51,9 @@ final class ProductWhiteBoxTest extends TestCase
         array $changes,
         int $expectedCode,
         ?string $expectedErrorField,
-        ?int $expectedStock
+        ?int $expectedStock,
+        ?bool $categoryExists,
+        ?int $repositoryProductId
     ): void {
         session_save_path(sys_get_temp_dir());
         session_id('product-whitebox-' . getmypid());

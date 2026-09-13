@@ -9,9 +9,9 @@ class ProductController extends BaseController
 {
     private $productService;
 
-    public function __construct()
+    public function __construct(?ProductService $productService = null)
     {
-        $this->productService = new ProductService();
+        $this->productService = $productService ?? new ProductService();
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Admin;
 
 use App\Core\BaseRepository;
+use App\Config\Database;
 use App\Repositories\NotificationRepository;
 use App\Services\NotificationService;
 use PDO;
@@ -41,10 +42,16 @@ final class NotificationWhiteBoxTest extends TestCase
         http_response_code(200);
     }
 
-    private function serviceWithResult(bool $markResult): array
+    private function serviceWithResult(
+        bool $markResult,
+        array $notifications = [],
+        int $createdId = 1
+    ): array
     {
-        $repo = new class($markResult) extends NotificationRepository {
+        $repo = new class($markResult, $notifications, $createdId) extends NotificationRepository {
             public bool $markResult;
+            public array $notifications;
+            public int $createdId;
             public int $calls = 0;
             public ?int $lastNotificationId = null;
             public ?int $lastUserId = null;

@@ -1,6 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
+use App\Config\Database;
 use App\Services\CategoryService;
 use App\Repositories\CategoryRepository;
 
@@ -53,6 +54,22 @@ class CategoryServiceTest extends TestCase
         );
 
         $this->categoryService->getCategory(999);
+    }
+
+    public function test_get_category_returns_existing_category()
+    {
+        $category = ['ID' => 1, 'Name' => 'Laptop'];
+
+        $this->repositoryMock
+            ->expects($this->once())
+            ->method('findById')
+            ->with(1)
+            ->willReturn($category);
+
+        $this->assertSame(
+            $category,
+            $this->categoryService->getCategory(1)
+        );
     }
 
     public function test_create_category_throws_invalid_argument_if_name_empty()
