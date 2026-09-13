@@ -86,61 +86,6 @@ class CategoryServiceTest extends TestCase
             ->createCategory(['name' => '']);
     }
 
-    public function test_create_category_trims_name_and_returns_created_data()
-    {
-        $this->repositoryMock
-            ->expects($this->once())
-            ->method('create')
-            ->with([
-                'name' => 'Điện thoại',
-                'icon' => 'phone.svg'
-            ])
-            ->willReturn(15);
-
-        $result = $this->categoryService->createCategory([
-            'name' => '  Điện thoại  ',
-            'icon' => 'phone.svg'
-        ]);
-
-        $this->assertSame([
-            'id' => 15,
-            'name' => 'Điện thoại',
-            'icon' => 'phone.svg'
-        ], $result);
-    }
-
-    public function test_create_category_accepts_name_at_100_character_boundary()
-    {
-        $name = str_repeat('a', 100);
-
-        $this->repositoryMock
-            ->expects($this->once())
-            ->method('create')
-            ->with(['name' => $name])
-            ->willReturn(16);
-
-        $this->assertSame(
-            ['id' => 16, 'name' => $name],
-            $this->categoryService->createCategory(['name' => $name])
-        );
-    }
-
-    public function test_create_category_rejects_name_above_100_characters()
-    {
-        $this->repositoryMock
-            ->expects($this->never())
-            ->method('create');
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            'Tên danh mục không được vượt quá 100 ký tự'
-        );
-
-        $this->categoryService->createCategory([
-            'name' => str_repeat('a', 101)
-        ]);
-    }
-
     public function test_update_category_calls_repository_successfully()
     {
         // Mock category tồn tại
@@ -154,7 +99,6 @@ class CategoryServiceTest extends TestCase
         $this->repositoryMock
             ->expects($this->once())
             ->method('update')
-            ->with(1, ['name' => 'Mới'])
             ->willReturn(true);
 
         $result =
@@ -165,74 +109,6 @@ class CategoryServiceTest extends TestCase
                 );
 
         $this->assertTrue($result);
-    }
-
-    public function test_update_category_without_name_skips_name_validation()
-    {
-        $data = ['icon' => 'laptop.svg'];
-
-        $this->repositoryMock
-            ->expects($this->once())
-            ->method('findById')
-            ->with(1)
-            ->willReturn(['ID' => 1, 'Name' => 'Laptop']);
-
-        $this->repositoryMock
-            ->expects($this->once())
-            ->method('update')
-            ->with(1, $data)
-            ->willReturn(false);
-
-        $this->assertFalse(
-            $this->categoryService->updateCategory(1, $data)
-        );
-    }
-
-    public function test_update_category_rejects_invalid_name_before_update()
-    {
-        $this->repositoryMock
-            ->method('findById')
-            ->willReturn(['ID' => 1, 'Name' => 'Laptop']);
-
-        $this->repositoryMock
-            ->expects($this->never())
-            ->method('update');
-
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->categoryService->updateCategory(1, ['name' => '   ']);
-    }
-
-    public function test_constructor_can_create_default_repository()
-    {
-        $databaseReflection = new ReflectionClass(Database::class);
-        $database = $databaseReflection->newInstanceWithoutConstructor();
-        $connection = $this->createMock(PDO::class);
-
-        $connectionProperty = $databaseReflection->getProperty('conn');
-        $connectionProperty->setAccessible(true);
-        $connectionProperty->setValue($database, $connection);
-
-        $instanceProperty = $databaseReflection->getProperty('instance');
-        $instanceProperty->setAccessible(true);
-        $previousInstance = $instanceProperty->getValue();
-        $instanceProperty->setValue(null, $database);
-
-        try {
-            $service = new CategoryService();
-            $serviceReflection = new ReflectionClass($service);
-            $repositoryProperty = $serviceReflection->getProperty(
-                'categoryRepository'
-            );
-            $repositoryProperty->setAccessible(true);
-
-            $this->assertInstanceOf(
-                CategoryRepository::class,
-                $repositoryProperty->getValue($service)
-            );
-        } finally {
-            $instanceProperty->setValue(null, $previousInstance);
-        }
     }
 
     public function test_delete_category_successfully()

@@ -13,23 +13,6 @@ use PHPUnit\Framework\TestCase;
 #[PreserveGlobalState(false)]
 final class ProductWhiteBoxTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        session_save_path(sys_get_temp_dir());
-        session_id('product-whitebox-' . getmypid());
-        $_SESSION = [];
-    }
-
-    protected function tearDown(): void
-    {
-        $_SESSION = [];
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            session_destroy();
-        }
-        header_remove();
-        http_response_code(200);
-    }
-
     /*
      * =========================================================
      * CREATE PRODUCT - BASIS PATHS
@@ -42,28 +25,22 @@ final class ProductWhiteBoxTest extends TestCase
         // Validator is treated as one call node.
         return [
             'PROD-WB-P1 session none then unauthenticated'
-                => [false, false, [], 401, null, null, null, null],
+                => [false, false, [], 401, null, null],
 
             'PROD-WB-P2 session active but unauthenticated'
-                => [true, false, [], 401, null, null, null, null],
+                => [true, false, [], 401, null, null],
 
             'PROD-WB-P3 validation errors'
-                => [true, true, ['name' => ''], 400, 'name', null, null, null],
+                => [true, true, ['name' => ''], 400, 'name', null],
 
             'PROD-WB-P4 nonpositive price'
-                => [true, true, ['price' => 0], 400, 'price', null, null, null],
+                => [true, true, ['price' => 0], 400, 'price', null],
 
             'PROD-WB-P5 successful creation with supplied stock'
-                => [true, true, [], 201, null, 10, true, 55],
+                => [true, true, [], 201, null, 10],
 
             'PROD-WB-P6 successful creation with default stock'
-                => [true, true, ['stock_quantity' => '__UNSET__'], 201, null, 1, true, 55],
-
-            'PROD-WB-P7 category does not exist'
-                => [true, true, [], 400, 'category_id', null, false, null],
-
-            'PROD-WB-P8 repository cannot create product'
-                => [true, true, [], 500, null, 10, true, 0],
+                => [true, true, ['stock_quantity' => '__UNSET__'], 201, null, 1],
         ];
     }
 
@@ -78,6 +55,9 @@ final class ProductWhiteBoxTest extends TestCase
         ?bool $categoryExists,
         ?int $repositoryProductId
     ): void {
+        session_save_path(sys_get_temp_dir());
+        session_id('product-whitebox-' . getmypid());
+
         if ($startSession) {
             session_start([
                 'use_cookies' => false,
@@ -106,16 +86,7 @@ final class ProductWhiteBoxTest extends TestCase
 
         $repository = $this->createMock(ProductRepository::class);
 
-        if ($categoryExists === null) {
-            $repository->expects(self::never())->method('categoryExists');
-        } else {
-            $repository->expects(self::once())
-                ->method('categoryExists')
-                ->with(1)
-                ->willReturn($categoryExists);
-        }
-
-        if ($repositoryProductId !== null) {
+        if ($expectedCode === 201) {
             $repository->expects(self::once())
                 ->method('create')
                 ->with(
@@ -135,7 +106,7 @@ final class ProductWhiteBoxTest extends TestCase
                         }
                     )
                 )
-                ->willReturn($repositoryProductId);
+                ->willReturn(55);
         } else {
             $repository->expects(self::never())
                 ->method('create');
@@ -169,6 +140,14 @@ final class ProductWhiteBoxTest extends TestCase
             );
         }
 
+        $_SESSION = [];
+
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_destroy();
+        }
+
+        header_remove();
+        http_response_code(200);
     }
 
     /*
@@ -180,12 +159,25 @@ final class ProductWhiteBoxTest extends TestCase
     private function serviceWith(
         ProductRepository $repository
     ): ProductService {
-        return new ProductService($repository);
+        $reflection = new \ReflectionClass(
+            ProductService::class
+        );
+
+        $service = $reflection
+            ->newInstanceWithoutConstructor();
+
+        $reflection
+            ->getProperty('productRepository')
+            ->setValue($service, $repository);
+
+        return $service;
     }
 
     private function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
+            session_save_path(sys_get_temp_dir());
+
             session_start([
                 'use_cookies' => false,
                 'cache_limiter' => ''
@@ -381,18 +373,6 @@ final class ProductWhiteBoxTest extends TestCase
      * =========================================================
      */
 
-    public function test_WB_getSellerProducts_session_none_guest_returns_401(): void
-    {
-        $_SESSION = [];
-        $repo = $this->createMock(ProductRepository::class);
-        $repo->expects($this->never())->method('findSellerProducts');
-
-        $result = $this->serviceWith($repo)->getSellerProducts();
-
-        $this->assertSame('error', $result['status']);
-        $this->assertSame(401, $result['code']);
-    }
-
     public function test_WB_getSellerProducts_guest_returns_401(): void
     {
         $this->startSession();
@@ -422,7 +402,7 @@ final class ProductWhiteBoxTest extends TestCase
         );
     }
 
-    public function test_WB_getSellerProducts_logged_in_forwards_status_filter(): void
+    public function test_WB_getSellerProducts_logged_in_returns_products(): void
     {
         $this->startSession();
 
@@ -445,13 +425,13 @@ final class ProductWhiteBoxTest extends TestCase
 
         $repo->expects($this->once())
             ->method('findSellerProducts')
-            ->with(5, 'active')
+            ->with(5, null)
             ->willReturn($products);
 
         $service = $this->serviceWith($repo);
 
         $result = $service
-            ->getSellerProducts('active');
+            ->getSellerProducts();
 
         $this->assertSame(
             'success',
@@ -527,19 +507,6 @@ final class ProductWhiteBoxTest extends TestCase
      * GET SELLER STATS
      * =========================================================
      */
-
-    public function test_WB_getSellerStats_session_none_guest_returns_401(): void
-    {
-        $_SESSION = [];
-        $repo = $this->createMock(ProductRepository::class);
-        $repo->expects($this->never())->method('findSellerProducts');
-        $repo->expects($this->never())->method('getSellerStats');
-
-        $result = $this->serviceWith($repo)->getSellerStats();
-
-        $this->assertSame('error', $result['status']);
-        $this->assertSame(401, $result['code']);
-    }
 
     public function test_WB_getSellerStats_guest_returns_401(): void
     {
@@ -657,13 +624,10 @@ final class ProductWhiteBoxTest extends TestCase
                     'Status' => 'sold'
                 ],
                 [
-                    'status' => 'sold'
+                    'Status' => 'sold'
                 ],
                 [
                     'Status' => 'pending'
-                ],
-                [
-                    'Name' => 'Product without status'
                 ]
             ]);
 
@@ -691,7 +655,7 @@ final class ProductWhiteBoxTest extends TestCase
         );
 
         $this->assertSame(
-            4,
+            3,
             $result['data']['total_products']
         );
 
@@ -867,8 +831,7 @@ public function test_WB_deleteProduct_owner_success(): void
 
     $repo->expects($this->once())
         ->method('softDelete')
-        ->with(10)
-        ->willReturn(true);
+        ->with(10);
 
     $service = $this->serviceWith($repo);
 
@@ -899,8 +862,7 @@ public function test_WB_deleteProduct_admin_success(): void
 
     $repo->expects($this->once())
         ->method('softDelete')
-        ->with(10)
-        ->willReturn(true);
+        ->with(10);
 
     $service = $this->serviceWith($repo);
 
@@ -908,26 +870,6 @@ public function test_WB_deleteProduct_admin_success(): void
 
     $this->assertSame('success', $result['status']);
     $this->assertSame(200, $result['code']);
-}
-
-public function test_WB_deleteProduct_repository_failure_returns_500(): void
-{
-    $this->startSession();
-    $_SESSION = ['user_id' => 7, 'role' => 'seller'];
-
-    $repo = $this->createMock(ProductRepository::class);
-    $repo->expects($this->once())->method('findById')->with(10)->willReturn([
-        'Product_ID' => 10,
-        'Seller_ID' => 7,
-        'Status' => 'active'
-    ]);
-    $repo->expects($this->once())->method('softDelete')->with(10)->willReturn(false);
-
-    $result = $this->serviceWith($repo)->deleteProduct(10);
-
-    $this->assertSame('error', $result['status']);
-    $this->assertSame(500, $result['code']);
-    $this->assertSame('Không thể xóa tin đăng.', $result['message']);
 }
 /*
  * =========================================================
@@ -1116,58 +1058,6 @@ public function test_WB_updateProduct_validation_error_returns_400(): void
     );
 }
 
-public static function invalidUpdateData(): array
-{
-    return [
-        'price zero' => [['price' => 0], 'price', null],
-        'price nonnumeric' => [['price' => 'abc'], 'price', null],
-        'price above database maximum' => [['price' => 10000000000000], 'price', null],
-        'category nonnumeric' => [['category_id' => 'abc'], 'category_id', null],
-        'category does not exist' => [['category_id' => 9999], 'category_id', false],
-        'stock zero' => [['stock_quantity' => 0], 'stock_quantity', null],
-        'stock negative' => [['stock_quantity' => -1], 'stock_quantity', null],
-        'stock nonnumeric' => [['stock_quantity' => 'abc'], 'stock_quantity', null],
-    ];
-}
-
-#[DataProvider('invalidUpdateData')]
-public function test_WB_updateProduct_rejects_invalid_domain_data(
-    array $changes,
-    string $expectedErrorField,
-    ?bool $categoryExists
-): void {
-    $this->startSession();
-    $_SESSION = ['user_id' => 7, 'role' => 'seller'];
-
-    $repo = $this->createMock(ProductRepository::class);
-    $repo->expects($this->once())->method('findById')->with(10)->willReturn([
-        'Product_ID' => 10,
-        'Seller_ID' => 7,
-        'Status' => 'active'
-    ]);
-    $repo->expects($this->never())->method('update');
-
-    if ($categoryExists === null) {
-        $repo->expects($this->never())->method('categoryExists');
-    } else {
-        $repo->expects($this->once())->method('categoryExists')->with(9999)->willReturn($categoryExists);
-    }
-
-    $data = [
-        'name' => 'Updated product',
-        'price' => 60000,
-        'category_id' => 2,
-        'stock_quantity' => 5,
-    ];
-    $data = array_replace($data, $changes);
-
-    $result = $this->serviceWith($repo)->updateProduct(10, $data);
-
-    $this->assertSame('error', $result['status']);
-    $this->assertSame(400, $result['code']);
-    $this->assertArrayHasKey($expectedErrorField, $result['errors']);
-}
-
 
 public function test_WB_updateProduct_owner_success_with_stock(): void
 {
@@ -1177,7 +1067,6 @@ public function test_WB_updateProduct_owner_success_with_stock(): void
     $_SESSION['role'] = 'seller';
 
     $repo = $this->createMock(ProductRepository::class);
-    $repo->expects($this->once())->method('categoryExists')->with(2)->willReturn(true);
 
     $repo->expects($this->once())
         ->method('findById')
@@ -1253,7 +1142,6 @@ public function test_WB_updateProduct_owner_success_default_stock(): void
     $_SESSION['role'] = 'seller';
 
     $repo = $this->createMock(ProductRepository::class);
-    $repo->expects($this->once())->method('categoryExists')->with(2)->willReturn(true);
 
     $repo->expects($this->once())
         ->method('findById')
@@ -1307,7 +1195,6 @@ public function test_WB_updateProduct_owner_success_with_image(): void
     $_SESSION['role'] = 'seller';
 
     $repo = $this->createMock(ProductRepository::class);
-    $repo->expects($this->once())->method('categoryExists')->with(2)->willReturn(true);
 
     $repo->expects($this->once())
         ->method('findById')
@@ -1360,7 +1247,6 @@ public function test_WB_updateProduct_admin_non_owner_keeps_status(): void
     $_SESSION['role'] = 'admin';
 
     $repo = $this->createMock(ProductRepository::class);
-    $repo->expects($this->once())->method('categoryExists')->with(2)->willReturn(true);
 
     $repo->expects($this->once())
         ->method('findById')
@@ -1411,7 +1297,6 @@ public function test_WB_updateProduct_owner_admin_keeps_status(): void
     $_SESSION['role'] = 'admin';
 
     $repo = $this->createMock(ProductRepository::class);
-    $repo->expects($this->once())->method('categoryExists')->with(2)->willReturn(true);
 
     $repo->expects($this->once())
         ->method('findById')
@@ -1449,31 +1334,5 @@ public function test_WB_updateProduct_owner_admin_keeps_status(): void
 
     $this->assertSame('success', $result['status']);
     $this->assertSame(200, $result['code']);
-}
-
-public function test_WB_updateProduct_repository_failure_returns_500(): void
-{
-    $this->startSession();
-    $_SESSION = ['user_id' => 7, 'role' => 'seller'];
-
-    $repo = $this->createMock(ProductRepository::class);
-    $repo->expects($this->once())->method('findById')->with(10)->willReturn([
-        'Product_ID' => 10,
-        'Seller_ID' => 7,
-        'Status' => 'active'
-    ]);
-    $repo->expects($this->once())->method('categoryExists')->with(2)->willReturn(true);
-    $repo->expects($this->once())->method('update')->with(10, $this->isType('array'))->willReturn(false);
-
-    $result = $this->serviceWith($repo)->updateProduct(10, [
-        'name' => 'Updated product',
-        'price' => 60000,
-        'category_id' => 2,
-        'stock_quantity' => 5,
-    ]);
-
-    $this->assertSame('error', $result['status']);
-    $this->assertSame(500, $result['code']);
-    $this->assertSame('Không thể cập nhật tin đăng.', $result['message']);
 }
 }

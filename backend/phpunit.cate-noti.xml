@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true">
+
+    <testsuites>
+        <testsuite name="Category Notification Tests">
+            <file>tests/CategoryServiceTest.php</file>
+            <file>tests/AdminCategoryEpBvaTest.php</file>
+            <file>tests/NotificationServiceTest.php</file>
+            <file>tests/NotificationWhiteBoxTest.php</file>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <file>src/services/CategoryService.php</file>
+            <file>src/services/NotificationService.php</file>
+        </include>
+    </source>
+
+</phpunit>

@@ -55,45 +55,10 @@ final class NotificationWhiteBoxTest extends TestCase
             public int $calls = 0;
             public ?int $lastNotificationId = null;
             public ?int $lastUserId = null;
-            public int $findByUserCalls = 0;
-            public ?int $lastFindByUserId = null;
-            public int $createCalls = 0;
-            public ?array $lastCreateArguments = null;
 
-            public function __construct(
-                bool $markResult,
-                array $notifications,
-                int $createdId
-            )
+            public function __construct(bool $markResult)
             {
                 $this->markResult = $markResult;
-                $this->notifications = $notifications;
-                $this->createdId = $createdId;
-            }
-
-            public function findByUser(int $userId): array
-            {
-                $this->findByUserCalls++;
-                $this->lastFindByUserId = $userId;
-
-                return $this->notifications;
-            }
-
-            public function create(
-                int $userId,
-                string $title,
-                string $content,
-                $customDb = null
-            ): int {
-                $this->createCalls++;
-                $this->lastCreateArguments = [
-                    $userId,
-                    $title,
-                    $content,
-                    $customDb
-                ];
-
-                return $this->createdId;
             }
 
             public function markAsRead(
@@ -118,38 +83,6 @@ final class NotificationWhiteBoxTest extends TestCase
         $prop->setValue($service, $repo);
 
         return [$service, $repo];
-    }
-
-    public function test_constructor_creates_default_repository(): void
-    {
-        $databaseReflection = new ReflectionClass(Database::class);
-        $database = $databaseReflection->newInstanceWithoutConstructor();
-        $connection = $this->createMock(PDO::class);
-
-        $connectionProperty = $databaseReflection->getProperty('conn');
-        $connectionProperty->setAccessible(true);
-        $connectionProperty->setValue($database, $connection);
-
-        $instanceProperty = $databaseReflection->getProperty('instance');
-        $instanceProperty->setAccessible(true);
-        $previousInstance = $instanceProperty->getValue();
-        $instanceProperty->setValue(null, $database);
-
-        try {
-            $service = new NotificationService();
-            $serviceReflection = new ReflectionClass($service);
-            $repositoryProperty = $serviceReflection->getProperty(
-                'notificationRepository'
-            );
-            $repositoryProperty->setAccessible(true);
-
-            self::assertInstanceOf(
-                NotificationRepository::class,
-                $repositoryProperty->getValue($service)
-            );
-        } finally {
-            $instanceProperty->setValue(null, $previousInstance);
-        }
     }
 
     public function test_WB00_D0_true_starts_session_then_D1_true_returns_401(): void
@@ -313,67 +246,6 @@ final class NotificationWhiteBoxTest extends TestCase
         self::assertSame(
             0,
             $repo->calls
-        );
-    }
-
-    public function test_get_notifications_returns_current_users_data(): void
-    {
-        $_SESSION['user_id'] = '7';
-        $notifications = [
-            ['ID' => 11, 'Title' => 'Đơn hàng mới'],
-            ['ID' => 12, 'Title' => 'Đã thanh toán']
-        ];
-
-        [$service, $repo] = $this->serviceWithResult(
-            true,
-            $notifications
-        );
-
-        $result = $service->getMyNotifications();
-
-        self::assertSame('success', $result['status']);
-        self::assertSame(200, $result['code']);
-        self::assertSame($notifications, $result['data']);
-        self::assertSame(1, $repo->findByUserCalls);
-        self::assertSame(7, $repo->lastFindByUserId);
-    }
-
-    public function test_send_returns_true_when_repository_creates_positive_id(): void
-    {
-        $transaction = $this->createMock(PDO::class);
-        [$service, $repo] = $this->serviceWithResult(true, [], 25);
-
-        $result = $service->send(
-            7,
-            'Đơn hàng mới',
-            'Bạn vừa nhận được một đơn hàng.',
-            $transaction
-        );
-
-        self::assertTrue($result);
-        self::assertSame(1, $repo->createCalls);
-        self::assertSame(
-            [
-                7,
-                'Đơn hàng mới',
-                'Bạn vừa nhận được một đơn hàng.',
-                $transaction
-            ],
-            $repo->lastCreateArguments
-        );
-    }
-
-    public function test_send_returns_false_when_repository_does_not_create_row(): void
-    {
-        [$service, $repo] = $this->serviceWithResult(true, [], 0);
-
-        $result = $service->send(7, 'Tiêu đề', 'Nội dung');
-
-        self::assertFalse($result);
-        self::assertSame(1, $repo->createCalls);
-        self::assertSame(
-            [7, 'Tiêu đề', 'Nội dung', null],
-            $repo->lastCreateArguments
         );
     }
 

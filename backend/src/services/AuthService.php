@@ -9,7 +9,7 @@ class AuthService
 {
     private UserRepository $userRepository;
 
-    public function __construct(?UserRepository $userRepository = null)
+    public function __construct($userRepository = null)
     {
         $this->userRepository = $userRepository ?? new UserRepository();
     }
